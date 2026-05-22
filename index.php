@@ -323,26 +323,34 @@ if ($method === 'GET') {
             include 'api/profile.php';
             exit;
         case 'api/upgrade':
-            require_once __DIR__ . '/backend/Database.php';
-            require_once __DIR__ . '/backend/Auth.php';
-            require_once __DIR__ . '/backend/Token.php';
-            header('Content-Type: application/json');
-            $currentUser = auth_get_current_user();
-            if (!$currentUser) {
-                http_response_code(401);
-                echo json_encode(['success' => false, 'error' => 'Not authenticated']);
-                exit;
+            try {
+                header('Content-Type: application/json');
+                $currentUser = auth_get_current_user();
+                if (!$currentUser) {
+                    http_response_code(401);
+                    echo json_encode(['success' => false, 'error' => 'Not authenticated']);
+                    exit;
+                }
+                $raw = file_get_contents('php://input');
+                $input = json_decode($raw, true);
+                if (!$input) {
+                    http_response_code(400);
+                    echo json_encode(['success' => false, 'error' => 'Invalid request']);
+                    exit;
+                }
+                $storeSlug = $input['storeSlug'] ?? '';
+                $storeId = null;
+                if ($storeSlug) {
+                    require_once __DIR__ . '/backend/Store.php';
+                    $store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
+                    $storeId = $store ? $store['id'] : null;
+                }
+                $result = token_upgrade_to_premium($currentUser['id'], $storeId);
+                echo json_encode($result);
+            } catch (Exception $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
             }
-            $input = json_decode(file_get_contents('php://input'), true);
-            $storeSlug = $input['storeSlug'] ?? '';
-            $storeId = null;
-            if ($storeSlug) {
-                require_once __DIR__ . '/backend/Store.php';
-                $store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
-                $storeId = $store ? $store['id'] : null;
-            }
-            $result = token_upgrade_to_premium($currentUser['id'], $storeId);
-            echo json_encode($result);
             exit;
         default:
             http_response_code(404);
