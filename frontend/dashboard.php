@@ -84,7 +84,7 @@ async function upgradeToPremium() {
     btn.disabled = true;
     btn.textContent = 'Processing...';
     try {
-        const res = await fetch('/api/upgrade', {
+        const res = await fetch('/api/upgrade.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ storeSlug: '' })
