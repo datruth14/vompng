@@ -176,6 +176,21 @@ if ($method === 'GET') {
             include 'frontend/dashboard.php';
             break;
 
+        case $requestPath === 'dashboard/stores':
+            $stores = store_get_user_stores($currentUser['id']);
+            include 'frontend/dashboard_stores.php';
+            break;
+
+        case $requestPath === 'dashboard/products':
+            $stores = store_get_user_stores($currentUser['id']);
+            $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
+            $perPage = 12;
+            $products = product_get_by_user_id_paginated($currentUser['id'], $page, $perPage);
+            $totalProductsAll = product_count_by_user_id($currentUser['id']);
+            $totalPages = max(1, (int) ceil($totalProductsAll / $perPage));
+            include 'frontend/dashboard_products_all.php';
+            break;
+
         case count($segments) === 2 && $segments[0] === 'dashboard':
             $storeSlug = $segments[1];
             $store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
@@ -198,6 +213,7 @@ if ($method === 'GET') {
                 break;
             }
             $products = product_get_products_by_store($store['id']);
+            $productCategories = product_get_categories();
             include 'frontend/dashboard_products.php';
             break;
 

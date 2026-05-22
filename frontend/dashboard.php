@@ -16,25 +16,25 @@ ob_start();
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+        <a href="/dashboard/stores" class="glass-morphism rounded-[2rem] p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Your Stores</p>
             <p class="text-5xl font-black text-white"><?php echo count($stores); ?></p>
-        </article>
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+        </a>
+        <a href="/dashboard/products" class="glass-morphism rounded-[2rem] p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Total Products</p>
             <p class="text-5xl font-black text-white"><?php echo (int) $totalProducts; ?></p>
-        </article>
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
-            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Account Status</p>
-            <p class="text-2xl font-black text-emerald-400">Active</p>
-        </article>
+        </a>
+        <a href="/dashboard/<?php echo htmlspecialchars($stores[0]['slug'] ?? ''); ?>/tokens" class="glass-morphism rounded-[2rem] p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
+            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
+            <p class="text-5xl font-black text-[#ff610a]"><?php echo (int) ($currentUser['token_balance'] ?? 0); ?></p>
+        </a>
     </div>
 
     <section class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10">
         <h2 class="text-2xl font-black text-white mb-6">Your Stores</h2>
         <?php if ($stores): ?>
             <div class="space-y-4">
-                <?php foreach ($stores as $store): ?>
+                <?php foreach (array_slice($stores, 0, 3) as $store): ?>
                     <article class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div>
@@ -50,6 +50,11 @@ ob_start();
                     </article>
                 <?php endforeach; ?>
             </div>
+            <?php if (count($stores) > 3): ?>
+                <div class="mt-6 text-center">
+                    <a href="/dashboard/stores" class="inline-block px-8 py-4 rounded-2xl bg-white/10 text-white font-black text-sm hover:bg-white/20 transition-all">View All Stores (<?php echo count($stores); ?>)</a>
+                </div>
+            <?php endif; ?>
         <?php else: ?>
             <p class="text-gray-400">No stores yet. Create one to get started.</p>
         <?php endif; ?>

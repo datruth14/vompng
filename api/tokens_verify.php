@@ -42,14 +42,14 @@ if ($tokens <= 0) {
 }
 
 if ($tokens <= 0) {
-    header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?error=' . urlencode('Could not determine token count'));
+    header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?error=' . urlencode('Could not determine Vomp Coin count'));
     exit;
 }
 
-$result = token_purchase($store['id'], $tokens);
+$result = token_purchase($store['owner_id'], $tokens, $store['id']);
 if ($result['success']) {
-    logger_info("Paystack payment verified: {$reference}, {$tokens} tokens credited to store {$storeSlug}");
-    header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?success=Payment+verified!+' . $tokens . '+tokens+added');
+    logger_info("Paystack payment verified: {$reference}, {$tokens} Vomp Coins credited to user {$store['owner_id']}");
+    header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?success=Payment+verified!+' . $tokens . '+Vomp+Coins+added');
 } else {
     header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?error=' . urlencode($result['error']));
 }

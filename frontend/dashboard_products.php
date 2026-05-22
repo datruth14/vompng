@@ -14,19 +14,19 @@ ob_start();
             <p class="text-gray-500 font-medium text-lg">Add or edit items for <?php echo htmlspecialchars($store['name']); ?>.</p>
         </div>
         <div class="flex flex-col items-end gap-3">
-            <?php if ((int)$store['token_balance'] < 10): ?>
+            <?php if ((int) ($currentUser['token_balance'] ?? 0) < 10): ?>
                 <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 3h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
-                    <?php if ((int)$store['token_balance'] <= 0): ?>
-                        No tokens &mdash; <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up to add products</a>
+                    <?php if ((int) ($currentUser['token_balance'] ?? 0) <= 0): ?>
+                        No Vomp Coins &mdash; <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up to add products</a>
                     <?php else: ?>
-                        Only <?php echo (int)$store['token_balance']; ?> token<?php echo (int)$store['token_balance'] !== 1 ? 's' : ''; ?> left &mdash; need 10 to publish. <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up</a>
+                        Only <?php echo (int) ($currentUser['token_balance'] ?? 0); ?> Vomp Coin<?php echo (int) ($currentUser['token_balance'] ?? 0) !== 1 ? 's' : ''; ?> left &mdash; need 10 to publish. <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up</a>
                     <?php endif; ?>
                 </div>
             <?php else: ?>
-                <span class="text-xs text-gray-500 font-bold"><?php echo (int)$store['token_balance']; ?> tokens remaining &bull; 10 tokens per product</span>
+                <span class="text-xs text-gray-500 font-bold"><?php echo (int) ($currentUser['token_balance'] ?? 0); ?> Vomp Coins remaining &bull; 10 Vomp Coins per product</span>
             <?php endif; ?>
-            <button onclick="toggleAddForm()" <?php echo (int)$store['token_balance'] < 10 ? 'disabled title="Need at least 10 tokens"' : ''; ?> class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all disabled:opacity-40 disabled:cursor-not-allowed">Add New Product</button>
+            <button onclick="toggleAddForm()" <?php echo (int) ($currentUser['token_balance'] ?? 0) < 10 ? 'disabled title="Need at least 10 Vomp Coins"' : ''; ?> class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all disabled:opacity-40 disabled:cursor-not-allowed">Add New Product</button>
         </div>
     </header>
 
@@ -51,6 +51,15 @@ ob_start();
                 </div>
             </div>
             <div class="space-y-4">
+                <div>
+                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Category</label>
+                    <select id="pCategory" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                        <option value="" class="bg-gray-900 text-gray-400">Select a category</option>
+                        <?php foreach ($productCategories as $cat): ?>
+                            <option value="<?php echo htmlspecialchars($cat); ?>" class="bg-gray-900"><?php echo htmlspecialchars($cat); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Description</label>
                     <textarea id="pDesc" rows="6" placeholder="Describe your product..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all"></textarea>
@@ -171,6 +180,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     formData.append('name', document.getElementById('pName').value);
     formData.append('price', document.getElementById('pPrice').value.replace(/,/g, ''));
     formData.append('description', document.getElementById('pDesc').value);
+    formData.append('category', document.getElementById('pCategory').value);
 
     const fileInput = document.getElementById('pMedia');
     if (fileInput.files.length > 0) {
@@ -196,7 +206,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
             const msg = document.getElementById('productFormMsg');
             msg.innerHTML = `<div class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold text-sm">
                 <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 3h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
-                No tokens left. <a href="/dashboard/${slug}/tokens" class="underline ml-1">Top up your balance</a> to publish more products.
+                No Vomp Coins left. <a href="/dashboard/${slug}/tokens" class="underline ml-1">Top up your balance</a> to publish more products.
             </div>`;
             btn.disabled = false;
             btn.textContent = 'Save Product';

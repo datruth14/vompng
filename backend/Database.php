@@ -63,8 +63,6 @@ function db_init_schema(PDO $db)
                 hero_image_url TEXT,
                 hero_color TEXT DEFAULT '#4f46e5',
                 accent_color TEXT DEFAULT '#8b5cf6',
-                token_balance INTEGER DEFAULT 50,
-                plan TEXT DEFAULT 'free',
                 is_active INTEGER DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -106,6 +104,15 @@ function db_init_schema(PDO $db)
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
             )
+        ",
+        'product_categories' => "
+            CREATE TABLE IF NOT EXISTS product_categories (
+                id TEXT PRIMARY KEY,
+                name TEXT UNIQUE NOT NULL,
+                sort_order INTEGER DEFAULT 0,
+                is_active INTEGER DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
         "
     ];
 
@@ -117,13 +124,21 @@ function db_init_schema(PDO $db)
         }
     }
 
+    db_ensure_column($db, 'users', 'token_balance', 'INTEGER DEFAULT 0');
+    db_ensure_column($db, 'users', 'plan', "TEXT DEFAULT 'free'");
+
+    // Migrate existing store token balances to user balances
+    $migrated = $db->query('SELECT COUNT(*) FROM users WHERE token_balance > 0')->fetchColumn();
+    if ((int) $migrated === 0) {
+        $db->exec('UPDATE users SET token_balance = (SELECT COALESCE(SUM(token_balance), 0) FROM stores WHERE stores.owner_id = users.id)');
+        $db->exec("UPDATE users SET plan = 'premium' WHERE id IN (SELECT owner_id FROM stores WHERE plan = 'premium')");
+    }
+
     db_ensure_column($db, 'stores', 'contact_email', 'TEXT');
     db_ensure_column($db, 'stores', 'logo_url', 'TEXT');
     db_ensure_column($db, 'stores', 'hero_image_url', 'TEXT');
     db_ensure_column($db, 'stores', 'hero_color', "TEXT DEFAULT '#4f46e5'");
     db_ensure_column($db, 'stores', 'accent_color', "TEXT DEFAULT '#8b5cf6'");
-    db_ensure_column($db, 'stores', 'token_balance', 'INTEGER DEFAULT 50');
-    db_ensure_column($db, 'stores', 'plan', "TEXT DEFAULT 'free'");
     db_ensure_column($db, 'stores', 'social_facebook', 'TEXT');
     db_ensure_column($db, 'stores', 'social_instagram', 'TEXT');
     db_ensure_column($db, 'stores', 'social_twitter', 'TEXT');
@@ -140,6 +155,19 @@ function db_init_schema(PDO $db)
     $db->exec('CREATE INDEX IF NOT EXISTS idx_products_store_id ON products(store_id)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_stores_owner_id ON stores(owner_id)');
     $db->exec('CREATE INDEX IF NOT EXISTS idx_tokens_store_id ON token_transactions(store_id)');
+
+    // Seed default categories if the table is empty
+    $count = $db->query('SELECT COUNT(*) FROM product_categories')->fetchColumn();
+    if ((int) $count === 0) {
+        $defaults = [
+            'Electronics', 'Fashion', 'Food & Groceries', 'Health & Beauty',
+            'Home & Garden', 'Books', 'Sports', 'Kids', 'Automotive', 'Accessories'
+        ];
+        $stmt = $db->prepare('INSERT INTO product_categories (id, name, sort_order) VALUES (?, ?, ?)');
+        foreach ($defaults as $i => $name) {
+            $stmt->execute([bin2hex(random_bytes(12)), $name, $i]);
+        }
+    }
 }
 
 /* Add a column to a table if it is missing. */

@@ -32,7 +32,7 @@ $tokens = isset($data['tokens']) ? (int) $data['tokens'] : 0;
 
 if ($tokens < TOKEN_MINIMUM) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => "Minimum purchase is " . TOKEN_MINIMUM . " tokens"]);
+    echo json_encode(['success' => false, 'error' => "Minimum purchase is " . TOKEN_MINIMUM . " Vomp Coins"]);
     exit;
 }
 

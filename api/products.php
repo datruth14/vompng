@@ -47,6 +47,7 @@ if ($method === 'POST') {
         $name = $data['name'] ?? '';
         $price = $data['price'] ?? 0;
         $description = $data['description'] ?? '';
+        $category = $data['category'] ?? '';
         $mediaUrl = $data['media_url'] ?? '';
 
         if (!$name) {
@@ -115,15 +116,15 @@ if ($method === 'POST') {
             $mediaUrl = '/uploads/' . $fileName;
         }
 
-        /* Deduct 1 token for publishing this product */
-        $tokenResult = token_deduct_for_product_upload($store['id']);
+        /* Deduct 10 tokens from user's central balance for publishing this product */
+        $tokenResult = token_deduct_for_product_upload($currentUser['id'], $store['id']);
         if (!$tokenResult['success']) {
             http_response_code(402);
             echo json_encode(['success' => false, 'error' => $tokenResult['error'], 'code' => $tokenResult['code'] ?? null]);
             exit;
         }
 
-        $result = product_create($store['id'], $name, $price, $description, $mediaUrl);
+        $result = product_create($store['id'], $name, $price, $description, $mediaUrl, 'image', $category);
         echo json_encode($result);
         exit;
     }

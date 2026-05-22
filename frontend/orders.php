@@ -6,7 +6,7 @@ ob_start();
     <div class="mb-10">
         <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Activity</p>
         <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">Orders & Activity</h1>
-        <p class="text-gray-400">Track token usage and order activity across your stores.</p>
+        <p class="text-gray-400">Track Vomp Coin usage and order activity across your stores.</p>
     </div>
 
     <?php if (empty($stores)): ?>
@@ -34,7 +34,7 @@ ob_start();
                             <div>
                                 <h2 class="text-xl font-black text-white"><?php echo htmlspecialchars($s['name']); ?></h2>
                                 <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                                    <?php echo $availableCount; ?> active products · <?php echo (int)$s['token_balance']; ?> tokens
+                                    <?php echo $availableCount; ?> active products · <?php echo (int)($currentUser['token_balance'] ?? 0); ?> Vomp Coins
                                 </p>
                             </div>
                         </div>
@@ -43,7 +43,7 @@ ob_start();
 
                     <?php if (empty($txns)): ?>
                         <div class="text-center py-8">
-                            <p class="text-gray-500 text-sm">No activity yet. Tokens will appear here as you use them.</p>
+                            <p class="text-gray-500 text-sm">No activity yet. Vomp Coins will appear here as you use them.</p>
                         </div>
                     <?php else: ?>
                         <div class="space-y-2">
@@ -60,7 +60,7 @@ ob_start();
                                             </div>
                                         <?php endif; ?>
                                         <div class="min-w-0">
-                                            <p class="text-sm font-bold text-white truncate"><?php echo htmlspecialchars($tx['description'] ?? ($tx['type'] === 'credit' ? 'Token purchase' : 'Token deduction')); ?></p>
+                                            <p class="text-sm font-bold text-white truncate"><?php echo htmlspecialchars($tx['description'] ?? ($tx['type'] === 'credit' ? 'Vomp Coin purchase' : 'Vomp Coin deduction')); ?></p>
                                             <p class="text-xs text-gray-500"><?php echo htmlspecialchars($tx['created_at']); ?></p>
                                         </div>
                                     </div>

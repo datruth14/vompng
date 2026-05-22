@@ -18,8 +18,8 @@ ob_start();
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
-            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Token Balance</p>
-            <p class="text-5xl font-black text-white"><?php echo (int) $store['token_balance']; ?></p>
+            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
+            <p class="text-5xl font-black text-white"><?php echo (int) ($currentUser['token_balance'] ?? 0); ?></p>
         </article>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Live Products</p>
@@ -41,21 +41,21 @@ ob_start();
             <p class="text-gray-400 text-sm">Update your WhatsApp, theme colors, and profile details.</p>
         </a>
         <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
-            <h3 class="text-white font-black text-xl mb-2">Tokens</h3>
-            <p class="text-gray-400 text-sm">Top up order credits and review token transaction history.</p>
+            <h3 class="text-white font-black text-xl mb-2">Vomp Coins</h3>
+            <p class="text-gray-400 text-sm">Top up and review Vomp Coin transaction history.</p>
         </a>
     </div>
 
     <section class="glass-morphism rounded-[2.5rem] p-8 border border-white/10">
-        <h2 class="text-2xl font-black text-white mb-6">Recent Token Activity</h2>
+        <h2 class="text-2xl font-black text-white mb-6">Recent Vomp Coin Activity</h2>
         <?php if (!$transactions): ?>
-            <p class="text-gray-400">No token activity yet.</p>
+            <p class="text-gray-400">No Vomp Coin activity yet.</p>
         <?php else: ?>
             <div class="space-y-3">
                 <?php foreach ($transactions as $tx): ?>
                     <article class="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between gap-4">
                         <div>
-                            <p class="text-white font-bold"><?php echo htmlspecialchars($tx['description'] ?: 'Token activity'); ?></p>
+                            <p class="text-white font-bold"><?php echo htmlspecialchars($tx['description'] ?: 'Vomp Coin transaction'); ?></p>
                             <p class="text-xs text-gray-500"><?php echo htmlspecialchars($tx['created_at']); ?></p>
                         </div>
                         <span class="font-black <?php echo ($tx['type'] ?? 'debit') === 'credit' ? 'text-emerald-300' : 'text-rose-300'; ?>">

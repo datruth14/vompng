@@ -3,15 +3,15 @@
  * Dashboard token management template.
  */
 
-$pageTitle = 'Token Management - VomP';
+$pageTitle = 'Vomp Coin Management - VomP';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Order Credits</p>
-            <h1 class="text-5xl font-black text-white tracking-tight mb-2">Tokens</h1>
-            <p class="text-gray-500 font-medium text-lg">Manage your storefront's order processing capacity.</p>
+            <h1 class="text-5xl font-black text-white tracking-tight mb-2">Vomp Coins</h1>
+            <p class="text-gray-500 font-medium text-lg">Manage your order processing balance.</p>
         </div>
     </header>
 
@@ -20,22 +20,22 @@ ob_start();
             <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-4">Current Balance</p>
             <div class="relative mb-6">
                 <div class="absolute inset-0 bg-[#ff610a]/20 blur-3xl rounded-full"></div>
-                <p class="text-7xl font-black text-white relative"><?php echo (int) $store['token_balance']; ?></p>
+                <p class="text-7xl font-black text-white relative"><?php echo (int) ($currentUser['token_balance'] ?? 0); ?></p>
             </div>
-            <p class="text-gray-400 text-sm font-medium">Tokens available for <br>customer orders</p>
+            <p class="text-gray-400 text-sm font-medium">Vomp Coins available for <br>customer orders</p>
         </article>
 
         <div class="md:col-span-2 space-y-8">
-            <h2 class="text-2xl font-black text-white">Top Up Tokens</h2>
+            <h2 class="text-2xl font-black text-white">Top Up Vomp Coins</h2>
             <div class="glass-morphism rounded-3xl p-8 border border-white/10">
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Price</p>
-                <p class="text-3xl font-black text-white mb-6">₦20 <span class="text-sm text-gray-500 font-medium">per token</span></p>
+                <p class="text-3xl font-black text-white mb-6">₦20 <span class="text-sm text-gray-500 font-medium">per Vomp Coin</span></p>
 
                 <div class="flex flex-col sm:flex-row gap-6 items-end">
                     <div class="flex-1 w-full">
-                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Number of Tokens</label>
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Number of Vomp Coins</label>
                         <input type="number" id="tokenInput" min="50" step="1" value="50" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
-                        <p class="text-xs text-gray-500 mt-2 ml-1">Minimum: <span class="text-white font-bold">50 tokens</span> (₦1,000)</p>
+                        <p class="text-xs text-gray-500 mt-2 ml-1">Minimum: <span class="text-white font-bold">50 Vomp Coins</span> (₦1,000)</p>
                     </div>
                     <div class="w-full sm:w-48 text-center sm:text-right">
                         <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-1">Total Price</p>
@@ -44,7 +44,7 @@ ob_start();
                 </div>
 
                 <button id="purchaseBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8">
-                    Buy Tokens
+                    Buy Vomp Coins
                 </button>
                 <div id="purchaseMsg" class="mt-4"></div>
             </div>
@@ -59,7 +59,7 @@ ob_start();
 
         <?php if (!$transactions): ?>
             <div class="py-12 text-center">
-                <p class="text-gray-500 font-medium">No token activity recorded yet.</p>
+                <p class="text-gray-500 font-medium">No Vomp Coin activity recorded yet.</p>
             </div>
         <?php else: ?>
             <div class="overflow-hidden">
@@ -76,7 +76,7 @@ ob_start();
                         <?php foreach ($transactions as $tx): ?>
                             <tr class="group">
                                 <td class="py-5 pl-2">
-                                    <p class="text-white font-bold"><?php echo htmlspecialchars($tx['description'] ?: 'Token transaction'); ?></p>
+                                    <p class="text-white font-bold"><?php echo htmlspecialchars($tx['description'] ?: 'Vomp Coin transaction'); ?></p>
                                     <p class="text-[10px] text-gray-600 font-mono mt-1 uppercase"><?php echo $tx['id']; ?></p>
                                 </td>
                                 <td class="py-5">
@@ -123,7 +123,7 @@ tokenInput.addEventListener('blur', () => {
 document.getElementById('purchaseBtn').addEventListener('click', async function () {
     const tokens = parseInt(tokenInput.value) || 0;
     if (tokens < TOKEN_MIN) {
-        document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum purchase is ' + TOKEN_MIN + ' tokens (₦' + (TOKEN_MIN * TOKEN_PRICE).toLocaleString() + ')</div>';
+        document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum purchase is ' + TOKEN_MIN + ' Vomp Coins (₦' + (TOKEN_MIN * TOKEN_PRICE).toLocaleString() + ')</div>';
         return;
     }
 
@@ -144,12 +144,12 @@ document.getElementById('purchaseBtn').addEventListener('click', async function 
         } else {
             document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Failed to initiate payment') + '</div>';
             btn.disabled = false;
-            btn.textContent = 'Buy Tokens';
+            btn.textContent = 'Buy Vomp Coins';
         }
     } catch (err) {
         document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
         btn.disabled = false;
-        btn.textContent = 'Buy Tokens';
+        btn.textContent = 'Buy Vomp Coins';
     }
 });
 </script>

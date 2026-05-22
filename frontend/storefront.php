@@ -18,7 +18,6 @@ ob_start();
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff8c3a] mb-2">Storefront</p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-3"><?php echo htmlspecialchars($store['name']); ?></h1>
             <p class="text-gray-300 max-w-2xl"><?php echo htmlspecialchars($store['description'] ?: 'Browse products and order directly via WhatsApp.'); ?></p>
-            <p class="mt-4 text-sm text-gray-400">Available order tokens: <span class="font-black text-white"><?php echo (int) $store['token_balance']; ?></span></p>
         </div>
     </header>
 

@@ -46,8 +46,11 @@ function auth_register($name, $email, $password, $storeName, $storeDescription, 
             $userStmt = $db->prepare('INSERT INTO users (id, email, password, name, created_at, updated_at) VALUES (?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'))');
             $userStmt->execute([$userId, $email, $hashedPassword, $name]);
 
-            $storeStmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, token_balance, plan, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 50, \'free\', 1, datetime(\'now\'), datetime(\'now\'))');
-            $storeStmt->execute([$storeId, $storeName, $storeSlug, $storeDescription, $userId, $contactPhone]);
+            $storeStmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, datetime(\'now\'), datetime(\'now\'))');
+            $storeStmt->execute([$storeId, $storeName, $slug, $storeDescription, $userId, $phone]);
+
+            // Seed the user with 50 free tokens
+            $db->exec("UPDATE users SET token_balance = COALESCE(token_balance, 0) + 50 WHERE id = '{$userId}'");
 
             $db->commit();
 

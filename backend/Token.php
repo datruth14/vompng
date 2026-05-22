@@ -12,58 +12,71 @@ require_once __DIR__ . '/Product.php';
 const TOKEN_PRICE_PER_UNIT = 20;
 const TOKEN_MINIMUM = 50;
 
-/* Purchase tokens with a custom amount. */
+/* Get user's current token balance. */
 
-function token_purchase($storeId, $tokenCount)
+function token_user_balance($userId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
+    $stmt->execute([$userId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    return $row ? (int) $row['token_balance'] : 0;
+}
+
+/* Purchase tokens for a user (central balance). Logs transaction under the given store. */
+
+function token_purchase($userId, $tokenCount, $logStoreId = null)
 {
     $cost = TOKEN_PRICE_PER_UNIT;
     $min = TOKEN_MINIMUM;
 
     $tokenCount = (int) $tokenCount;
     if ($tokenCount < $min) {
-        return ['success' => false, 'error' => "Minimum purchase is {$min} tokens (₦" . number_format($min * $cost) . ")"];
+        return ['success' => false, 'error' => "Minimum purchase is {$min} Vomp Coins (₦" . number_format($min * $cost) . ")"];
     }
 
     $totalAmount = $tokenCount * $cost;
     $db = db_get_connection();
 
-    $storeStmt = $db->prepare('SELECT token_balance FROM stores WHERE id = ?');
-    $storeStmt->execute([$storeId]);
-    $store = $storeStmt->fetch(PDO::FETCH_ASSOC);
+    $userStmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
+    $userStmt->execute([$userId]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
 
-    if (!$store) {
-        return ['success' => false, 'error' => 'Store not found'];
+    if (!$user) {
+        return ['success' => false, 'error' => 'User not found'];
     }
 
-    $newBalance = ((int) $store['token_balance']) + $tokenCount;
+    $newBalance = ((int) $user['token_balance']) + $tokenCount;
     $db->beginTransaction();
 
     try {
-        $update = $db->prepare('UPDATE stores SET token_balance = ?, plan = \'premium\', updated_at = datetime(\'now\') WHERE id = ?');
-        $update->execute([$newBalance, $storeId]);
+        $update = $db->prepare("UPDATE users SET token_balance = ?, plan = 'premium' WHERE id = ?");
+        $update->execute([$newBalance, $userId]);
 
-        $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'credit\', ?, ?, datetime(\'now\'))');
-        $log->execute([
-            bin2hex(random_bytes(12)),
-            $storeId,
-            $tokenCount,
-            "Purchased {$tokenCount} tokens (₦" . number_format($totalAmount) . ")",
-        ]);
+        if ($logStoreId) {
+            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'credit\', ?, ?, datetime(\'now\'))');
+            $log->execute([
+                bin2hex(random_bytes(12)),
+                $logStoreId,
+                $tokenCount,
+                "Purchased {$tokenCount} Vomp Coins (₦" . number_format($totalAmount) . ")",
+            ]);
+        }
 
         $db->commit();
         return ['success' => true, 'token_balance' => $newBalance, 'added' => $tokenCount];
     } catch (Exception $e) {
         $db->rollBack();
-        return ['success' => false, 'error' => 'Failed to complete token purchase'];
+        return ['success' => false, 'error' => 'Failed to complete Vomp Coin purchase'];
     }
 }
 
-/* Build the WhatsApp redirect URL for an order. Deducts 1 token per order. */
+/* Build the WhatsApp redirect URL for an order. Deducts 1 token from the store owner's central balance. */
 
 function token_deduct_for_order($slug, $productId = null, $customer = [])
 {
     $db = db_get_connection();
-    $storeStmt = $db->prepare('SELECT id, contact_phone, name, token_balance FROM stores WHERE slug = ? AND is_active = 1');
+    $storeStmt = $db->prepare('SELECT s.id, s.contact_phone, s.name, s.owner_id FROM stores s WHERE s.slug = ? AND s.is_active = 1');
     $storeStmt->execute([$slug]);
     $store = $storeStmt->fetch(PDO::FETCH_ASSOC);
 
@@ -71,8 +84,13 @@ function token_deduct_for_order($slug, $productId = null, $customer = [])
         return ['success' => false, 'error' => 'Store not found'];
     }
 
-    if ((int) $store['token_balance'] < 1) {
-        return ['success' => false, 'error' => 'Seller has insufficient tokens to receive orders. Please contact the seller.', 'code' => 'NO_TOKENS'];
+    // Check owner's central token balance
+    $userStmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
+    $userStmt->execute([$store['owner_id']]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user || (int) $user['token_balance'] < 1) {
+        return ['success' => false, 'error' => 'Seller has insufficient Vomp Coins to receive orders. Please contact the seller.', 'code' => 'NO_TOKENS'];
     }
 
     $productName = '';
@@ -101,16 +119,16 @@ function token_deduct_for_order($slug, $productId = null, $customer = [])
         $number = '234' . $number;
     }
 
-    // Deduct 1 token
-    $newBalance = (int) $store['token_balance'] - 1;
+    // Deduct 1 token from user's central balance
+    $newBalance = (int) $user['token_balance'] - 1;
     $db->beginTransaction();
     try {
-        $update = $db->prepare('UPDATE stores SET token_balance = ?, updated_at = datetime(\'now\') WHERE id = ? AND token_balance >= 1');
-        $update->execute([$newBalance, $store['id']]);
+        $update = $db->prepare('UPDATE users SET token_balance = ? WHERE id = ? AND token_balance >= 1');
+        $update->execute([$newBalance, $store['owner_id']]);
 
         if ($update->rowCount() === 0) {
             $db->rollBack();
-            return ['success' => false, 'error' => 'Seller has insufficient tokens to receive orders.', 'code' => 'NO_TOKENS'];
+            return ['success' => false, 'error' => 'Seller has insufficient Vomp Coins to receive orders.', 'code' => 'NO_TOKENS'];
         }
 
         $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', 1, ?, datetime(\'now\'))');
@@ -155,50 +173,53 @@ function token_deduct_for_order($slug, $productId = null, $customer = [])
     return ['success' => true, 'whatsappUrl' => $waUrl, 'token_balance' => $newBalance];
 }
 
-/* Deduct 1 token when a seller uploads a new product. */
+/* Deduct 10 tokens from the user's central balance when uploading a product. */
 
-function token_deduct_for_product_upload($storeId)
+function token_deduct_for_product_upload($userId, $storeIdForLog = null)
 {
     $db = db_get_connection();
-    $storeStmt = $db->prepare('SELECT token_balance FROM stores WHERE id = ?');
-    $storeStmt->execute([$storeId]);
-    $store = $storeStmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$store) {
-        return ['success' => false, 'error' => 'Store not found'];
-    }
-
     $cost = 10;
 
-    if ((int) $store['token_balance'] < $cost) {
-        return ['success' => false, 'error' => 'Insufficient tokens to publish a product. You need at least 10 tokens.', 'code' => 'NO_TOKENS'];
+    $userStmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
+    $userStmt->execute([$userId]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        return ['success' => false, 'error' => 'User not found'];
     }
 
-    $newBalance = ((int) $store['token_balance']) - $cost;
+    if ((int) $user['token_balance'] < $cost) {
+        return ['success' => false, 'error' => 'Insufficient Vomp Coins to publish a product. You need at least 10.', 'code' => 'NO_TOKENS'];
+    }
+
+    $newBalance = ((int) $user['token_balance']) - $cost;
+    $storeIdForLog = $storeIdForLog ?: '';
 
     $db->beginTransaction();
     try {
-        $update = $db->prepare('UPDATE stores SET token_balance = ?, updated_at = datetime(\'now\') WHERE id = ? AND token_balance >= ?');
-        $update->execute([$newBalance, $storeId, $cost]);
+        $update = $db->prepare('UPDATE users SET token_balance = ? WHERE id = ? AND token_balance >= ?');
+        $update->execute([$newBalance, $userId, $cost]);
 
         if ($update->rowCount() === 0) {
             $db->rollBack();
-            return ['success' => false, 'error' => 'Insufficient tokens to publish a product.', 'code' => 'NO_TOKENS'];
+            return ['success' => false, 'error' => 'Insufficient Vomp Coins to publish a product.', 'code' => 'NO_TOKENS'];
         }
 
-        $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', ?, ?, datetime(\'now\'))');
-        $log->execute([
-            bin2hex(random_bytes(12)),
-            $storeId,
-            $cost,
-            'Product listing published (10 tokens)',
-        ]);
+        if ($storeIdForLog) {
+            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', ?, ?, datetime(\'now\'))');
+            $log->execute([
+                bin2hex(random_bytes(12)),
+                $storeIdForLog,
+                $cost,
+                'Product listing published (10 Vomp Coins)',
+            ]);
+        }
 
         $db->commit();
         return ['success' => true, 'token_balance' => $newBalance];
     } catch (Exception $e) {
         $db->rollBack();
-        return ['success' => false, 'error' => 'Failed to deduct token for product upload'];
+        return ['success' => false, 'error' => 'Failed to deduct Vomp Coins for product upload'];
     }
 }
 

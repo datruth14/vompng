@@ -30,11 +30,11 @@ ob_start();
     <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6 mb-16">
         <div class="glass-morphism rounded-2xl p-6 border border-white/10 text-center">
             <p class="text-3xl md:text-4xl font-black text-white mb-1">50</p>
-            <p class="text-xs uppercase tracking-widest font-black text-gray-500">Free Tokens</p>
+            <p class="text-xs uppercase tracking-widest font-black text-gray-500">Free Vomp Coins</p>
         </div>
         <div class="glass-morphism rounded-2xl p-6 border border-white/10 text-center">
             <p class="text-3xl md:text-4xl font-black text-white mb-1">10</p>
-            <p class="text-xs uppercase tracking-widest font-black text-gray-500">Tokens Per Product</p>
+            <p class="text-xs uppercase tracking-widest font-black text-gray-500">Vomp Coins Per Product</p>
         </div>
         <div class="glass-morphism rounded-2xl p-6 border border-white/10 text-center">
             <p class="text-3xl md:text-4xl font-black text-white mb-1">100%</p>
@@ -42,7 +42,7 @@ ob_start();
         </div>
         <div class="glass-morphism rounded-2xl p-6 border border-white/10 text-center">
             <p class="text-3xl md:text-4xl font-black text-white mb-1">₦20</p>
-            <p class="text-xs uppercase tracking-widest font-black text-gray-500">Per Token</p>
+            <p class="text-xs uppercase tracking-widest font-black text-gray-500">Per Vomp Coin</p>
         </div>
     </div>
 </section>
@@ -69,7 +69,7 @@ ob_start();
                     <span class="text-2xl font-black text-[#ff610a]">2</span>
                 </div>
                 <h3 class="text-xl font-black text-white mb-3">List Your Products</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Add product photos, set prices, and write descriptions. Each listing uses 10 tokens from your balance.</p>
+                <p class="text-gray-400 text-sm leading-relaxed">Add product photos, set prices, and write descriptions. Each listing uses 10 Vomp Coins from your balance.</p>
             </div>
             <div class="glass-morphism rounded-[2rem] p-8 md:p-10 border border-white/10 text-center relative">
                 <div class="w-14 h-14 rounded-2xl bg-[#ff610a]/10 border border-[#ff610a]/20 flex items-center justify-center mx-auto mb-6">
@@ -112,8 +112,8 @@ ob_start();
                 <div class="w-12 h-12 rounded-xl bg-[#ff610a]/10 flex items-center justify-center mb-5">
                     <svg class="w-6 h-6 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 </div>
-                <h3 class="text-lg font-black text-white mb-2">Token-Powered Listings</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">New stores get 50 free tokens. Each product listing costs just 10 tokens. Top up anytime — 50 tokens minimum at ₦20 each.</p>
+                <h3 class="text-lg font-black text-white mb-2">Vomp Coin-Powered Listings</h3>
+                <p class="text-gray-400 text-sm leading-relaxed">New stores get 50 free Vomp Coins. Each product listing costs just 10 Vomp Coins. Top up anytime — 50 Vomp Coins minimum at ₦20 each.</p>
             </article>
 
             <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 hover:bg-white/[0.02] transition-all">
@@ -121,7 +121,7 @@ ob_start();
                     <svg class="w-6 h-6 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" /></svg>
                 </div>
                 <h3 class="text-lg font-black text-white mb-2">Zero Upfront Cost</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Registration is completely free. You only pay for token top-ups when you're ready to list more products beyond your free balance.</p>
+                <p class="text-gray-400 text-sm leading-relaxed">Registration is completely free. You only pay for Vomp Coin top-ups when you're ready to list more products beyond your free balance.</p>
             </article>
 
             <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 hover:bg-white/[0.02] transition-all">
@@ -129,7 +129,7 @@ ob_start();
                     <svg class="w-6 h-6 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
                 </div>
                 <h3 class="text-lg font-black text-white mb-2">Full Dashboard Control</h3>
-                <p class="text-gray-400 text-sm leading-relaxed">Manage products, track token balance, view transaction history, and update store settings — all from one clean dashboard.</p>
+                <p class="text-gray-400 text-sm leading-relaxed">Manage products, track Vomp Coin balance, view transaction history, and update store settings — all from one clean dashboard.</p>
             </article>
 
             <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 hover:bg-white/[0.02] transition-all">

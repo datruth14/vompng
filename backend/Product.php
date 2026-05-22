@@ -154,9 +154,9 @@ function product_search($query)
 function product_get_categories()
 {
     $db = db_get_connection();
-    $stmt = $db->query('SELECT DISTINCT category FROM products WHERE is_available = 1 ORDER BY category');
+    $stmt = $db->query('SELECT name FROM product_categories WHERE is_active = 1 ORDER BY sort_order ASC');
     $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    return array_map(fn($r) => $r['category'], $rows);
+    return array_map(fn($r) => $r['name'], $rows);
 }
 
 /* Return a single product by ID. */
@@ -181,16 +181,16 @@ function product_get_by_id_and_store($productId, $storeId)
 
 /* Create a new product record for a store. */
 
-function product_create($storeId, $name, $price, $description = '', $mediaUrl = '', $mediaType = 'image')
+function product_create($storeId, $name, $price, $description = '', $mediaUrl = '', $mediaType = 'image', $category = '')
 {
     $db = db_get_connection();
     $id = bin2hex(random_bytes(12));
 
     $stmt = $db->prepare(
-        'INSERT INTO products (id, name, price, description, media_url, media_type, store_id, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, datetime(\'now\'), datetime(\'now\'))'
+        'INSERT INTO products (id, name, price, description, media_url, media_type, category, store_id, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, datetime(\'now\'), datetime(\'now\'))'
     );
 
-    $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $storeId]);
+    $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $category ?: 'Others', $storeId]);
 
     return $result ? ['success' => true, 'id' => $id, 'message' => 'Product created'] : ['success' => false, 'error' => 'Failed to create product'];
 }
@@ -199,7 +199,7 @@ function product_create($storeId, $name, $price, $description = '', $mediaUrl = 
 
 function product_update($productId, $data)
 {
-    $allowed = ['name', 'price', 'description', 'media_url', 'media_type', 'is_available'];
+    $allowed = ['name', 'price', 'description', 'media_url', 'media_type', 'is_available', 'category'];
     $updateData = array_intersect_key($data, array_flip($allowed));
 
     if (empty($updateData)) {
@@ -226,4 +226,31 @@ function product_delete($productId)
     $result = $stmt->execute([$productId]);
 
     return $result ? ['success' => true, 'message' => 'Product deleted'] : ['success' => false, 'error' => 'Failed to delete product'];
+}
+
+/* Return all products across all stores owned by a user. */
+
+function product_get_by_user_id($userId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT p.*, s.name AS store_name, s.slug AS store_slug FROM products p JOIN stores s ON p.store_id = s.id WHERE s.owner_id = ? ORDER BY p.created_at DESC');
+    $stmt->execute([$userId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function product_get_by_user_id_paginated($userId, $page = 1, $perPage = 50)
+{
+    $db = db_get_connection();
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('SELECT p.*, s.name AS store_name, s.slug AS store_slug FROM products p JOIN stores s ON p.store_id = s.id WHERE s.owner_id = ? ORDER BY p.created_at DESC LIMIT ? OFFSET ?');
+    $stmt->execute([$userId, $perPage, $offset]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function product_count_by_user_id($userId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT COUNT(*) FROM products p JOIN stores s ON p.store_id = s.id WHERE s.owner_id = ?');
+    $stmt->execute([$userId]);
+    return (int) $stmt->fetchColumn();
 }
