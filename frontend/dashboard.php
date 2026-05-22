@@ -37,7 +37,7 @@ ob_start();
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
             <?php if (($currentUser['plan'] ?? 'free') === 'premium'): ?>
-                <p class="text-3xl font-black text-emerald-400">PREMIUM</p>
+                <p class="text-xl md:text-3xl font-black text-emerald-400">PREMIUM</p>
             <?php else: ?>
                 <p class="text-3xl font-black text-[#ff8c3a] mb-3">FREE</p>
                 <button onclick="upgradeToPremium()" class="w-full px-4 py-3 rounded-xl bg-[#ff610a] text-white font-black text-xs hover:bg-[#e05500] transition-all">Upgrade to Premium — 500 Vomp Coins</button>
