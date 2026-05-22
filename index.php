@@ -162,6 +162,10 @@ if ($method === 'GET') {
 
         case $requestPath === 'dashboard/create-store':
             $userStores = store_get_user_stores($currentUser['id']);
+            if (($currentUser['plan'] ?? 'free') !== 'premium' && count($userStores) > 0) {
+                header('Location: /dashboard');
+                exit;
+            }
             $defaultPhone = $userStores ? $userStores[0]['contact_phone'] : '';
             $defaultEmail = $userStores ? $userStores[0]['contact_email'] : $currentUser['email'];
             include 'frontend/create_store.php';

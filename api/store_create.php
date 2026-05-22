@@ -50,6 +50,16 @@ try {
         exit;
     }
 
+    // Free users can only create one store
+    if (($currentUser['plan'] ?? 'free') !== 'premium') {
+        $existingStores = store_get_user_stores($currentUser['id']);
+        if (count($existingStores) > 0) {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'error' => 'Upgrade to premium to create multiple stores']);
+            exit;
+        }
+    }
+
     $result = store_create_for_user($currentUser['id'], $storeName, $storeDescription, $contactPhone, $contactEmail);
 
     if ($result['success']) {
