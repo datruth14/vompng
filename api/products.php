@@ -77,7 +77,7 @@ if ($method === 'POST') {
             }
 
             /* Create uploads directory if it doesn't exist */
-            $uploadsDir = __DIR__ . '/../uploads';
+            $uploadsDir = __DIR__ . '/../assets/uploads';
             if (!is_dir($uploadsDir)) {
                 if (!mkdir($uploadsDir, 0755, true)) {
                     echo json_encode(['success' => false, 'error' => 'Failed to create uploads directory']);
@@ -113,7 +113,7 @@ if ($method === 'POST') {
             }
 
             /* Set media URL to the uploaded file path */
-            $mediaUrl = '/uploads/' . $fileName;
+            $mediaUrl = '/assets/uploads/' . $fileName;
         }
 
         /* Deduct 10 tokens from user's central balance for publishing this product */

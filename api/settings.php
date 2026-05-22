@@ -84,7 +84,7 @@ if ($method === 'POST') {
         }
 
         /* Create uploads directory if it doesn't exist */
-        $uploadsDir = __DIR__ . '/../uploads';
+            $uploadsDir = __DIR__ . '/../assets/uploads';
         if (!is_dir($uploadsDir)) {
             if (!mkdir($uploadsDir, 0755, true)) {
                 echo json_encode(['success' => false, 'error' => 'Failed to create uploads directory']);
@@ -119,7 +119,7 @@ if ($method === 'POST') {
         }
 
         /* Set hero image URL to the uploaded file path */
-        $toUpdate['hero_image_url'] = '/uploads/' . $fileName;
+        $toUpdate['hero_image_url'] = '/assets/uploads/' . $fileName;
     }
 
     $res = store_update($store['id'], $toUpdate);
