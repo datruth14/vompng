@@ -9,7 +9,7 @@ ob_start();
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">My Stores</h1>
             <p class="text-gray-500 font-medium text-lg"><?php echo count($stores); ?> store<?php echo count($stores) !== 1 ? 's' : ''; ?> total</p>
         </div>
-        <a href="/dashboard/create-store" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Create Another Store</a>
+        <a href="/dashboard/create-store" class="px-8 py-4 rounded-2xl bg-gray-950 text-white font-black text-sm border border-white/10 hover:bg-white/5 transition-all">Create Another Store</a>
     </header>
 
     <div class="space-y-4">
