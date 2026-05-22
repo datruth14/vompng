@@ -1,5 +1,6 @@
 <IfModule mod_rewrite.c>
     RewriteEngine On
+    Options +FollowSymLinks -MultiViews
     RewriteBase /
     
     # Block access to database directory

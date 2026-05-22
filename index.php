@@ -34,6 +34,10 @@ if (isset($_GET['success']) && $_GET['success'] !== '') {
 $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
 $requestPath = trim(str_replace('/index.php', '', $uri), '/');
 $requestPath = ltrim($requestPath, '/') ?: '';
+// Fallback for Apache rewrites that set ?path= via .htaccess
+if ($requestPath === '' && isset($_GET['path']) && $_GET['path'] !== '') {
+    $requestPath = rtrim($_GET['path'], '/');
+}
 $segments = $requestPath === '' ? [] : explode('/', $requestPath);
 $method = $_SERVER['REQUEST_METHOD'];
 
