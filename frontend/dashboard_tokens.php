@@ -3,7 +3,7 @@
  * Dashboard token management template.
  */
 
-$pageTitle = 'Vomp Coin Management - VomP';
+$pageTitle = 'Vomp Coin Management - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">

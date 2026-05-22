@@ -119,7 +119,7 @@ ob_start();
         </div>
     </div>
     <div class="mt-8 pt-6 border-t border-white/5 text-center text-xs text-gray-600">
-        &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($store['name']); ?>. All rights reserved. Powered by <a href="/" class="text-[#ff610a] hover:underline">VomP</a>.
+        &copy; <?php echo date('Y'); ?> <?php echo htmlspecialchars($store['name']); ?>. All rights reserved. Powered by <a href="/" class="text-[#ff610a] hover:underline">vomp</a>.
     </div>
 </footer>
 

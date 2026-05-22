@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Orders - VomP';
+$pageTitle = 'Orders - vomp';
 ob_start();
 ?>
 <section class="py-8 md:py-12">

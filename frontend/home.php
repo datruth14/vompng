@@ -3,14 +3,14 @@
  * Home page template for unauthenticated visitors.
  */
 
-$pageTitle = 'Home - VomP';
+$pageTitle = 'Home - vomp';
 ob_start();
 ?>
 
 <!-- Hero Section -->
 <section class="py-12 md:py-20">
     <div class="max-w-4xl mx-auto text-center mb-14">
-        <h1 class="text-5xl md:text-7xl font-black tracking-tight text-white mb-4">Sell Smarter With <span class="text-gradient">VOMP</span></h1>
+        <h1 class="text-5xl md:text-7xl font-black tracking-tight text-white mb-4">Sell Smarter With <span class="text-gradient">vomp</span></h1>
         <p class="text-gray-400 text-lg md:text-xl font-medium">Create your online store in minutes, list products with zero upfront cost, and receive orders directly via WhatsApp. No technical skills required.</p>
         <div class="mt-10 flex flex-wrap justify-center gap-4">
             <?php if (!empty($currentUser)): ?>
@@ -86,7 +86,7 @@ ob_start();
 <section class="py-16 md:py-24">
     <div class="max-w-6xl mx-auto">
         <div class="text-center mb-14">
-            <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-3">Why Choose VomP</p>
+            <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-3">Why Choose vomp</p>
             <h2 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">Everything You Need to Sell</h2>
             <p class="text-gray-400 text-lg max-w-2xl mx-auto">Built for Nigerian entrepreneurs who want a simple, effective way to sell online.</p>
         </div>
@@ -205,8 +205,8 @@ ob_start();
 <footer class="py-16 md:py-20 border-t border-white/5 mt-16">
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
         <div class="md:col-span-2">
-            <img src="/assets/img/logo.png" alt="VomP" class="h-10 w-auto mb-4">
-            <p class="text-gray-400 text-sm leading-relaxed max-w-sm">VomP is Nigeria's simplest marketplace platform. Create your store, list products, and receive orders directly via WhatsApp — no technical skills required.</p>
+            <img src="/assets/img/logo.png" alt="vomp" class="h-10 w-auto mb-4">
+            <p class="text-gray-400 text-sm leading-relaxed max-w-sm">vomp is Nigeria's simplest marketplace platform. Create your store, list products, and receive orders directly via WhatsApp — no technical skills required.</p>
             <div class="flex items-center gap-3 mt-5">
                 <a href="mailto:support@vomp.ng" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" /></svg>
@@ -239,10 +239,10 @@ ob_start();
         </div>
     </div>
     <div class="max-w-6xl mx-auto mt-10 pt-6 border-t border-white/5 text-center text-xs text-gray-600">
-        &copy; <?php echo date('Y'); ?> VomP. All rights reserved.
+        &copy; <?php echo date('Y'); ?> vomp. All rights reserved.
     </div>
     <div class="max-w-6xl mx-auto mt-3 text-center text-xs text-gray-700">
-        VomP is a product of 14Eter Limited RC: 1865845
+        vomp is a product of 14Eter Limited RC: 1865845
     </div>
 </footer>
 

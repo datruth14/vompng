@@ -91,7 +91,7 @@ body {
 }
 
 .skeleton-box::before {
-  content: 'VOMP NIGERIA';
+  content: 'vomp NIGERIA';
   position: absolute;
   inset: 0;
   display: flex;

@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'My Products - VomP';
+$pageTitle = 'My Products - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-8">

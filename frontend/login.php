@@ -3,7 +3,7 @@
  * Login page template.
  */
 
-$pageTitle = 'Login - VomP';
+$pageTitle = 'Login - vomp';
 ob_start();
 ?>
 <section class="min-h-[70vh] flex items-center justify-center py-10">
@@ -30,7 +30,7 @@ ob_start();
             </form>
 
             <p class="text-center text-sm font-medium text-gray-500 mt-10">
-                New to VOMP? <a href="/register" class="text-[#ff610a] hover:text-[#ff8c3a] font-bold">Start selling free</a>
+                New to vomp? <a href="/register" class="text-[#ff610a] hover:text-[#ff8c3a] font-bold">Start selling free</a>
             </p>
         </div>
     </div>

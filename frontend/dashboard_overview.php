@@ -3,7 +3,7 @@
  * Dashboard overview template for a single store.
  */
 
-$pageTitle = 'Store Overview - VomP';
+$pageTitle = 'Store Overview - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">

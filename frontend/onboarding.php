@@ -3,7 +3,7 @@
  * Onboarding / registration page template.
  */
 
-$pageTitle = 'Onboarding - VomP';
+$pageTitle = 'Onboarding - vomp';
 ob_start();
 ?>
 <section class="min-h-[78vh] flex items-center justify-center py-10">

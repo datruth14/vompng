@@ -3,7 +3,7 @@
  * Dashboard product management template.
  */
 
-$pageTitle = 'Manage Products - VomP';
+$pageTitle = 'Manage Products - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">

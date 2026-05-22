@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle ?? 'VomP App'; ?></title>
+    <title><?php echo $pageTitle ?? 'vomp App'; ?></title>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
     <meta name="theme-color" content="#030712">
     <script src="https://cdn.tailwindcss.com"></script>
@@ -24,7 +24,7 @@
             <!-- Desktop & Mobile Header Row -->
             <div class="flex justify-between items-center">
                 <a href="/" class="inline-flex items-center group">
-                    <img src="/assets/img/logo.png" alt="VomP" class="h-10 w-auto group-hover:scale-105 transition-transform duration-300">
+                    <img src="/assets/img/logo.png" alt="vomp" class="h-10 w-auto group-hover:scale-105 transition-transform duration-300">
                 </a>
 
                 <!-- Hamburger Button (Mobile Only) -->
@@ -248,7 +248,7 @@
         /* Native share */
         function shareCurrentPage() {
             const url = window.location.href;
-            const title = document.title || 'VomP';
+            const title = document.title || 'vomp';
             if (navigator.share) {
                 navigator.share({ title: title, url: url }).catch(() => {});
             } else {

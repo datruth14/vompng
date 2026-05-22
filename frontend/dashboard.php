@@ -3,7 +3,7 @@
  * Dashboard landing page template with store list and stats.
  */
 
-$pageTitle = 'Dashboard - VomP';
+$pageTitle = 'Dashboard - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">

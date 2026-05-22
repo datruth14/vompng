@@ -3,7 +3,7 @@
  * Register page template.
  */
 
-$pageTitle = 'Register - VomP';
+$pageTitle = 'Register - vomp';
 ob_start();
 ?>
 <section class="min-h-[70vh] flex items-center justify-center py-10">

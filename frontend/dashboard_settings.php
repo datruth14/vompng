@@ -3,7 +3,7 @@
  * Dashboard settings template for store configuration.
  */
 
-$pageTitle = 'Store Settings - VomP';
+$pageTitle = 'Store Settings - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10">

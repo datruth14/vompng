@@ -17,7 +17,7 @@ $currentUser = auth_get_current_user();
 $error = null;
 $success = null;
 $content = '';
-$pageTitle = 'VomP';
+$pageTitle = 'vomp';
 
 if (isset($_GET['error']) && $_GET['error'] !== '') {
     $error = $_GET['error'];
@@ -140,7 +140,7 @@ if ($method === 'GET') {
             break;
 
         case $requestPath === 'download':
-            $pageTitle = 'Download App - VomP';
+            $pageTitle = 'Download App - vomp';
             ob_start();
             ?>
             <section class="min-h-[60vh] flex items-center justify-center">
@@ -149,7 +149,7 @@ if ($method === 'GET') {
                         <svg class="w-10 h-10 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                     </div>
                     <h1 class="text-5xl md:text-6xl font-black text-white tracking-tight">Coming Soon</h1>
-                    <p class="text-gray-400 text-lg max-w-md mx-auto">The VomP mobile app is on its way. You'll be able to manage your store on the go.</p>
+                    <p class="text-gray-400 text-lg max-w-md mx-auto">The vomp mobile app is on its way. You'll be able to manage your store on the go.</p>
                 </div>
             </section>
             <?php

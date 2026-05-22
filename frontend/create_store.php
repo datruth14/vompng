@@ -1,5 +1,5 @@
 <?php
-$pageTitle = 'Create Store - VomP';
+$pageTitle = 'Create Store - vomp';
 ob_start();
 ?>
 <section class="min-h-[78vh] flex items-center justify-center py-10">
