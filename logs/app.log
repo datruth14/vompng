@@ -884,3 +884,11 @@
 2026-05-22 19:58:21 [INFO] 127.0.0.1 GET /marketplace
 2026-05-22 19:58:29 [INFO] 127.0.0.1 GET /stores
 2026-05-22 19:59:14 [INFO] 127.0.0.1 GET /stores
+2026-05-22 20:01:58 [INFO] 127.0.0.1 GET /download
+2026-05-22 20:02:01 [INFO] 127.0.0.1 GET /dashboard
+2026-05-22 20:02:11 [INFO] 127.0.0.1 GET /marketplace
+2026-05-22 20:02:25 [INFO] 127.0.0.1 GET /logout
+2026-05-22 20:02:25 [INFO] User logged out (token removed)
+2026-05-22 20:02:25 [INFO] 127.0.0.1 GET /
+2026-05-22 20:02:35 [INFO] 127.0.0.1 GET /marketplace
+2026-05-22 20:04:08 [INFO] 127.0.0.1 GET /marketplace
