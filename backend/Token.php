@@ -242,3 +242,56 @@ function token_history_by_date($storeId, $from, $to, $limit = 200)
     $stmt->execute([$storeId, $from, $to, (int) $limit]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+/* Upgrade a user to premium by deducting 500 Vomp Coins from their balance. */
+
+function token_upgrade_to_premium($userId, $logStoreId = null)
+{
+    $db = db_get_connection();
+    $cost = 500;
+
+    $userStmt = $db->prepare('SELECT token_balance, plan FROM users WHERE id = ?');
+    $userStmt->execute([$userId]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$user) {
+        return ['success' => false, 'error' => 'User not found'];
+    }
+
+    if ($user['plan'] === 'premium') {
+        return ['success' => false, 'error' => 'You are already on the premium plan'];
+    }
+
+    if ((int) $user['token_balance'] < $cost) {
+        return ['success' => false, 'error' => "Insufficient Vomp Coins. Premium upgrade costs {$cost} Vomp Coins.", 'code' => 'NO_TOKENS'];
+    }
+
+    $newBalance = (int) $user['token_balance'] - $cost;
+
+    $db->beginTransaction();
+    try {
+        $update = $db->prepare("UPDATE users SET token_balance = ?, plan = 'premium' WHERE id = ? AND token_balance >= ?");
+        $update->execute([$newBalance, $userId, $cost]);
+
+        if ($update->rowCount() === 0) {
+            $db->rollBack();
+            return ['success' => false, 'error' => 'Failed to upgrade. Insufficient Vomp Coins.', 'code' => 'NO_TOKENS'];
+        }
+
+        if ($logStoreId) {
+            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', ?, ?, datetime(\'now\'))');
+            $log->execute([
+                bin2hex(random_bytes(12)),
+                $logStoreId,
+                $cost,
+                'Premium plan upgrade (500 Vomp Coins)',
+            ]);
+        }
+
+        $db->commit();
+        return ['success' => true, 'plan' => 'premium', 'token_balance' => $newBalance];
+    } catch (Exception $e) {
+        $db->rollBack();
+        return ['success' => false, 'error' => 'Failed to upgrade to premium'];
+    }
+}

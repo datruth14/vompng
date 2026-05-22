@@ -980,3 +980,9 @@
 2026-05-22 21:06:40 [INFO] 127.0.0.1 GET /dashboard/beautyglow
 2026-05-22 21:06:42 [INFO] 127.0.0.1 GET /dashboard/beautyglow
 2026-05-22 21:06:42 [INFO] 127.0.0.1 GET /login
+2026-05-22 21:12:13 [INFO] 127.0.0.1 GET /dashboard
+2026-05-22 21:12:23 [INFO] 127.0.0.1 GET /dashboard/primedeals
+2026-05-22 21:12:54 [INFO] 127.0.0.1 GET /dashboard
+2026-05-22 21:14:10 [INFO] 127.0.0.1 GET /dashboard
+2026-05-22 21:14:17 [INFO] 127.0.0.1 GET /store/primedeals
+2026-05-22 21:14:34 [INFO] 127.0.0.1 GET /dashboard/naijatreasure

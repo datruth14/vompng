@@ -15,7 +15,7 @@ ob_start();
         <a href="/dashboard/create-store" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Create Another Store</a>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
         <a href="/dashboard/stores" class="glass-morphism rounded-[2rem] p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Your Stores</p>
             <p class="text-5xl font-black text-white"><?php echo count($stores); ?></p>
@@ -28,6 +28,16 @@ ob_start();
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
             <p class="text-5xl font-black text-[#ff610a]"><?php echo (int) ($currentUser['token_balance'] ?? 0); ?></p>
         </a>
+        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
+            <?php if (($currentUser['plan'] ?? 'free') === 'premium'): ?>
+                <p class="text-3xl font-black text-emerald-400">PREMIUM</p>
+            <?php else: ?>
+                <p class="text-3xl font-black text-[#ff8c3a] mb-3">FREE</p>
+                <button onclick="upgradeToPremium()" class="w-full px-4 py-3 rounded-xl bg-[#ff610a] text-white font-black text-xs hover:bg-[#e05500] transition-all">Upgrade to Premium — 500 Vomp Coins</button>
+                <div id="upgradeMsg" class="mt-2"></div>
+            <?php endif; ?>
+        </article>
     </div>
 
     <section class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10">
@@ -60,6 +70,36 @@ ob_start();
         <?php endif; ?>
     </section>
 </section>
+
+<script>
+async function upgradeToPremium() {
+    const btn = document.querySelector('button[onclick="upgradeToPremium()"]');
+    const msg = document.getElementById('upgradeMsg');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    try {
+        const res = await fetch('/api/upgrade', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ storeSlug: '' })
+        });
+        const result = await res.json();
+        if (result.success) {
+            msg.innerHTML = '<div class="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs font-bold">Upgraded to Premium!</div>';
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            msg.innerHTML = '<div class="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-bold">' + (result.error || 'Upgrade failed') + '</div>';
+            btn.disabled = false;
+            btn.textContent = 'Upgrade to Premium — 500 Vomp Coins';
+        }
+    } catch (err) {
+        msg.innerHTML = '<div class="px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-bold">Network error</div>';
+        btn.disabled = false;
+        btn.textContent = 'Upgrade to Premium — 500 Vomp Coins';
+    }
+}
+</script>
+
 <?php
 $content = ob_get_clean();
 ?>

@@ -318,6 +318,28 @@ if ($method === 'GET') {
         case 'api/profile.php':
             include 'api/profile.php';
             exit;
+        case 'api/upgrade':
+            require_once __DIR__ . '/backend/Database.php';
+            require_once __DIR__ . '/backend/Auth.php';
+            require_once __DIR__ . '/backend/Token.php';
+            header('Content-Type: application/json');
+            $currentUser = auth_get_current_user();
+            if (!$currentUser) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'error' => 'Not authenticated']);
+                exit;
+            }
+            $input = json_decode(file_get_contents('php://input'), true);
+            $storeSlug = $input['storeSlug'] ?? '';
+            $storeId = null;
+            if ($storeSlug) {
+                require_once __DIR__ . '/backend/Store.php';
+                $store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
+                $storeId = $store ? $store['id'] : null;
+            }
+            $result = token_upgrade_to_premium($currentUser['id'], $storeId);
+            echo json_encode($result);
+            exit;
         default:
             http_response_code(404);
             echo json_encode(['error' => 'API endpoint not found']);

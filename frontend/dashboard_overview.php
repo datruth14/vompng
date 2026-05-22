@@ -27,7 +27,11 @@ ob_start();
         </article>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
-            <p class="text-3xl font-black text-[#ff8c3a]"><?php echo strtoupper(htmlspecialchars($store['plan'])); ?></p>
+            <?php if (($currentUser['plan'] ?? 'free') === 'premium'): ?>
+                <p class="text-3xl font-black text-emerald-400">PREMIUM</p>
+            <?php else: ?>
+                <p class="text-3xl font-black text-[#ff8c3a]">FREE</p>
+            <?php endif; ?>
         </article>
     </div>
 
