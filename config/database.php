@@ -1,4 +1,9 @@
 <?php
+/*
+ * Application database configuration.
+ * Defines the SQLite database path and connection settings.
+ */
+
 // Database configuration
 return [
     'driver' => 'sqlite',

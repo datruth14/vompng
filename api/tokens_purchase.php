@@ -1,50 +1,57 @@
 <?php
-require_once 'backend/Database.php';
-require_once 'backend/Auth.php';
-require_once 'backend/Store.php';
-require_once 'backend/Token.php';
+/*
+ * API endpoint to initialize Paystack payment for token purchases.
+ * POST /api/tokens/purchase
+ */
 
-use Backend\Auth;
-use Backend\Store;
-use Backend\Token;
+require_once __DIR__ . '/../backend/Database.php';
+require_once __DIR__ . '/../backend/Auth.php';
+require_once __DIR__ . '/../backend/Store.php';
+require_once __DIR__ . '/../backend/Token.php';
+require_once __DIR__ . '/../backend/Paystack.php';
 
 header('Content-Type: application/json');
 
-$auth = new Auth();
-$currentUser = $auth->getCurrentUser();
-
+$currentUser = auth_get_current_user();
 if (!$currentUser) {
     http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'error' => 'Not authenticated']);
     exit;
 }
 
-$storeModel = new Store();
-$tokenModel = new Token();
-
 $storeSlug = $_GET['storeSlug'] ?? '';
-$store = $storeModel->getStoreBySlugForOwner($storeSlug, $currentUser['id']);
-
+$store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
 if (!$store) {
     http_response_code(404);
-    echo json_encode(['error' => 'Store not found']);
+    echo json_encode(['success' => false, 'error' => 'Store not found']);
     exit;
 }
 
 $data = json_decode(file_get_contents('php://input'), true);
-$method = $_SERVER['REQUEST_METHOD'];
+$tokens = isset($data['tokens']) ? (int) $data['tokens'] : 0;
 
-if ($method === 'POST') {
-    $plan = $data['plan'] ?? '';
-    if (!$plan) {
-        echo json_encode(['success' => false, 'error' => 'Plan is required']);
-        exit;
-    }
-
-    $result = $tokenModel->purchase($store['id'], $plan);
-    echo json_encode($result);
+if ($tokens < TOKEN_MINIMUM) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => "Minimum purchase is " . TOKEN_MINIMUM . " tokens"]);
     exit;
 }
 
-http_response_code(405);
-echo json_encode(['error' => 'Method not allowed']);
+$totalAmountKobo = $tokens * TOKEN_PRICE_PER_UNIT * 100; // Paystack uses kobo (NGN * 100)
+
+$scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$callbackUrl = "{$scheme}://{$host}/api/tokens_verify.php?storeSlug={$storeSlug}";
+
+$result = paystack_initialize(
+    $currentUser['email'],
+    $totalAmountKobo,
+    [
+        'store_slug' => $storeSlug,
+        'store_id' => $store['id'],
+        'user_id' => $currentUser['id'],
+        'tokens' => $tokens,
+    ],
+    $callbackUrl
+);
+
+echo json_encode($result);

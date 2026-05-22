@@ -1,4 +1,8 @@
 <?php
+/*
+ * Dashboard landing page template with store list and stats.
+ */
+
 $pageTitle = 'Dashboard - VomP';
 ob_start();
 ?>
@@ -8,7 +12,7 @@ ob_start();
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">Overview</h1>
             <p class="text-gray-500 font-medium text-lg">Manage your stores with the same visual rhythm as the original app.</p>
         </div>
-        <a href="/register" class="btn-press px-8 py-4 rounded-2xl bg-indigo-500 text-white font-black text-sm shadow-xl shadow-indigo-500/20 hover:bg-indigo-400 transition-all">Create Another Store</a>
+        <a href="/dashboard/create-store" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Create Another Store</a>
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -35,12 +39,12 @@ ob_start();
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                             <div>
                                 <h3 class="text-xl font-black text-white"><?php echo htmlspecialchars($store['name']); ?></h3>
-                                <p class="text-xs uppercase tracking-widest text-indigo-400 font-black mt-1"><?php echo htmlspecialchars($store['slug']); ?></p>
+                                <p class="text-xs uppercase tracking-widest text-[#ff610a] font-black mt-1"><?php echo htmlspecialchars($store['slug']); ?></p>
                                 <p class="text-sm text-gray-400 mt-3"><?php echo htmlspecialchars($store['description'] ?: 'No description yet.'); ?></p>
                             </div>
                             <div class="flex gap-3">
                                 <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>" class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-black hover:bg-white/20 transition-all">View</a>
-                                <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>" class="btn-press px-5 py-2.5 rounded-xl bg-indigo-500 text-white text-sm font-black hover:bg-indigo-400 transition-all">Manage</a>
+                                <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>" class="btn-press px-5 py-2.5 rounded-xl bg-[#ff610a] text-white text-sm font-black hover:bg-[#e05500] transition-all">Manage</a>
                             </div>
                         </div>
                     </article>

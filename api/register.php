@@ -1,14 +1,16 @@
 <?php
+/*
+ * API endpoint for user registration.
+ * Accepts registration payloads and creates a new user + store.
+ */
+
 
 require_once __DIR__ . '/../backend/Database.php';
 require_once __DIR__ . '/../backend/Auth.php';
 
-use Backend\Auth;
-
-$auth = new Auth();
 $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 
-$result = $auth->register(
+$result = auth_register(
     $input['name'] ?? '',
     $input['email'] ?? '',
     $input['password'] ?? '',
@@ -17,7 +19,6 @@ $result = $auth->register(
     $input['contactPhone'] ?? ''
 );
 
-// Return JSON only for API clients; browser form posts get redirects.
 $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
 $wantsJson = stripos($accept, 'application/json') !== false;
 

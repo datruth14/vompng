@@ -7,31 +7,155 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/theme.css">
 </head>
-<body class="bg-gray-950 text-gray-100 selection:bg-indigo-500/30">
+<body class="bg-gray-950 text-gray-100 selection:bg-[#ff610a]/30">
+    <script>
+        window.APP_CURRENT_USER = <?php echo json_encode($currentUser ?? null); ?>;
+        window.APP_IS_LOGGED_IN = <?php echo json_encode(!empty($currentUser)); ?>;
+    </script>
     <div class="fixed inset-0 overflow-hidden pointer-events-none">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] animate-blob"></div>
         <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] animate-blob" style="animation-delay:2s"></div>
     </div>
 
     <nav class="relative z-10 max-w-7xl mx-auto px-4 pt-8">
-        <div class="glass-morphism rounded-3xl px-6 py-4 flex justify-between items-center border border-white/10">
-            <a href="/" class="inline-flex items-center gap-3 group">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform duration-300">
-                    <span class="text-white font-black">V</span>
+        <div class="glass-morphism rounded-3xl px-6 py-4 border border-white/10">
+            <!-- Desktop & Mobile Header Row -->
+            <div class="flex justify-between items-center">
+                <a href="/" class="inline-flex items-center group">
+                    <img src="/assets/img/logo.png" alt="VomP" class="h-10 w-auto group-hover:scale-105 transition-transform duration-300">
+                </a>
+
+                <!-- Hamburger Button (Mobile Only) -->
+                <button id="mobile-menu-btn" class="md:hidden p-2 rounded-lg bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-all">
+                    <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                    <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <!-- Desktop Menu (Hidden on Mobile) -->
+                <div class="hidden md:flex items-center gap-6">
+                    <?php if ($currentUser): ?>
+                        <a href="/dashboard" class="inline-flex items-center gap-2 py-2 px-3 text-[#ff8c3a] hover:text-[#ffb07a] font-bold text-sm transition-all duration-200 relative group">
+                            <svg class="w-4 h-4 text-[#ff610a] group-hover:text-[#ffcc66] transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+                            </svg>
+                            <span>Dashboard</span>
+                            <span class="absolute bottom-0 left-3 right-3 h-[2px] bg-[#ff610a] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200"></span>
+                        </a>
+                        <a href="/download" class="inline-flex items-center gap-2 py-2 px-3 text-gray-300 hover:text-white font-bold text-sm transition-all duration-200 relative group">
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                            <span>Download App</span>
+                            <span class="absolute bottom-0 left-3 right-3 h-[2px] bg-[#ff610a] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200"></span>
+                        </a>
+                        <span class="inline-flex items-center gap-2 text-gray-400 text-xs font-bold uppercase tracking-wider border-l border-white/10 pl-4 py-1">
+                            <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            <span><?php echo htmlspecialchars($currentUser['name']); ?></span>
+                        </span>
+                        <a href="/logout" class="inline-flex items-center gap-2 py-2 px-3 text-rose-300 hover:text-rose-100 font-bold text-sm transition-all duration-200 relative group">
+                            <svg class="w-4 h-4 text-rose-400 group-hover:text-rose-200 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Logout</span>
+                            <span class="absolute bottom-0 left-3 right-3 h-[2px] bg-rose-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200"></span>
+                        </a>
+                    <?php else: ?>
+                        <a href="/login" class="inline-flex items-center gap-2 py-2 px-3 text-gray-300 hover:text-white font-bold text-sm transition-all duration-200 relative group">
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
+                            <span>Login</span>
+                            <span class="absolute bottom-0 left-3 right-3 h-[2px] bg-[#ff610a] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200"></span>
+                        </a>
+                        <a href="/register" class="inline-flex items-center gap-2 py-2 px-3 text-[#ff8c3a] hover:text-[#ffb07a] font-bold text-sm transition-all duration-200 relative group">
+                            <svg class="w-4 h-4 text-[#ff610a] group-hover:text-[#ffcc66] transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            <span>Register</span>
+                            <span class="absolute bottom-0 left-3 right-3 h-[2px] bg-[#ff610a] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200"></span>
+                        </a>
+                        <a href="/download" class="inline-flex items-center gap-2 py-2 px-3 text-gray-300 hover:text-white font-bold text-sm transition-all duration-200 relative group">
+                            <svg class="w-4 h-4 text-gray-400 group-hover:text-white transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                            <span>Download App</span>
+                            <span class="absolute bottom-0 left-3 right-3 h-[2px] bg-[#ff610a] scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-200"></span>
+                        </a>
+                    <?php endif; ?>
                 </div>
-                <span class="text-3xl font-black text-white tracking-tight">VOMP</span>
-            </a>
-            <div class="flex items-center gap-3">
+            </div>
+
+            <!-- Mobile Menu (Hidden by default) -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pt-4 border-t border-white/10 space-y-3 flex flex-col items-center">
                 <?php if ($currentUser): ?>
-                    <span class="text-gray-300 text-sm font-bold uppercase tracking-wider"><?php echo htmlspecialchars($currentUser['name']); ?></span>
-                    <a href="/logout" class="btn-press px-5 py-2.5 rounded-xl bg-rose-500/20 border border-rose-400/30 text-rose-200 font-black text-sm hover:bg-rose-500/30 transition-all">Logout</a>
+                    <a href="/dashboard" class="flex items-center gap-2 py-2.5 px-5 text-[#ff8c3a] hover:text-[#ffb07a] font-bold text-sm transition-all duration-200">
+                        <svg class="w-4 h-4 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z" />
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <div class="flex items-center gap-2 py-1 text-gray-500 text-xs font-black uppercase tracking-wider">
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        <span><?php echo htmlspecialchars($currentUser['name']); ?></span>
+                    </div>
+                    <a href="/download" class="flex items-center gap-2 py-2.5 px-5 text-gray-300 hover:text-white font-bold text-sm transition-all duration-200">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                        <span>Download App</span>
+                    </a>
+                    <a href="/logout" class="flex items-center gap-2 py-2.5 px-5 text-rose-300 hover:text-rose-100 font-bold text-sm transition-all duration-200">
+                        <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span>Logout</span>
+                    </a>
                 <?php else: ?>
-                    <a href="/login" class="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-black text-sm hover:bg-white/10 transition-all">Login</a>
-                    <a href="/register" class="btn-press px-5 py-2.5 rounded-xl bg-indigo-500 text-white font-black text-sm shadow-lg shadow-indigo-500/20 hover:bg-indigo-400 transition-all">Register</a>
+                    <a href="/login" class="flex items-center gap-2 py-2.5 px-5 text-gray-300 hover:text-white font-bold text-sm transition-all duration-200">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        <span>Login</span>
+                    </a>
+                    <a href="/register" class="flex items-center gap-2 py-2.5 px-5 text-[#ff8c3a] hover:text-[#ffb07a] font-bold text-sm transition-all duration-200">
+                        <svg class="w-4 h-4 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                        </svg>
+                        <span>Register</span>
+                    </a>
+                    <a href="/download" class="flex items-center gap-2 py-2.5 px-5 text-gray-300 hover:text-white font-bold text-sm transition-all duration-200">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                        <span>Download App</span>
+                    </a>
                 <?php endif; ?>
             </div>
         </div>
     </nav>
+
+    <script>
+        /* Mobile menu toggle functionality */
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const menuIcon = document.getElementById('menu-icon');
+        const closeIcon = document.getElementById('close-icon');
+
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            menuIcon.classList.toggle('hidden');
+            closeIcon.classList.toggle('hidden');
+        });
+
+        /* Close mobile menu when a link is clicked */
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+                menuIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            });
+        });
+    </script>
 
     <main class="relative z-10 max-w-7xl mx-auto p-4 md:p-8">
         <?php if (isset($error)): ?>
@@ -48,5 +172,118 @@
 
         <?php echo $content ?? ''; ?>
     </main>
+
+    <!-- Share FAB -->
+    <button id="shareBtn" class="fixed bottom-24 right-4 z-50 w-12 h-12 rounded-full bg-black text-[#ff610a] border-2 border-[#ff610a] shadow-lg shadow-[#ff610a]/20 hover:bg-[#1a1a1a] transition-all flex items-center justify-center" onclick="shareCurrentPage()">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+    </button>
+
+    <!-- Bottom Nav Toggle (stays on right edge when collapsed) -->
+    <button id="navToggleBtn" class="fixed bottom-6 right-4 z-50 w-12 h-12 rounded-full bg-[#ff610a] text-white shadow-lg shadow-[#ff610a]/30 hover:bg-[#e05500] transition-all flex items-center justify-center">
+        <svg id="navToggleIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+    </button>
+
+    <!-- Bottom Nav (slides from right) -->
+    <div id="bottomNav" class="fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 translate-x-full">
+        <div class="max-w-lg mx-auto px-4 pb-4">
+            <div class="glass-morphism rounded-2xl px-3 py-3 border border-white/10 flex items-center justify-around gap-1">
+                <a href="/" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                    <span class="text-[10px] font-black uppercase tracking-wider">Home</span>
+                </a>
+                <a href="/marketplace" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" /></svg>
+                    <span class="text-[10px] font-black uppercase tracking-wider">Marketplace</span>
+                </a>
+                <a href="/download" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                    <span class="text-[10px] font-black uppercase tracking-wider">Download</span>
+                </a>
+                <?php if ($currentUser): ?>
+                    <a href="/orders" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+                        <span class="text-[10px] font-black uppercase tracking-wider">Orders</span>
+                    </a>
+                    <a href="/profile" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                        <span class="text-[10px] font-black uppercase tracking-wider">Profile</span>
+                    </a>
+                <?php else: ?>
+                    <a href="/login" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+                        <span class="text-[10px] font-black uppercase tracking-wider">Orders</span>
+                    </a>
+                    <a href="/login" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                        <span class="text-[10px] font-black uppercase tracking-wider">Profile</span>
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* Bottom nav slide from right toggle */
+        const navToggleBtn = document.getElementById('navToggleBtn');
+        const bottomNav = document.getElementById('bottomNav');
+        const navToggleIcon = document.getElementById('navToggleIcon');
+        const shareBtn = document.getElementById('shareBtn');
+        let navOpen = false;
+
+        navToggleBtn.addEventListener('click', () => {
+            navOpen = !navOpen;
+            if (navOpen) {
+                bottomNav.classList.remove('translate-x-full');
+                navToggleBtn.style.bottom = '5.5rem';
+                shareBtn.style.bottom = '11rem';
+                navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+            } else {
+                bottomNav.classList.add('translate-x-full');
+                navToggleBtn.style.bottom = '';
+                shareBtn.style.bottom = '';
+                navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />';
+            }
+        });
+
+        /* Native share */
+        function shareCurrentPage() {
+            const url = window.location.href;
+            const title = document.title || 'VomP';
+            if (navigator.share) {
+                navigator.share({ title: title, url: url }).catch(() => {});
+            } else {
+                const existing = document.getElementById('shareModal');
+                if (existing) existing.remove();
+                const overlay = document.createElement('div');
+                overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm';
+                overlay.id = 'shareModal';
+                overlay.addEventListener('click', () => overlay.remove());
+                const box = document.createElement('div');
+                box.className = 'bg-gray-900 rounded-2xl p-6 border border-white/10 max-w-sm w-full mx-4 shadow-2xl';
+                box.addEventListener('click', (e) => e.stopPropagation());
+                box.innerHTML = '<p class="text-white font-black text-lg mb-4">Share this page</p>' +
+                    '<div class="flex items-center gap-2 bg-white/5 rounded-xl px-4 py-3 border border-white/10">' +
+                    '<span class="text-gray-300 text-sm truncate flex-1">' + url + '</span>' +
+                    '<button class="shrink-0 px-3 py-1.5 rounded-lg bg-[#ff610a] text-white text-xs font-bold" id="copyBtn">Copy</button>' +
+                    '</div>' +
+                    '<button class="mt-4 text-sm text-gray-500 hover:text-white font-bold" id="closeShareBtn">Close</button>';
+                box.querySelector('#copyBtn').addEventListener('click', function() {
+                    navigator.clipboard.writeText(url).then(() => { this.textContent = 'Copied!'; });
+                });
+                box.querySelector('#closeShareBtn').addEventListener('click', () => overlay.remove());
+                overlay.appendChild(box);
+                document.body.appendChild(overlay);
+            }
+        }
+
+        /* Close when a link is clicked */
+        bottomNav.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', () => {
+                navOpen = false;
+                bottomNav.classList.add('translate-x-full');
+                navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />';
+            });
+        });
+    </script>
 </body>
 </html>

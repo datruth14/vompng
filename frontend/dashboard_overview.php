@@ -1,11 +1,15 @@
 <?php
+/*
+ * Dashboard overview template for a single store.
+ */
+
 $pageTitle = 'Store Overview - VomP';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-            <p class="text-xs uppercase tracking-[0.2em] font-black text-indigo-400 mb-2">Managing <?php echo htmlspecialchars($store['slug']); ?></p>
+            <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Managing <?php echo htmlspecialchars($store['slug']); ?></p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2"><?php echo htmlspecialchars($store['name']); ?></h1>
             <p class="text-gray-500 font-medium text-lg"><?php echo htmlspecialchars($store['description'] ?: 'No store description yet.'); ?></p>
         </div>
@@ -23,7 +27,7 @@ ob_start();
         </article>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
-            <p class="text-3xl font-black text-indigo-300"><?php echo strtoupper(htmlspecialchars($store['plan'])); ?></p>
+            <p class="text-3xl font-black text-[#ff8c3a]"><?php echo strtoupper(htmlspecialchars($store['plan'])); ?></p>
         </article>
     </div>
 

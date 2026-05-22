@@ -1,78 +1,229 @@
 <?php
+/*
+ * Product helper functions.
+ * Includes product creation, update, delete, and listing by store.
+ */
 
-namespace Backend;
 
-class Product
+require_once __DIR__ . '/Database.php';
+
+/* Return all products for a given store ID. */
+
+function product_get_products_by_store($storeId)
 {
-    private $db;
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT * FROM products WHERE store_id = ? ORDER BY created_at DESC');
+    $stmt->execute([$storeId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
 
-    public function __construct()
-    {
-        $this->db = Database::getInstance()->getConnection();
+/* Return only available products for a store. */
+
+function product_get_available_products_by_store($storeId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT * FROM products WHERE store_id = ? AND is_available = 1 ORDER BY created_at DESC');
+    $stmt->execute([$storeId]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* Return all available products across all stores with store info. */
+
+function product_get_all_available()
+{
+    $db = db_get_connection();
+    $stmt = $db->query('
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
+        FROM products p
+        JOIN stores s ON p.store_id = s.id
+        WHERE p.is_available = 1 AND s.is_active = 1
+        ORDER BY p.created_at DESC
+    ');
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function product_get_all_available_paginated($page = 1, $perPage = 50)
+{
+    $db = db_get_connection();
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
+        FROM products p
+        JOIN stores s ON p.store_id = s.id
+        WHERE p.is_available = 1 AND s.is_active = 1
+        ORDER BY p.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->execute([$perPage, $offset]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function product_count_all_available()
+{
+    $db = db_get_connection();
+    return (int) $db->query('SELECT COUNT(*) FROM products p JOIN stores s ON p.store_id = s.id WHERE p.is_available = 1 AND s.is_active = 1')->fetchColumn();
+}
+
+function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
+{
+    $db = db_get_connection();
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
+        FROM products p
+        JOIN stores s ON p.store_id = s.id
+        WHERE p.is_available = 1 AND s.is_active = 1 AND p.category = ?
+        ORDER BY p.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->execute([$category, $perPage, $offset]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function product_count_by_category($category)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT COUNT(*) FROM products p JOIN stores s ON p.store_id = s.id WHERE p.is_available = 1 AND s.is_active = 1 AND p.category = ?');
+    $stmt->execute([$category]);
+    return (int) $stmt->fetchColumn();
+}
+
+function product_search_paginated($query, $page = 1, $perPage = 50)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
+        FROM products p
+        JOIN stores s ON p.store_id = s.id
+        WHERE p.is_available = 1 AND s.is_active = 1
+        AND (p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?)
+        ORDER BY p.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->execute([$like, $like, $like, $perPage, $offset]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function product_count_search($query)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $stmt = $db->prepare('SELECT COUNT(*) FROM products p JOIN stores s ON p.store_id = s.id WHERE p.is_available = 1 AND s.is_active = 1 AND (p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?)');
+    $stmt->execute([$like, $like, $like]);
+    return (int) $stmt->fetchColumn();
+}
+
+/* Return available products filtered by category. */
+
+function product_get_by_category($category)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
+        FROM products p
+        JOIN stores s ON p.store_id = s.id
+        WHERE p.is_available = 1 AND s.is_active = 1 AND p.category = ?
+        ORDER BY p.created_at DESC
+    ');
+    $stmt->execute([$category]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* Search available products by name, description, or store name. */
+
+function product_search($query)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $stmt = $db->prepare('
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
+        FROM products p
+        JOIN stores s ON p.store_id = s.id
+        WHERE p.is_available = 1 AND s.is_active = 1
+        AND (p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?)
+        ORDER BY p.created_at DESC
+    ');
+    $stmt->execute([$like, $like, $like]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+/* Return all distinct product categories. */
+
+function product_get_categories()
+{
+    $db = db_get_connection();
+    $stmt = $db->query('SELECT DISTINCT category FROM products WHERE is_available = 1 ORDER BY category');
+    $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    return array_map(fn($r) => $r['category'], $rows);
+}
+
+/* Return a single product by ID. */
+
+function product_get_by_id($productId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT * FROM products WHERE id = ?');
+    $stmt->execute([$productId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+/* Return a product only if it belongs to the given store and is available. */
+
+function product_get_by_id_and_store($productId, $storeId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT * FROM products WHERE id = ? AND store_id = ? AND is_available = 1');
+    $stmt->execute([$productId, $storeId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC);
+}
+
+/* Create a new product record for a store. */
+
+function product_create($storeId, $name, $price, $description = '', $mediaUrl = '', $mediaType = 'image')
+{
+    $db = db_get_connection();
+    $id = bin2hex(random_bytes(12));
+
+    $stmt = $db->prepare(
+        'INSERT INTO products (id, name, price, description, media_url, media_type, store_id, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, datetime(\'now\'), datetime(\'now\'))'
+    );
+
+    $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $storeId]);
+
+    return $result ? ['success' => true, 'id' => $id, 'message' => 'Product created'] : ['success' => false, 'error' => 'Failed to create product'];
+}
+
+/* Update fields for an existing product. */
+
+function product_update($productId, $data)
+{
+    $allowed = ['name', 'price', 'description', 'media_url', 'media_type', 'is_available'];
+    $updateData = array_intersect_key($data, array_flip($allowed));
+
+    if (empty($updateData)) {
+        return ['success' => false, 'error' => 'No valid data to update'];
     }
 
-    public function getProductsByStore($storeId)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM products WHERE store_id = ? ORDER BY created_at DESC");
-        $stmt->execute([$storeId]);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    }
+    $updateData['updated_at'] = date('Y-m-d H:i:s');
+    $set = implode(', ', array_map(fn($k) => "$k = ?", array_keys($updateData)));
+    $sql = "UPDATE products SET $set WHERE id = ?";
 
-    public function getAvailableProductsByStore($storeId)
-    {
-        $stmt = $this->db->prepare("SELECT * FROM products WHERE store_id = ? AND is_available = 1 ORDER BY created_at DESC");
-        $stmt->execute([$storeId]);
-        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
-    }
+    $db = db_get_connection();
+    $stmt = $db->prepare($sql);
+    $result = $stmt->execute(array_merge(array_values($updateData), [$productId]));
 
-    public function createProduct($storeId, $name, $price, $description = '', $mediaUrl = '', $mediaType = 'image')
-    {
-        $id = bin2hex(random_bytes(12));
-        
-        $stmt = $this->db->prepare("
-            INSERT INTO products (
-                id, name, price, description, media_url, media_type,
-                store_id, is_available, created_at, updated_at
-            )
-            VALUES (?, ?, ?, ?, ?, ?, ?, 1, datetime('now'), datetime('now'))
-        ");
-        
-        $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $storeId]);
-        
-        return $result ?
-            ['success' => true, 'id' => $id, 'message' => 'Product created'] :
-            ['success' => false, 'error' => 'Failed to create product'];
-    }
+    return $result ? ['success' => true, 'message' => 'Product updated'] : ['success' => false, 'error' => 'Failed to update product'];
+}
 
-    public function updateProduct($productId, $data)
-    {
-        $allowed = ['name', 'price', 'description', 'media_url', 'media_type', 'is_available'];
-        $updateData = array_intersect_key($data, array_flip($allowed));
-        
-        if (empty($updateData)) {
-            return ['success' => false, 'error' => 'No valid data to update'];
-        }
+/* Delete a specific product by ID. */
 
-        $updateData['updated_at'] = date('Y-m-d H:i:s');
-        
-        $set = implode(', ', array_map(fn($k) => "$k = ?", array_keys($updateData)));
-        $sql = "UPDATE products SET $set WHERE id = ?";
-        
-        $stmt = $this->db->prepare($sql);
-        $result = $stmt->execute(array_merge(array_values($updateData), [$productId]));
+function product_delete($productId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('DELETE FROM products WHERE id = ?');
+    $result = $stmt->execute([$productId]);
 
-        return $result ?
-            ['success' => true, 'message' => 'Product updated'] :
-            ['success' => false, 'error' => 'Failed to update product'];
-    }
-
-    public function deleteProduct($productId)
-    {
-        $stmt = $this->db->prepare("DELETE FROM products WHERE id = ?");
-        $result = $stmt->execute([$productId]);
-        
-        return $result ?
-            ['success' => true, 'message' => 'Product deleted'] :
-            ['success' => false, 'error' => 'Failed to delete product'];
-    }
+    return $result ? ['success' => true, 'message' => 'Product deleted'] : ['success' => false, 'error' => 'Failed to delete product'];
 }

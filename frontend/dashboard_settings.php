@@ -1,11 +1,15 @@
 <?php
+/*
+ * Dashboard settings template for store configuration.
+ */
+
 $pageTitle = 'Store Settings - VomP';
 ob_start();
 ?>
 <section class="py-6 md:py-10">
     <header class="flex items-center justify-between mb-6">
         <div>
-            <p class="text-xs uppercase tracking-[0.2em] font-black text-indigo-400 mb-2">Editing <?php echo htmlspecialchars($store['slug']); ?></p>
+            <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Editing <?php echo htmlspecialchars($store['slug']); ?></p>
             <h1 class="text-4xl font-black text-white tracking-tight mb-1">Store Settings</h1>
             <p class="text-gray-400 text-sm">Update your storefront details and contact info.</p>
         </div>
@@ -16,12 +20,12 @@ ob_start();
         <form id="settingsForm" class="glass-morphism rounded-2xl p-6 border border-white/10 md:col-span-2 space-y-4">
             <div>
                 <label class="text-sm text-gray-300 font-bold">Store Name</label>
-                <input type="text" name="name" id="name" value="<?php echo htmlspecialchars($store['name']); ?>" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-indigo-400" />
+                <input type="text" name="name" id="name" value="<?php echo htmlspecialchars($store['name']); ?>" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a]" />
             </div>
 
             <div>
                 <label class="text-sm text-gray-300 font-bold">Description</label>
-                <textarea name="description" id="description" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-indigo-400"><?php echo htmlspecialchars($store['description']); ?></textarea>
+                <textarea name="description" id="description" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a]"><?php echo htmlspecialchars($store['description']); ?></textarea>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -35,26 +39,44 @@ ob_start();
                 </div>
             </div>
 
-            <div>
-                <label class="text-sm text-gray-300 font-bold">Logo URL</label>
-                <input type="text" name="logo_url" id="logo_url" value="<?php echo htmlspecialchars($store['logo_url'] ?? ''); ?>" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5" />
-            </div>
+            <hr class="border-white/10">
 
             <div>
-                <label class="text-sm text-gray-300 font-bold">Hero Image URL</label>
-                <input type="text" name="hero_image_url" id="hero_image_url" value="<?php echo htmlspecialchars($store['hero_image_url'] ?? ''); ?>" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5" />
+                <label class="text-sm text-gray-300 font-bold">Hero Image</label>
+                <input type="file" name="hero_image" id="hero_image" accept="image/*" class="mt-2 w-full rounded-xl px-4 py-3 bg-white/5 border border-white/5 text-gray-400 focus:outline-none focus:border-[#ff610a]/50 file:bg-[#ff610a]/20 file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-[#ff8c3a] file:font-bold file:text-xs file:cursor-pointer" />
+                <p class="text-xs text-gray-500 mt-1">JPG, PNG, GIF or WebP (Max 5MB). Leave blank to keep existing image.</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <label class="text-sm text-gray-300 font-bold">Accent Color</label>
-                    <input type="color" name="accent_color" id="accent_color" value="<?php echo htmlspecialchars($store['accent_color'] ?? '#6b21a8'); ?>" class="mt-2 w-full rounded-xl" />
-                </div>
-                <div>
-                    <label class="text-sm text-gray-300 font-bold">Hero Color</label>
-                    <input type="color" name="hero_color" id="hero_color" value="<?php echo htmlspecialchars($store['hero_color'] ?? '#4f46e5'); ?>" class="mt-2 w-full rounded-xl" />
+            <hr class="border-white/10">
+
+            <div>
+                <p class="text-sm text-gray-300 font-bold mb-3">Social Media Handles</p>
+                <p class="text-xs text-gray-500 mb-3">Enter full URLs (e.g. https://instagram.com/yourhandle)</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs text-gray-400 font-semibold">Facebook</label>
+                        <input type="url" name="social_facebook" id="social_facebook" value="<?php echo htmlspecialchars($store['social_facebook'] ?? ''); ?>" placeholder="https://facebook.com/..." class="mt-1 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a]" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 font-semibold">Instagram</label>
+                        <input type="url" name="social_instagram" id="social_instagram" value="<?php echo htmlspecialchars($store['social_instagram'] ?? ''); ?>" placeholder="https://instagram.com/..." class="mt-1 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a]" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 font-semibold">Twitter / X</label>
+                        <input type="url" name="social_twitter" id="social_twitter" value="<?php echo htmlspecialchars($store['social_twitter'] ?? ''); ?>" placeholder="https://twitter.com/..." class="mt-1 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a]" />
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-400 font-semibold">TikTok</label>
+                        <input type="url" name="social_tiktok" id="social_tiktok" value="<?php echo htmlspecialchars($store['social_tiktok'] ?? ''); ?>" placeholder="https://tiktok.com/..." class="mt-1 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a]" />
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="text-xs text-gray-400 font-semibold">YouTube</label>
+                        <input type="url" name="social_youtube" id="social_youtube" value="<?php echo htmlspecialchars($store['social_youtube'] ?? ''); ?>" placeholder="https://youtube.com/..." class="mt-1 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a]" />
+                    </div>
                 </div>
             </div>
+
+            <hr class="border-white/10">
 
             <div class="flex items-center gap-3">
                 <input type="checkbox" id="is_active" name="is_active" <?php echo (isset($store['is_active']) && (int)$store['is_active'] === 1) ? 'checked' : ''; ?> />
@@ -62,7 +84,7 @@ ob_start();
             </div>
 
             <div class="flex items-center justify-end gap-3">
-                <button type="button" id="saveBtn" class="btn-press px-6 py-3 rounded-2xl bg-indigo-500 text-white font-black">Save</button>
+                <button type="button" id="saveBtn" class="btn-press px-6 py-3 rounded-2xl bg-[#ff610a] text-white font-black">Save</button>
             </div>
 
             <div id="msg" class="mt-3"></div>
@@ -72,11 +94,9 @@ ob_start();
             <h3 class="text-white font-black text-xl mb-3">Preview</h3>
             <div class="space-y-3">
                 <div class="flex items-center gap-3">
-                    <?php if (!empty($store['logo_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($store['logo_url']); ?>" alt="logo" class="w-16 h-16 rounded-md object-cover" />
-                    <?php else: ?>
-                        <div class="w-16 h-16 rounded-md bg-white/5 flex items-center justify-center text-2xl font-black">V</div>
-                    <?php endif; ?>
+                    <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#ff610a] to-purple-600 flex items-center justify-center shadow-lg shadow-[#ff610a]/20 text-white font-black text-2xl">
+                        <?php echo strtoupper(substr(htmlspecialchars($store['name']), 0, 1)); ?>
+                    </div>
                     <div>
                         <div class="text-lg font-black text-white"><?php echo htmlspecialchars($store['name']); ?></div>
                         <div class="text-sm text-gray-400"><?php echo htmlspecialchars($store['contact_phone'] ?? ''); ?></div>
@@ -94,33 +114,49 @@ ob_start();
 
 <script>
 document.getElementById('saveBtn').addEventListener('click', async function() {
-    const data = {
-        name: document.getElementById('name').value,
-        description: document.getElementById('description').value,
-        contact_phone: document.getElementById('contact_phone').value,
-        contact_email: document.getElementById('contact_email').value,
-        logo_url: document.getElementById('logo_url').value,
-        hero_image_url: document.getElementById('hero_image_url').value,
-        accent_color: document.getElementById('accent_color').value,
-        hero_color: document.getElementById('hero_color').value,
-        is_active: document.getElementById('is_active').checked ? 1 : 0,
-    };
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    const formData = new FormData();
+    formData.append('name', document.getElementById('name').value);
+    formData.append('description', document.getElementById('description').value);
+    formData.append('contact_phone', document.getElementById('contact_phone').value);
+    formData.append('contact_email', document.getElementById('contact_email').value);
+    formData.append('social_facebook', document.getElementById('social_facebook').value);
+    formData.append('social_instagram', document.getElementById('social_instagram').value);
+    formData.append('social_twitter', document.getElementById('social_twitter').value);
+    formData.append('social_tiktok', document.getElementById('social_tiktok').value);
+    formData.append('social_youtube', document.getElementById('social_youtube').value);
+    formData.append('is_active', document.getElementById('is_active').checked ? 1 : 0);
+
+    const fileInput = document.getElementById('hero_image');
+    if (fileInput.files.length > 0) {
+        formData.append('hero_image', fileInput.files[0]);
+    }
 
     const slug = '<?php echo htmlspecialchars($store['slug']); ?>';
 
-    const res = await fetch('/api/settings?storeSlug=' + encodeURIComponent(slug), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    });
+    try {
+        const res = await fetch('/api/settings.php?storeSlug=' + encodeURIComponent(slug), {
+            method: 'POST',
+            body: formData
+        });
 
-    const json = await res.json();
-    const msg = document.getElementById('msg');
-    if (json.success) {
-        msg.innerHTML = '<div class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-bold">Saved successfully</div>';
-        setTimeout(() => { location.reload(); }, 900);
-    } else {
-        msg.innerHTML = '<div class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold">' + (json.error || 'Failed to save') + '</div>';
+        const json = await res.json();
+        const msg = document.getElementById('msg');
+        if (json.success) {
+            msg.innerHTML = '<div class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-bold">Saved successfully</div>';
+            setTimeout(() => { location.reload(); }, 900);
+        } else {
+            msg.innerHTML = '<div class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold">' + (json.error || 'Failed to save') + '</div>';
+            btn.disabled = false;
+            btn.textContent = 'Save';
+        }
+    } catch (err) {
+        document.getElementById('msg').innerHTML = '<div class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold">Network error. Please try again.</div>';
+        btn.disabled = false;
+        btn.textContent = 'Save';
     }
 });
 </script>

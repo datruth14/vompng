@@ -1,44 +1,65 @@
 <?php
+/*
+ * Dashboard product management template.
+ */
+
 $pageTitle = 'Manage Products - VomP';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-            <p class="text-xs uppercase tracking-[0.2em] font-black text-indigo-400 mb-2">Inventory Management</p>
+            <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Inventory Management</p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">Products</h1>
             <p class="text-gray-500 font-medium text-lg">Add or edit items for <?php echo htmlspecialchars($store['name']); ?>.</p>
         </div>
-        <button onclick="toggleAddForm()" class="btn-press px-8 py-4 rounded-2xl bg-indigo-500 text-white font-black text-sm shadow-xl shadow-indigo-500/20 hover:bg-indigo-400 transition-all">Add New Product</button>
+        <div class="flex flex-col items-end gap-3">
+            <?php if ((int)$store['token_balance'] < 10): ?>
+                <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 3h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                    <?php if ((int)$store['token_balance'] <= 0): ?>
+                        No tokens &mdash; <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up to add products</a>
+                    <?php else: ?>
+                        Only <?php echo (int)$store['token_balance']; ?> token<?php echo (int)$store['token_balance'] !== 1 ? 's' : ''; ?> left &mdash; need 10 to publish. <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up</a>
+                    <?php endif; ?>
+                </div>
+            <?php else: ?>
+                <span class="text-xs text-gray-500 font-bold"><?php echo (int)$store['token_balance']; ?> tokens remaining &bull; 10 tokens per product</span>
+            <?php endif; ?>
+            <button onclick="toggleAddForm()" <?php echo (int)$store['token_balance'] < 10 ? 'disabled title="Need at least 10 tokens"' : ''; ?> class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all disabled:opacity-40 disabled:cursor-not-allowed">Add New Product</button>
+        </div>
     </header>
 
-    <!-- Add Product Form (Initially Hidden) -->
+    <!-- Add / Edit Product Form -->
     <div id="addProductForm" class="hidden glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 mb-12">
-        <h2 class="text-2xl font-black text-white mb-6">Create New Product</h2>
-        <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <h2 id="formTitle" class="text-2xl font-black text-white mb-6">Create New Product</h2>
+        <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-8" enctype="multipart/form-data">
+            <input type="hidden" id="pId" value="">
             <div class="space-y-4">
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Product Name</label>
-                    <input type="text" id="pName" required placeholder="e.g. Classic Sneakers" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.08] transition-all">
+                    <input type="text" id="pName" required placeholder="e.g. Classic Sneakers" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
                 </div>
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Price (₦)</label>
-                    <input type="number" id="pPrice" required placeholder="0.00" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.08] transition-all">
+                    <input type="text" id="pPrice" required placeholder="0.00" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
                 </div>
-                <div>
-                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Image URL</label>
-                    <input type="text" id="pMedia" placeholder="https://..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.08] transition-all">
+                <div id="pMediaField">
+                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Product Image</label>
+                    <input type="file" id="pMedia" accept="image/*" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-gray-400 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all file:bg-[#ff610a]/20 file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-[#ff8c3a] file:font-bold file:text-xs file:cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-1">JPG, PNG, GIF or WebP (Max 5MB)</p>
                 </div>
             </div>
             <div class="space-y-4">
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Description</label>
-                    <textarea id="pDesc" rows="6" placeholder="Describe your product..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.08] transition-all"></textarea>
+                    <textarea id="pDesc" rows="6" placeholder="Describe your product..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all"></textarea>
                 </div>
                 <div class="flex gap-4 justify-end pt-4">
                     <button type="button" onclick="toggleAddForm()" class="px-8 py-4 rounded-2xl bg-white/5 text-white font-black text-sm hover:bg-white/10 transition-all">Cancel</button>
-                    <button type="submit" class="btn-press px-8 py-4 rounded-2xl bg-indigo-500 text-white font-black text-sm shadow-xl shadow-indigo-500/20 hover:bg-indigo-400 transition-all">Save Product</button>
+                    <button type="submit" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Save Product</button>
                 </div>
+                <div id="productFormMsg" class="mt-2"></div>
             </div>
         </form>
     </div>
@@ -47,15 +68,15 @@ ob_start();
         <?php foreach ($products as $p): ?>
             <article class="glass-morphism rounded-[2rem] p-6 border border-white/10 flex flex-col group hover:bg-white/5 transition-all">
                 <?php if ($p['media_url']): ?>
-                    <div class="aspect-square rounded-2xl overflow-hidden mb-6 bg-white/5 border border-white/5">
-                        <img src="<?php echo htmlspecialchars($p['media_url']); ?>" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                    <div class="aspect-square rounded-2xl overflow-hidden mb-6 skeleton-box border border-white/5">
+                        <img src="<?php echo htmlspecialchars($p['media_url']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="img-skeleton w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')">
                     </div>
                 <?php endif; ?>
                 
                 <div class="flex-1">
-                    <div class="flex items-start justify-between gap-4 mb-2">
-                        <h3 class="text-xl font-black text-white"><?php echo htmlspecialchars($p['name']); ?></h3>
-                        <p class="text-indigo-400 font-black">₦<?php echo number_format((float)$p['price'], 0); ?></p>
+                    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
+                        <h3 class="text-xl font-black text-white break-words"><?php echo htmlspecialchars($p['name']); ?></h3>
+                        <p class="text-[#ff610a] font-black whitespace-nowrap">₦<?php echo number_format((float)$p['price'], 0); ?></p>
                     </div>
                     <p class="text-gray-500 text-sm line-clamp-2 mb-6"><?php echo htmlspecialchars($p['description']); ?></p>
                 </div>
@@ -66,6 +87,9 @@ ob_start();
                         <span class="text-xs font-black uppercase tracking-wider text-gray-400"><?php echo (int)$p['is_available'] ? 'Live' : 'Hidden'; ?></span>
                     </div>
                     <div class="flex gap-2">
+                        <button onclick="editProduct('<?php echo $p['id']; ?>', '<?php echo addslashes($p['name']); ?>', '<?php echo $p['price']; ?>', '<?php echo addslashes($p['description']); ?>')" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
+                        </button>
                         <button onclick="deleteProduct('<?php echo $p['id']; ?>')" class="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
                         </button>
@@ -87,9 +111,54 @@ ob_start();
 </section>
 
 <script>
+function formatNumber(n) {
+    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+document.getElementById('pPrice').addEventListener('input', function () {
+    const val = this.value.replace(/[^0-9]/g, '');
+    if (val) this.value = formatNumber(val);
+});
+
+let editingId = null;
+
 function toggleAddForm() {
     const form = document.getElementById('addProductForm');
     form.classList.toggle('hidden');
+    if (form.classList.contains('hidden')) {
+        resetForm();
+    } else {
+        document.getElementById('pMediaField').classList.remove('hidden');
+        document.getElementById('pMedia').removeAttribute('required');
+    }
+}
+
+function resetForm() {
+    editingId = null;
+    document.getElementById('pId').value = '';
+    document.getElementById('pName').value = '';
+    document.getElementById('pPrice').value = '';
+    document.getElementById('pDesc').value = '';
+    document.getElementById('pMedia').value = '';
+    document.getElementById('productFormMsg').innerHTML = '';
+    document.getElementById('formTitle').textContent = 'Create New Product';
+    document.getElementById('pMediaField').classList.remove('hidden');
+}
+
+function editProduct(id, name, price, description) {
+    editingId = id;
+    document.getElementById('pId').value = id;
+    document.getElementById('pName').value = name;
+    document.getElementById('pPrice').value = formatNumber(price.replace(/[^0-9]/g, ''));
+    document.getElementById('pDesc').value = description;
+    document.getElementById('pMedia').value = '';
+    document.getElementById('productFormMsg').innerHTML = '';
+    document.getElementById('formTitle').textContent = 'Edit Product';
+    document.getElementById('pMediaField').classList.add('hidden');
+
+    const form = document.getElementById('addProductForm');
+    form.classList.remove('hidden');
+    form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 document.getElementById('productForm').addEventListener('submit', async (e) => {
@@ -98,23 +167,39 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     btn.disabled = true;
     btn.textContent = 'Saving...';
 
-    const data = {
-        name: document.getElementById('pName').value,
-        price: document.getElementById('pPrice').value,
-        media_url: document.getElementById('pMedia').value,
-        description: document.getElementById('pDesc').value
-    };
+    const formData = new FormData();
+    formData.append('name', document.getElementById('pName').value);
+    formData.append('price', document.getElementById('pPrice').value.replace(/,/g, ''));
+    formData.append('description', document.getElementById('pDesc').value);
+
+    const fileInput = document.getElementById('pMedia');
+    if (fileInput.files.length > 0) {
+        formData.append('media', fileInput.files[0]);
+    }
 
     const slug = '<?php echo $store['slug']; ?>';
+    const action = editingId ? 'update' : 'create';
+    let url = `/api/products.php?storeSlug=${slug}&action=${action}`;
+    if (editingId) {
+        url += `&id=${editingId}`;
+    }
+
     try {
-        const res = await fetch(`/api/products?storeSlug=${slug}&action=create`, {
+        const res = await fetch(url, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
+            body: formData
         });
         const result = await res.json();
         if (result.success) {
             location.reload();
+        } else if (result.code === 'NO_TOKENS') {
+            const msg = document.getElementById('productFormMsg');
+            msg.innerHTML = `<div class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold text-sm">
+                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 3h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                No tokens left. <a href="/dashboard/${slug}/tokens" class="underline ml-1">Top up your balance</a> to publish more products.
+            </div>`;
+            btn.disabled = false;
+            btn.textContent = 'Save Product';
         } else {
             alert(result.error || 'Failed to save product');
             btn.disabled = false;
@@ -129,10 +214,10 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
 
 async function deleteProduct(id) {
     if (!confirm('Are you sure you want to delete this product?')) return;
-    
+
     const slug = '<?php echo $store['slug']; ?>';
     try {
-        const res = await fetch(`/api/products?storeSlug=${slug}&action=delete&id=${id}`, {
+        const res = await fetch(`/api/products.php?storeSlug=${slug}&action=delete&id=${id}`, {
             method: 'POST'
         });
         const result = await res.json();

@@ -1,19 +1,20 @@
 <?php
+/*
+ * API endpoint for user login.
+ * Authenticates credentials and issues a session token cookie.
+ */
+
 
 require_once __DIR__ . '/../backend/Database.php';
 require_once __DIR__ . '/../backend/Auth.php';
 
-use Backend\Auth;
-
-$auth = new Auth();
 $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 
-$result = $auth->login(
+$result = auth_login(
     $input['email'] ?? '',
     $input['password'] ?? ''
 );
 
-// Return JSON only for API clients; browser form posts get redirects.
 $accept = $_SERVER['HTTP_ACCEPT'] ?? '';
 $wantsJson = stripos($accept, 'application/json') !== false;
 

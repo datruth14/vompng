@@ -2,6 +2,12 @@
     RewriteEngine On
     RewriteBase /
     
+    # Block access to database directory
+    RewriteRule ^database/ - [F,L]
+    
+    # Block access to .db files anywhere
+    RewriteRule \.db$ - [F,L]
+    
     # Skip if the file or directory exists
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d

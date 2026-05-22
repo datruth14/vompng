@@ -83,3 +83,48 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.2);
 }
+
+.skeleton-box {
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 97, 10, 0.04);
+}
+
+.skeleton-box::before {
+  content: 'VOMP NIGERIA';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: clamp(0.875rem, 3vw, 1.25rem);
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  color: rgba(255, 97, 10, 0.15);
+  z-index: 1;
+  pointer-events: none;
+}
+
+.skeleton-box::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 25%, rgba(255, 97, 10, 0.12) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite;
+  z-index: 2;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.img-skeleton {
+  opacity: 0;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.img-skeleton.loaded {
+  opacity: 1;
+}
