@@ -53,12 +53,18 @@ ob_start();
                 <?php foreach (array_slice($stores, 0, 3) as $store): ?>
                     <article class="p-6 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
                         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                            <div>
+                            <div class="min-w-0">
                                 <h3 class="text-xl font-black text-white"><?php echo htmlspecialchars($store['name']); ?></h3>
                                 <p class="text-xs uppercase tracking-widest text-[#ff610a] font-black mt-1"><?php echo htmlspecialchars($store['slug']); ?></p>
                                 <p class="text-sm text-gray-400 mt-3"><?php echo htmlspecialchars($store['description'] ?: 'No description yet.'); ?></p>
+                                <div class="flex items-center gap-3 mt-3">
+                                    <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>" class="text-xs text-gray-500 font-mono hover:text-white transition-colors truncate"><?php echo $_SERVER['HTTP_HOST'] ?? 'localhost'; ?>/store/<?php echo htmlspecialchars($store['slug']); ?></a>
+                                    <button onclick="shareStore('<?php echo htmlspecialchars($store['slug']); ?>', '<?php echo htmlspecialchars($store['name']); ?>')" class="flex-shrink-0 w-7 h-7 rounded-lg bg-black border border-[#ff610a]/30 text-[#ff610a] hover:bg-[#ff610a]/10 transition-all flex items-center justify-center" title="Share store">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="flex gap-3">
+                            <div class="flex gap-3 flex-shrink-0">
                                 <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>" class="px-5 py-2.5 rounded-xl bg-white/10 text-white text-sm font-black hover:bg-white/20 transition-all">View</a>
                                 <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>" class="btn-press px-5 py-2.5 rounded-xl bg-[#ff610a] text-white text-sm font-black hover:bg-[#e05500] transition-all">Manage</a>
                             </div>
@@ -102,6 +108,20 @@ async function upgradeToPremium() {
         msg.innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-bold">Network error: ' + err.message + '</div>';
         btn.disabled = false;
         btn.textContent = 'Upgrade to Premium — 500 Vomp Coins';
+    }
+}
+
+function shareStore(slug, name) {
+    const url = window.location.origin + '/store/' + slug;
+    if (navigator.share) {
+        navigator.share({ title: name, url: url }).catch(() => {});
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            const btn = document.querySelector(`button[onclick="shareStore('${slug}', '${name}')"]`);
+            const orig = btn.innerHTML;
+            btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>';
+            setTimeout(() => btn.innerHTML = orig, 2000);
+        }).catch(() => {});
     }
 }
 </script>
