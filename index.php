@@ -55,7 +55,8 @@ if (
         str_starts_with($requestPath, 'api/settings') ||
         str_starts_with($requestPath, 'api/tokens/purchase') ||
         str_starts_with($requestPath, 'api/tokens_purchase.php') ||
-        str_starts_with($requestPath, 'api/store/')
+        str_starts_with($requestPath, 'api/store/') ||
+        str_starts_with($requestPath, 'api/upgrade')
     )
 ) {
     header('Location: /login');
@@ -323,34 +324,8 @@ if ($method === 'GET') {
             include 'api/profile.php';
             exit;
         case 'api/upgrade':
-            try {
-                header('Content-Type: application/json');
-                $currentUser = auth_get_current_user();
-                if (!$currentUser) {
-                    http_response_code(401);
-                    echo json_encode(['success' => false, 'error' => 'Not authenticated']);
-                    exit;
-                }
-                $raw = file_get_contents('php://input');
-                $input = json_decode($raw, true);
-                if (!$input) {
-                    http_response_code(400);
-                    echo json_encode(['success' => false, 'error' => 'Invalid request']);
-                    exit;
-                }
-                $storeSlug = $input['storeSlug'] ?? '';
-                $storeId = null;
-                if ($storeSlug) {
-                    require_once __DIR__ . '/backend/Store.php';
-                    $store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
-                    $storeId = $store ? $store['id'] : null;
-                }
-                $result = token_upgrade_to_premium($currentUser['id'], $storeId);
-                echo json_encode($result);
-            } catch (Exception $e) {
-                http_response_code(500);
-                echo json_encode(['success' => false, 'error' => $e->getMessage()]);
-            }
+        case 'api/upgrade.php':
+            include 'api/upgrade.php';
             exit;
         default:
             http_response_code(404);
