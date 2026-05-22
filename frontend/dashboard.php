@@ -34,7 +34,7 @@ ob_start();
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
             <p class="text-5xl font-black text-[#ff610a]"><?php echo (int) ($currentUser['token_balance'] ?? 0); ?></p>
         </a>
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
             <?php if (($currentUser['plan'] ?? 'free') === 'premium'): ?>
                 <p class="text-3xl font-black text-emerald-400">PREMIUM</p>
