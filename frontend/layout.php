@@ -272,6 +272,7 @@
         navOverlay.addEventListener('click', closeNav);
 
         /* Native share */
+        function shareCurrentPage() {
             const url = window.location.href;
             const title = document.title || 'vomp';
             if (navigator.share) {
