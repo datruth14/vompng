@@ -217,7 +217,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     btn.disabled = true;
     btn.textContent = 'Compressing...';
     msgEl.innerHTML = '';
-    progressWrap.classList.add('hidden');
+    progressWrap.classList.remove('hidden');
     progressBar.style.width = '0%';
 
     const formData = new FormData();
