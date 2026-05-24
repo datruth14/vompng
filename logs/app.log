@@ -1024,3 +1024,18 @@
 2026-05-22 21:50:52 [INFO] 127.0.0.1 GET /dashboard
 2026-05-22 21:50:54 [INFO] 127.0.0.1 GET /dashboard/stores
 2026-05-22 21:51:50 [INFO] 127.0.0.1 GET /dashboard/stores
+2026-05-24 08:41:01 [INFO] 127.0.0.1 GET /
+2026-05-24 08:41:05 [INFO] 127.0.0.1 GET /dashboard
+2026-05-24 08:41:08 [INFO] 127.0.0.1 GET /logout
+2026-05-24 08:41:08 [INFO] User logged out (token removed)
+2026-05-24 08:41:08 [INFO] 127.0.0.1 GET /
+2026-05-24 08:41:10 [INFO] 127.0.0.1 GET /login
+2026-05-24 08:41:12 [INFO] 127.0.0.1 GET /login?error=Invalid+email+or+password
+2026-05-24 08:41:17 [INFO] User logged in: aae3cc9261f27a4f9ef2cb40
+2026-05-24 08:41:17 [INFO] 127.0.0.1 GET /dashboard
+2026-05-24 08:41:27 [INFO] 127.0.0.1 GET /dashboard/create-store
+2026-05-24 08:41:49 [INFO] store_create raw input: {"storeName":"oma store","storeDescription":"We sell all kinds of tehc tools","contactPhone":"07062552032","contactEmail":"datruth14.vd@gmail.com"}
+2026-05-24 08:41:49 [INFO] 127.0.0.1 GET /dashboard/oma-store
+2026-05-24 08:42:00 [INFO] 127.0.0.1 GET /dashboard/oma-store/products
+2026-05-24 08:42:57 [INFO] 127.0.0.1 GET /dashboard/oma-store/products
+2026-05-24 08:45:11 [INFO] 127.0.0.1 GET /dashboard/oma-store/products

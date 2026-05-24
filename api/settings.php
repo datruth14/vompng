@@ -65,21 +65,40 @@ if ($method === 'POST') {
     /* Handle file upload for hero image if present */
     if (!empty($_FILES['hero_image'])) {
         $file = $_FILES['hero_image'];
-        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $maxSize = 5 * 1024 * 1024; // 5MB
+        $maxSize = 10 * 1024 * 1024; // 10MB
 
-        if (!in_array($file['type'], $allowedTypes)) {
-            echo json_encode(['success' => false, 'error' => 'Invalid image format. Use JPG, PNG, GIF, or WebP']);
+        if ($file['error'] !== UPLOAD_ERR_OK) {
+            echo json_encode(['success' => false, 'error' => 'Upload failed: ' . $file['error']]);
             exit;
         }
 
         if ($file['size'] > $maxSize) {
-            echo json_encode(['success' => false, 'error' => 'Image too large. Max 5MB']);
+            echo json_encode(['success' => false, 'error' => 'Image too large. Max 10MB']);
             exit;
         }
 
-        if ($file['error'] !== UPLOAD_ERR_OK) {
-            echo json_encode(['success' => false, 'error' => 'Upload failed: ' . $file['error']]);
+        // Detect actual MIME type from file content
+        $detectedType = '';
+        if (function_exists('finfo_open')) {
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $detectedType = finfo_file($finfo, $file['tmp_name']);
+            finfo_close($finfo);
+        } elseif (function_exists('exif_imagetype')) {
+            $exifType = exif_imagetype($file['tmp_name']);
+            $exifMap = [
+                IMAGETYPE_JPEG => 'image/jpeg',
+                IMAGETYPE_PNG => 'image/png',
+                IMAGETYPE_GIF => 'image/gif',
+                IMAGETYPE_WEBP => 'image/webp',
+            ];
+            $detectedType = $exifMap[$exifType] ?? $file['type'];
+        } else {
+            $detectedType = $file['type'];
+        }
+
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
+        if (!in_array($detectedType, $allowedTypes)) {
+            echo json_encode(['success' => false, 'error' => 'Invalid image format. Use JPG, PNG, GIF, WebP, or HEIC']);
             exit;
         }
 
@@ -93,29 +112,27 @@ if ($method === 'POST') {
         }
 
         /* Generate unique filename */
-        $fileName = bin2hex(random_bytes(16)) . '.webp';
+        $origExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+        $fileName = bin2hex(random_bytes(16)) . '.' . $origExt;
         $filePath = $uploadsDir . '/' . $fileName;
 
-        /* Optimize and convert image to WebP if GD is available, otherwise save original */
-        if (extension_loaded('gd')) {
-            $optimized = optimize_image_to_webp($file['tmp_name'], $filePath);
-            if (!$optimized) {
-                echo json_encode(['success' => false, 'error' => 'Failed to process image']);
-                exit;
+        /* Try to convert to WebP if GD supports it, otherwise save original */
+        $converted = false;
+        if (extension_loaded('gd') && in_array($detectedType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+            $webpName = bin2hex(random_bytes(16)) . '.webp';
+            $webpPath = $uploadsDir . '/' . $webpName;
+            if (optimize_image_to_webp($file['tmp_name'], $webpPath)) {
+                $fileName = $webpName;
+                $filePath = $webpPath;
+                $converted = true;
             }
-        } else {
-            /* Fallback: save file with original extension and convert filename to webp reference */
-            $origExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            $fallbackFileName = bin2hex(random_bytes(16)) . '.' . $origExt;
-            $fallbackPath = $uploadsDir . '/' . $fallbackFileName;
-            
-            if (!move_uploaded_file($file['tmp_name'], $fallbackPath)) {
+        }
+
+        if (!$converted) {
+            if (!move_uploaded_file($file['tmp_name'], $filePath)) {
                 echo json_encode(['success' => false, 'error' => 'Failed to save image']);
                 exit;
             }
-            
-            /* Use original file as fallback */
-            $fileName = $fallbackFileName;
         }
 
         /* Set hero image URL to the uploaded file path */
