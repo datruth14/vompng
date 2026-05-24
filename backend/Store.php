@@ -88,7 +88,9 @@ function store_get_all_active_paginated($page = 1, $perPage = 50)
     $db = db_get_connection();
     $offset = max(0, ($page - 1) * $perPage);
     $stmt = $db->prepare('SELECT * FROM stores WHERE is_active = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?');
-    $stmt->execute([$perPage, $offset]);
+    $stmt->bindValue(1, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(2, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -104,7 +106,11 @@ function store_search_paginated($query, $page = 1, $perPage = 50)
     $like = '%' . $query . '%';
     $offset = max(0, ($page - 1) * $perPage);
     $stmt = $db->prepare('SELECT * FROM stores WHERE is_active = 1 AND (name LIKE ? OR description LIKE ?) ORDER BY created_at DESC LIMIT ? OFFSET ?');
-    $stmt->execute([$like, $like, $perPage, $offset]);
+    $stmt->bindValue(1, $like);
+    $stmt->bindValue(2, $like);
+    $stmt->bindValue(3, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(4, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 

@@ -54,7 +54,9 @@ function product_get_all_available_paginated($page = 1, $perPage = 50)
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
     ');
-    $stmt->execute([$perPage, $offset]);
+    $stmt->bindValue(1, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(2, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -76,7 +78,10 @@ function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
     ');
-    $stmt->execute([$category, $perPage, $offset]);
+    $stmt->bindValue(1, $category);
+    $stmt->bindValue(2, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(3, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -102,7 +107,12 @@ function product_search_paginated($query, $page = 1, $perPage = 50)
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
     ');
-    $stmt->execute([$like, $like, $like, $perPage, $offset]);
+    $stmt->bindValue(1, $like);
+    $stmt->bindValue(2, $like);
+    $stmt->bindValue(3, $like);
+    $stmt->bindValue(4, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(5, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -243,7 +253,10 @@ function product_get_by_user_id_paginated($userId, $page = 1, $perPage = 50)
     $db = db_get_connection();
     $offset = max(0, ($page - 1) * $perPage);
     $stmt = $db->prepare('SELECT p.*, s.name AS store_name, s.slug AS store_slug FROM products p JOIN stores s ON p.store_id = s.id WHERE s.owner_id = ? ORDER BY p.created_at DESC LIMIT ? OFFSET ?');
-    $stmt->execute([$userId, $perPage, $offset]);
+    $stmt->bindValue(1, $userId);
+    $stmt->bindValue(2, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(3, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 

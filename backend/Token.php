@@ -229,7 +229,9 @@ function token_history($storeId, $limit = 50)
 {
     $db = db_get_connection();
     $stmt = $db->prepare('SELECT * FROM token_transactions WHERE store_id = ? ORDER BY created_at DESC LIMIT ?');
-    $stmt->execute([$storeId, (int) $limit]);
+    $stmt->bindValue(1, $storeId);
+    $stmt->bindValue(2, (int) $limit, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -238,8 +240,12 @@ function token_history($storeId, $limit = 50)
 function token_history_by_date($storeId, $from, $to, $limit = 200)
 {
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT * FROM token_transactions WHERE store_id = ? AND date(created_at) >= ? AND date(created_at) <= ? ORDER BY created_at DESC LIMIT ?');
-    $stmt->execute([$storeId, $from, $to, (int) $limit]);
+    $stmt = $db->prepare('SELECT * FROM token_transactions WHERE store_id = ? AND DATE(created_at) >= ? AND DATE(created_at) <= ? ORDER BY created_at DESC LIMIT ?');
+    $stmt->bindValue(1, $storeId);
+    $stmt->bindValue(2, $from);
+    $stmt->bindValue(3, $to);
+    $stmt->bindValue(4, (int) $limit, PDO::PARAM_INT);
+    $stmt->execute();
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
