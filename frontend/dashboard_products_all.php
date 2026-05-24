@@ -26,7 +26,7 @@ ob_start();
                 <article class="glass-morphism rounded-[2rem] overflow-hidden border border-white/10 hover:bg-white/[0.02] transition-all">
                     <div class="aspect-[4/3] bg-white/5 overflow-hidden">
                         <?php if (!empty($p['media_url'])): ?>
-                            <img src="/<?php echo htmlspecialchars($p['media_url']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="w-full h-full object-cover">
+                            <img src="<?php echo htmlspecialchars($p['media_url']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-gray-600\'><svg class=\'w-10 h-10\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z\'/></svg></div>'">
                         <?php else: ?>
                             <div class="w-full h-full flex items-center justify-center text-gray-600">
                                 <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z" /></svg>

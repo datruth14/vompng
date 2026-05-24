@@ -75,7 +75,13 @@ if ($method === 'POST') {
             }
 
             $targetDir = __DIR__ . '/../assets/media/images/product_images/';
-            if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
+            if (!is_dir($targetDir)) {
+                @mkdir($targetDir, 0777, true);
+            }
+            if (!is_writable($targetDir)) {
+                echo json_encode(['success' => false, 'error' => 'Uploads directory not writable.']);
+                exit;
+            }
 
             $origName = pathinfo($file['name'], PATHINFO_FILENAME);
             $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -84,32 +90,37 @@ if ($method === 'POST') {
             $uniqueName = time() . "_" . $clean . "_" . uniqid() . "." . $ext;
             $targetFile = $targetDir . $uniqueName;
 
-            $imgInfo = getimagesize($file['tmp_name']);
+            $imgInfo = @getimagesize($file['tmp_name']);
             if (!$imgInfo) {
                 echo json_encode(['success' => false, 'error' => 'Failed to read image.']);
                 exit;
             }
             $imageType = $imgInfo[2];
 
+            $saved = false;
             switch ($imageType) {
                 case IMAGETYPE_JPEG:
-                    $image = imagecreatefromjpeg($file['tmp_name']);
-                    imagejpeg($image, $targetFile, 30);
+                    $image = @imagecreatefromjpeg($file['tmp_name']);
+                    if ($image) { $saved = @imagejpeg($image, $targetFile, 30); imagedestroy($image); }
                     break;
                 case IMAGETYPE_PNG:
-                    $image = imagecreatefrompng($file['tmp_name']);
-                    imagepng($image, $targetFile, 9);
+                    $image = @imagecreatefrompng($file['tmp_name']);
+                    if ($image) { $saved = @imagepng($image, $targetFile, 9); imagedestroy($image); }
                     break;
                 case IMAGETYPE_WEBP:
-                    $image = imagecreatefromwebp($file['tmp_name']);
-                    imagewebp($image, $targetFile, 30);
+                    $image = @imagecreatefromwebp($file['tmp_name']);
+                    if ($image) { $saved = @imagewebp($image, $targetFile, 30); imagedestroy($image); }
                     break;
                 default:
                     echo json_encode(['success' => false, 'error' => 'Unsupported image format.']);
                     exit;
             }
 
-            imagedestroy($image);
+            if (!$saved) {
+                echo json_encode(['success' => false, 'error' => 'Failed to save processed image. Check directory permissions.']);
+                exit;
+            }
+
             $mediaUrl = '/assets/media/images/product_images/' . $uniqueName;
         }
 
