@@ -46,8 +46,8 @@ ob_start();
                 </div>
                 <div id="pMediaField">
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Product Image</label>
-                    <input type="file" id="pMedia" accept="image/*" capture="environment" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-gray-400 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all file:bg-[#ff610a]/20 file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-[#ff8c3a] file:font-bold file:text-xs file:cursor-pointer">
-                    <p class="text-xs text-gray-500 mt-1">JPG, PNG or WebP</p>
+                    <input type="file" id="pMedia" accept="image/*" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-gray-400 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all file:bg-[#ff610a]/20 file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-[#ff8c3a] file:font-bold file:text-xs file:cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-1">JPG, PNG or WebP (compressed automatically)</p>
                 </div>
             </div>
             <div class="space-y-4">
@@ -173,7 +173,41 @@ function editProduct(id, name, price, description) {
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-document.getElementById('productForm').addEventListener('submit', (e) => {
+function compressImage(file, quality = 0.7, maxDim = 1600) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        const url = URL.createObjectURL(file);
+        img.onload = () => {
+            URL.revokeObjectURL(url);
+            let w = img.width, h = img.height;
+            if (w > maxDim || h > maxDim) {
+                const r = Math.min(maxDim / w, maxDim / h);
+                w = Math.round(w * r);
+                h = Math.round(h * r);
+            }
+            const c = document.createElement('canvas');
+            c.width = w;
+            c.height = h;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            const supportsWebp = c.toDataURL('image/webp').indexOf('image/webp') === 5;
+            const mime = supportsWebp ? 'image/webp' : 'image/jpeg';
+            const ext = supportsWebp ? '.webp' : '.jpg';
+            c.toBlob((blob) => {
+                if (blob) {
+                    const name = file.name.replace(/\.[^.]+$/, ext);
+                    resolve(new File([blob], name, { type: mime }));
+                } else {
+                    resolve(file);
+                }
+            }, mime, quality);
+        };
+        img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+        img.src = url;
+    });
+}
+
+document.getElementById('productForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('saveProductBtn');
     const progressWrap = document.getElementById('uploadProgressWrap');
@@ -181,9 +215,9 @@ document.getElementById('productForm').addEventListener('submit', (e) => {
     const msgEl = document.getElementById('productFormMsg');
 
     btn.disabled = true;
-    btn.textContent = 'Uploading...';
+    btn.textContent = 'Compressing...';
     msgEl.innerHTML = '';
-    progressWrap.classList.remove('hidden');
+    progressWrap.classList.add('hidden');
     progressBar.style.width = '0%';
 
     const formData = new FormData();
@@ -194,7 +228,9 @@ document.getElementById('productForm').addEventListener('submit', (e) => {
 
     const fileInput = document.getElementById('pMedia');
     if (fileInput.files.length > 0) {
-        formData.append('media', fileInput.files[0]);
+        btn.textContent = 'Compressing...';
+        const compressed = await compressImage(fileInput.files[0]);
+        formData.append('media', compressed);
     }
 
     const slug = '<?php echo $store['slug']; ?>';
