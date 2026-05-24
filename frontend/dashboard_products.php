@@ -64,9 +64,12 @@ ob_start();
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Description</label>
                     <textarea id="pDesc" rows="6" placeholder="Describe your product..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all"></textarea>
                 </div>
+                <div id="uploadProgressWrap" class="hidden w-full bg-white/5 rounded-full h-2 overflow-hidden">
+                    <div id="uploadProgressBar" class="bg-[#ff610a] h-full rounded-full transition-all duration-300" style="width:0%"></div>
+                </div>
                 <div class="flex gap-4 justify-end pt-4">
                     <button type="button" onclick="toggleAddForm()" class="px-8 py-4 rounded-2xl bg-white/5 text-white font-black text-sm hover:bg-white/10 transition-all">Cancel</button>
-                    <button type="submit" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Save Product</button>
+                    <button type="submit" id="saveProductBtn" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Save Product</button>
                 </div>
                 <div id="productFormMsg" class="mt-2"></div>
             </div>
@@ -170,11 +173,18 @@ function editProduct(id, name, price, description) {
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-document.getElementById('productForm').addEventListener('submit', async (e) => {
+document.getElementById('productForm').addEventListener('submit', (e) => {
     e.preventDefault();
-    const btn = e.target.querySelector('button[type="submit"]');
+    const btn = document.getElementById('saveProductBtn');
+    const progressWrap = document.getElementById('uploadProgressWrap');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const msgEl = document.getElementById('productFormMsg');
+
     btn.disabled = true;
-    btn.textContent = 'Saving...';
+    btn.textContent = 'Uploading...';
+    msgEl.innerHTML = '';
+    progressWrap.classList.remove('hidden');
+    progressBar.style.width = '0%';
 
     const formData = new FormData();
     formData.append('name', document.getElementById('pName').value);
@@ -194,32 +204,50 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
         url += `&id=${editingId}`;
     }
 
-    try {
-        const res = await fetch(url, {
-            method: 'POST',
-            body: formData
-        });
-        const result = await res.json();
-        if (result.success) {
-            location.reload();
-        } else if (result.code === 'NO_TOKENS') {
-            const msg = document.getElementById('productFormMsg');
-            msg.innerHTML = `<div class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold text-sm">
-                <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 3h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
-                No Vomp Coins left. <a href="/dashboard/${slug}/tokens" class="underline ml-1">Top up your balance</a> to publish more products.
-            </div>`;
-            btn.disabled = false;
-            btn.textContent = 'Save Product';
-        } else {
-            alert(result.error || 'Failed to save product');
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url);
+
+    xhr.upload.onprogress = (evt) => {
+        if (evt.lengthComputable) {
+            const pct = Math.round((evt.loaded / evt.total) * 100);
+            progressBar.style.width = pct + '%';
+            btn.textContent = pct < 100 ? `Uploading ${pct}%` : 'Saving...';
+        }
+    };
+
+    xhr.onload = () => {
+        progressWrap.classList.add('hidden');
+        try {
+            const result = JSON.parse(xhr.responseText);
+            if (result.success) {
+                location.reload();
+            } else if (result.code === 'NO_TOKENS') {
+                msgEl.innerHTML = `<div class="flex items-center gap-3 px-5 py-3 rounded-2xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold text-sm">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 3h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" /></svg>
+                    No Vomp Coins left. <a href="/dashboard/${slug}/tokens" class="underline ml-1">Top up your balance</a> to publish more products.
+                </div>`;
+                btn.disabled = false;
+                btn.textContent = 'Save Product';
+            } else {
+                alert(result.error || 'Failed to save product');
+                btn.disabled = false;
+                btn.textContent = 'Save Product';
+            }
+        } catch (err) {
+            alert('Server error. Check console.');
             btn.disabled = false;
             btn.textContent = 'Save Product';
         }
-    } catch (err) {
+    };
+
+    xhr.onerror = () => {
+        progressWrap.classList.add('hidden');
         alert('Network error. Please try again.');
         btn.disabled = false;
         btn.textContent = 'Save Product';
-    }
+    };
+
+    xhr.send(formData);
 });
 
 async function deleteProduct(id) {
