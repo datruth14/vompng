@@ -54,7 +54,7 @@ function token_purchase($userId, $tokenCount, $logStoreId = null)
         $update->execute([$newBalance, $userId]);
 
         if ($logStoreId) {
-            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'credit\', ?, ?, datetime(\'now\'))');
+            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'credit\', ?, ?, NOW())');
             $log->execute([
                 bin2hex(random_bytes(12)),
                 $logStoreId,
@@ -131,7 +131,7 @@ function token_deduct_for_order($slug, $productId = null, $customer = [])
             return ['success' => false, 'error' => 'Seller has insufficient Vomp Coins to receive orders.', 'code' => 'NO_TOKENS'];
         }
 
-        $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', 1, ?, datetime(\'now\'))');
+        $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', 1, ?, NOW())');
         $log->execute([
             bin2hex(random_bytes(12)),
             $store['id'],
@@ -206,7 +206,7 @@ function token_deduct_for_product_upload($userId, $storeIdForLog = null)
         }
 
         if ($storeIdForLog) {
-            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', ?, ?, datetime(\'now\'))');
+            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', ?, ?, NOW())');
             $log->execute([
                 bin2hex(random_bytes(12)),
                 $storeIdForLog,
@@ -279,7 +279,7 @@ function token_upgrade_to_premium($userId, $logStoreId = null)
         }
 
         if ($logStoreId) {
-            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', ?, ?, datetime(\'now\'))');
+            $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', ?, ?, NOW())');
             $log->execute([
                 bin2hex(random_bytes(12)),
                 $logStoreId,

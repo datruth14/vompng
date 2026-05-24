@@ -133,7 +133,7 @@ function store_create_for_user($ownerId, $name, $description, $contactPhone, $co
         }
 
         $storeId = auth_generate_id();
-        $stmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, contact_email, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, datetime(\'now\'), datetime(\'now\'))');
+        $stmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, contact_email, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())');
         $stmt->execute([$storeId, $name, $slug, $description, $ownerId, $contactPhone, $contactEmail]);
 
         return [

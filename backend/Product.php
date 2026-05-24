@@ -187,7 +187,7 @@ function product_create($storeId, $name, $price, $description = '', $mediaUrl = 
     $id = bin2hex(random_bytes(12));
 
     $stmt = $db->prepare(
-        'INSERT INTO products (id, name, price, description, media_url, media_type, category, store_id, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, datetime(\'now\'), datetime(\'now\'))'
+        'INSERT INTO products (id, name, price, description, media_url, media_type, category, store_id, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
     );
 
     $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $category ?: 'Others', $storeId]);

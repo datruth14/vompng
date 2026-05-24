@@ -43,10 +43,10 @@ function auth_register($name, $email, $password, $storeName, $storeDescription, 
 
         $db->beginTransaction();
         try {
-            $userStmt = $db->prepare('INSERT INTO users (id, email, password, name, created_at, updated_at) VALUES (?, ?, ?, ?, datetime(\'now\'), datetime(\'now\'))');
+            $userStmt = $db->prepare('INSERT INTO users (id, email, password, name, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())');
             $userStmt->execute([$userId, $email, $hashedPassword, $name]);
 
-            $storeStmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, datetime(\'now\'), datetime(\'now\'))');
+            $storeStmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())');
             $storeStmt->execute([$storeId, $storeName, $slug, $storeDescription, $userId, $phone]);
 
             // Seed the user with 50 free tokens
@@ -88,7 +88,7 @@ function auth_login($email, $password)
         $tokenHash = hash('sha256', $token);
         $expiresAt = date('Y-m-d H:i:s', strtotime('+30 days'));
 
-        $sessionStmt = $db->prepare('INSERT INTO sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, datetime(\'now\'))');
+        $sessionStmt = $db->prepare('INSERT INTO sessions (id, user_id, token, expires_at, created_at) VALUES (?, ?, ?, ?, NOW())');
         $sessionStmt->execute([$sessionId, $user['id'], $tokenHash, $expiresAt]);
 
         $secure = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
@@ -124,7 +124,7 @@ function auth_get_current_user()
 
     $db = db_get_connection();
     $tokenHash = hash('sha256', $_COOKIE['vomp_token']);
-    $stmt = $db->prepare('SELECT users.* FROM users JOIN sessions ON users.id = sessions.user_id WHERE sessions.token = ? AND sessions.expires_at > datetime(\'now\')');
+    $stmt = $db->prepare('SELECT users.* FROM users JOIN sessions ON users.id = sessions.user_id WHERE sessions.token = ? AND sessions.expires_at > NOW()');
     $stmt->execute([$tokenHash]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }

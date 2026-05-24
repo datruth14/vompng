@@ -12,7 +12,7 @@ require_once __DIR__ . '/Logger.php';
 $db = db_get_connection();
 
 try {
-    $stmt = $db->prepare("DELETE FROM sessions WHERE expires_at <= datetime('now')");
+    $stmt = $db->prepare("DELETE FROM sessions WHERE expires_at <= NOW()");
     $stmt->execute();
     $count = $stmt->rowCount();
     logger_info("Pruned {$count} expired sessions");
