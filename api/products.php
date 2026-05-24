@@ -55,80 +55,53 @@ if ($method === 'POST') {
             exit;
         }
 
-        /* Handle file upload if present */
         if (!empty($_FILES['media'])) {
             $file = $_FILES['media'];
+            $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 
-            $errCodes = [
-                1 => 'Image exceeds server upload limit',
-                2 => 'Image exceeds form size limit',
-                3 => 'Upload was incomplete',
-                4 => 'No file was selected',
-                6 => 'Server missing temp directory',
-                7 => 'Server failed to write file',
-            ];
             if ($file['error'] !== UPLOAD_ERR_OK) {
-                echo json_encode(['success' => false, 'error' => $errCodes[$file['error']] ?? 'Upload error (' . $file['error'] . ')']);
+                $map = [1 => 'exceeds server limit', 2 => 'exceeds form limit', 3 => 'incomplete', 4 => 'no file selected', 6 => 'missing temp dir', 7 => 'write failed'];
+                echo json_encode(['success' => false, 'error' => 'Upload failed: ' . ($map[$file['error']] ?? 'error ' . $file['error'])]);
                 exit;
             }
 
-            $maxSize = 30 * 1024 * 1024;
-            if ($file['size'] > $maxSize) {
-                echo json_encode(['success' => false, 'error' => 'Image too large. Max 30MB']);
-                exit;
-            }
-
-            list($width, $height, $imageType) = getimagesize($file['tmp_name']);
-            $allowedTypes = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP, IMAGETYPE_GIF, IMAGETYPE_BMP];
-
-            if (!in_array($imageType, $allowedTypes)) {
-                echo json_encode(['success' => false, 'error' => 'Invalid image format. Use JPG, PNG, WebP, GIF or BMP']);
-                exit;
-            }
-
-            if (!extension_loaded('gd')) {
-                echo json_encode(['success' => false, 'error' => 'Server missing GD image library']);
+            if (!in_array($file['type'], $allowedTypes) || !is_uploaded_file($file['tmp_name'])) {
+                echo json_encode(['success' => false, 'error' => 'Invalid image type.']);
                 exit;
             }
 
             $targetDir = __DIR__ . '/../assets/media/images/product_images/';
-            if (!is_dir($targetDir)) {
-                mkdir($targetDir, 0777, true);
-            }
+            if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
 
-            if (!is_writable($targetDir)) {
-                echo json_encode(['success' => false, 'error' => 'Upload directory not writable']);
-                exit;
-            }
-
-            $cleanName = preg_replace("/[^a-zA-Z0-9_-]/", "", pathinfo($file['name'], PATHINFO_FILENAME));
+            $originalName = pathinfo($file['name'], PATHINFO_FILENAME);
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $cleanName = preg_replace("/[^a-zA-Z0-9_-]/", "", $originalName);
             if (empty($cleanName)) $cleanName = "image";
-            $uniqueName = time() . "_" . $cleanName . "_" . uniqid() . ".webp";
+            $uniqueName = time() . "_" . $cleanName . "_" . uniqid() . "." . $extension;
             $targetFile = $targetDir . $uniqueName;
+
+            list($width, $height, $imageType) = getimagesize($file['tmp_name']);
+            $compressionQuality = 30;
 
             switch ($imageType) {
                 case IMAGETYPE_JPEG:
                     $image = imagecreatefromjpeg($file['tmp_name']);
+                    imagejpeg($image, $targetFile, $compressionQuality);
                     break;
                 case IMAGETYPE_PNG:
                     $image = imagecreatefrompng($file['tmp_name']);
+                    imagepng($image, $targetFile, 9);
                     break;
                 case IMAGETYPE_WEBP:
                     $image = imagecreatefromwebp($file['tmp_name']);
-                    break;
-                case IMAGETYPE_GIF:
-                    $image = imagecreatefromgif($file['tmp_name']);
-                    break;
-                case IMAGETYPE_BMP:
-                    $image = imagecreatefrombmp($file['tmp_name']);
+                    imagewebp($image, $targetFile, $compressionQuality);
                     break;
                 default:
-                    echo json_encode(['success' => false, 'error' => 'Unsupported image format']);
+                    echo json_encode(['success' => false, 'error' => 'Unsupported image format.']);
                     exit;
             }
 
-            imagewebp($image, $targetFile, 60);
-            imagedestroy($image);
+            if (isset($image)) imagedestroy($image);
 
             $mediaUrl = '/assets/media/images/product_images/' . $uniqueName;
         }
