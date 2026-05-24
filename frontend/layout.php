@@ -190,8 +190,8 @@
     <!-- Overlay backdrop -->
     <div id="navOverlay" class="fixed inset-0 z-40 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
 
-    <!-- Nav Drawer (slides from right) -->
-    <div id="navDrawer" class="fixed top-0 right-0 z-40 h-full w-72 bg-gray-950/95 border-l border-white/10 shadow-2xl transition-transform duration-300 translate-x-full will-change-transform overflow-y-auto">
+    <!-- Nav Drawer (slides from left) -->
+    <div id="navDrawer" class="fixed top-0 left-0 z-40 h-full w-72 bg-gray-950/95 border-r border-white/10 shadow-2xl transition-transform duration-300 -translate-x-full will-change-transform overflow-y-auto">
         <div class="flex flex-col items-stretch gap-2 p-6 pt-20">
             <a href="/" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
@@ -248,7 +248,7 @@
 
         function openNav() {
             navOpen = true;
-            navDrawer.classList.remove('translate-x-full');
+            navDrawer.classList.remove('-translate-x-full');
             navOverlay.classList.remove('opacity-0', 'pointer-events-none');
             navToggleBtn.style.bottom = '1rem';
             if (shareBtn) shareBtn.style.bottom = '5.5rem';
@@ -257,7 +257,7 @@
 
         function closeNav() {
             navOpen = false;
-            navDrawer.classList.add('translate-x-full');
+            navDrawer.classList.add('-translate-x-full');
             navOverlay.classList.add('opacity-0', 'pointer-events-none');
             navToggleBtn.style.bottom = '';
             if (shareBtn) shareBtn.style.bottom = '';
