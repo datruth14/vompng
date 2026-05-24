@@ -57,7 +57,6 @@ if ($method === 'POST') {
 
         if (!empty($_FILES['media'])) {
             $file = $_FILES['media'];
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
 
             if ($file['error'] !== UPLOAD_ERR_OK) {
                 $map = [1 => 'exceeds server limit', 2 => 'exceeds form limit', 3 => 'incomplete', 4 => 'no file selected', 6 => 'missing temp dir', 7 => 'write failed'];
@@ -65,28 +64,37 @@ if ($method === 'POST') {
                 exit;
             }
 
-            if (!in_array($file['type'], $allowedTypes) || !is_uploaded_file($file['tmp_name'])) {
-                echo json_encode(['success' => false, 'error' => 'Invalid image type.']);
+            if ($file['size'] > 30 * 1024 * 1024) {
+                echo json_encode(['success' => false, 'error' => 'Image too large. Max 30MB']);
+                exit;
+            }
+
+            if (!is_uploaded_file($file['tmp_name'])) {
+                echo json_encode(['success' => false, 'error' => 'Invalid upload.']);
                 exit;
             }
 
             $targetDir = __DIR__ . '/../assets/media/images/product_images/';
             if (!is_dir($targetDir)) mkdir($targetDir, 0777, true);
 
-            $originalName = pathinfo($file['name'], PATHINFO_FILENAME);
-            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            $cleanName = preg_replace("/[^a-zA-Z0-9_-]/", "", $originalName);
-            if (empty($cleanName)) $cleanName = "image";
-            $uniqueName = time() . "_" . $cleanName . "_" . uniqid() . "." . $extension;
+            $origName = pathinfo($file['name'], PATHINFO_FILENAME);
+            $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $clean = preg_replace("/[^a-zA-Z0-9_-]/", "", $origName);
+            if (empty($clean)) $clean = "image";
+            $uniqueName = time() . "_" . $clean . "_" . uniqid() . "." . $ext;
             $targetFile = $targetDir . $uniqueName;
 
-            list($width, $height, $imageType) = getimagesize($file['tmp_name']);
-            $compressionQuality = 30;
+            $imgInfo = getimagesize($file['tmp_name']);
+            if (!$imgInfo) {
+                echo json_encode(['success' => false, 'error' => 'Failed to read image.']);
+                exit;
+            }
+            $imageType = $imgInfo[2];
 
             switch ($imageType) {
                 case IMAGETYPE_JPEG:
                     $image = imagecreatefromjpeg($file['tmp_name']);
-                    imagejpeg($image, $targetFile, $compressionQuality);
+                    imagejpeg($image, $targetFile, 30);
                     break;
                 case IMAGETYPE_PNG:
                     $image = imagecreatefrompng($file['tmp_name']);
@@ -94,83 +102,15 @@ if ($method === 'POST') {
                     break;
                 case IMAGETYPE_WEBP:
                     $image = imagecreatefromwebp($file['tmp_name']);
-                    imagewebp($image, $targetFile, $compressionQuality);
+                    imagewebp($image, $targetFile, 30);
                     break;
                 default:
                     echo json_encode(['success' => false, 'error' => 'Unsupported image format.']);
                     exit;
             }
 
-            if (isset($image)) imagedestroy($image);
-
+            imagedestroy($image);
             $mediaUrl = '/assets/media/images/product_images/' . $uniqueName;
-        }
-
-            if ($file['size'] > $maxSize) {
-                echo json_encode(['success' => false, 'error' => 'Image too large. Max 10MB']);
-                exit;
-            }
-
-            // Detect actual MIME type from file content
-            $detectedType = '';
-            if (function_exists('finfo_open')) {
-                $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                $detectedType = finfo_file($finfo, $file['tmp_name']);
-                finfo_close($finfo);
-            } elseif (function_exists('exif_imagetype')) {
-                $exifType = exif_imagetype($file['tmp_name']);
-                $exifMap = [
-                    IMAGETYPE_JPEG => 'image/jpeg',
-                    IMAGETYPE_PNG => 'image/png',
-                    IMAGETYPE_GIF => 'image/gif',
-                    IMAGETYPE_WEBP => 'image/webp',
-                ];
-                $detectedType = $exifMap[$exifType] ?? $file['type'];
-            } else {
-                $detectedType = $file['type'];
-            }
-
-            $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'];
-            if (!in_array($detectedType, $allowedTypes)) {
-                echo json_encode(['success' => false, 'error' => 'Invalid image format. Use JPG, PNG, GIF, WebP, or HEIC']);
-                exit;
-            }
-
-            /* Create uploads directory if it doesn't exist */
-            $uploadsDir = __DIR__ . '/../assets/uploads';
-            if (!is_dir($uploadsDir)) {
-                if (!mkdir($uploadsDir, 0755, true)) {
-                    echo json_encode(['success' => false, 'error' => 'Failed to create uploads directory']);
-                    exit;
-                }
-            }
-
-            /* Generate unique filename */
-            $origExt = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-            $fileName = bin2hex(random_bytes(16)) . '.' . $origExt;
-            $filePath = $uploadsDir . '/' . $fileName;
-
-            /* Try to convert to WebP if GD supports it, otherwise save original */
-            $converted = false;
-            if (extension_loaded('gd') && in_array($detectedType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
-                $webpName = bin2hex(random_bytes(16)) . '.webp';
-                $webpPath = $uploadsDir . '/' . $webpName;
-                if (optimize_image_to_webp($file['tmp_name'], $webpPath)) {
-                    $fileName = $webpName;
-                    $filePath = $webpPath;
-                    $converted = true;
-                }
-            }
-
-            if (!$converted) {
-                if (!move_uploaded_file($file['tmp_name'], $filePath)) {
-                    echo json_encode(['success' => false, 'error' => 'Failed to save image']);
-                    exit;
-                }
-            }
-
-            /* Set media URL to the uploaded file path */
-            $mediaUrl = '/assets/uploads/' . $fileName;
         }
 
         /* Deduct 10 tokens from user's central balance for publishing this product */
