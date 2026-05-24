@@ -23,8 +23,8 @@ if (preg_match('/\.db$/i', $_SERVER["REQUEST_URI"])) {
     return true;
 }
 
-/* Route /assets/uploads/* to actual uploaded files */
-if (strpos($_SERVER['REQUEST_URI'], '/assets/uploads/') === 0) {
+/* Route uploaded files */
+if (strpos($_SERVER['REQUEST_URI'], '/assets/uploads/') === 0 || strpos($_SERVER['REQUEST_URI'], '/assets/media/') === 0) {
     $file = __DIR__ . $_SERVER['REQUEST_URI'];
     if (is_file($file)) {
         return false;

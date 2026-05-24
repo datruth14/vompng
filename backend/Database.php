@@ -1,13 +1,31 @@
 <?php
-/*
- * Database helper functions for the VOMP application.
- * Manages the SQLite connection, schema creation, and common query helpers.
- */
 
+function db_load_env()
+{
+    static $loaded = false;
+    if ($loaded) return;
+
+    $envFile = __DIR__ . '/../.env';
+    if (is_file($envFile)) {
+        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '' || str_starts_with($line, '#')) continue;
+            $parts = explode('=', $line, 2);
+            if (count($parts) === 2) {
+                $key = trim($parts[0]);
+                $val = trim($parts[1], " \t\"'");
+                putenv("$key=$val");
+                $_ENV[$key] = $val;
+            }
+        }
+    }
+    $loaded = true;
+}
+
+db_load_env();
 
 require_once __DIR__ . '/../config/database.php';
-
-/* Return the singleton PDO connection for the application. */
 
 function db_get_connection()
 {
@@ -19,10 +37,11 @@ function db_get_connection()
     $config = require __DIR__ . '/../config/database.php';
 
     try {
+        $dsn = "mysql:host={$config['host']};port={$config['port']};dbname={$config['database']};charset={$config['charset']}";
         $db = new PDO(
-            'sqlite:' . $config['database'],
-            null,
-            null,
+            $dsn,
+            $config['username'],
+            $config['password'],
             [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
         );
 
@@ -35,84 +54,85 @@ function db_get_connection()
     return $db;
 }
 
-/* Ensure the database schema and tables exist. */
-
 function db_init_schema(PDO $db)
 {
     $tables = [
         'users' => "
             CREATE TABLE IF NOT EXISTS users (
-                id TEXT PRIMARY KEY,
-                email TEXT UNIQUE NOT NULL,
-                password TEXT NOT NULL,
-                name TEXT NOT NULL,
+                id VARCHAR(24) PRIMARY KEY,
+                email VARCHAR(255) UNIQUE NOT NULL,
+                password VARCHAR(255) NOT NULL,
+                name VARCHAR(255) NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ",
         'stores' => "
             CREATE TABLE IF NOT EXISTS stores (
-                id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                slug TEXT UNIQUE NOT NULL,
+                id VARCHAR(24) PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                slug VARCHAR(255) UNIQUE NOT NULL,
                 description TEXT,
-                owner_id TEXT NOT NULL,
-                contact_phone TEXT,
-                contact_email TEXT,
+                owner_id VARCHAR(24) NOT NULL,
+                contact_phone VARCHAR(50),
+                contact_email VARCHAR(255),
                 logo_url TEXT,
                 hero_image_url TEXT,
-                hero_color TEXT DEFAULT '#4f46e5',
-                accent_color TEXT DEFAULT '#8b5cf6',
-                is_active INTEGER DEFAULT 1,
+                hero_color VARCHAR(20) DEFAULT '#4f46e5',
+                accent_color VARCHAR(20) DEFAULT '#8b5cf6',
+                is_active TINYINT(1) DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (owner_id) REFERENCES users(id) ON DELETE CASCADE
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ",
         'products' => "
             CREATE TABLE IF NOT EXISTS products (
-                id TEXT PRIMARY KEY,
-                name TEXT NOT NULL,
-                price REAL NOT NULL,
+                id VARCHAR(24) PRIMARY KEY,
+                name VARCHAR(255) NOT NULL,
+                price DECIMAL(10,2) NOT NULL,
                 description TEXT,
                 media_url TEXT,
-                media_type TEXT DEFAULT 'image',
-                is_available INTEGER DEFAULT 1,
-                store_id TEXT NOT NULL,
+                media_type VARCHAR(20) DEFAULT 'image',
+                is_available TINYINT(1) DEFAULT 1,
+                category VARCHAR(100) DEFAULT 'Others',
+                product_condition VARCHAR(50) DEFAULT 'Brand-New',
+                location VARCHAR(255),
+                store_id VARCHAR(24) NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ",
         'sessions' => "
             CREATE TABLE IF NOT EXISTS sessions (
-                id TEXT PRIMARY KEY,
-                user_id TEXT NOT NULL,
-                token TEXT UNIQUE NOT NULL,
+                id VARCHAR(24) PRIMARY KEY,
+                user_id VARCHAR(24) NOT NULL,
+                token VARCHAR(64) UNIQUE NOT NULL,
                 expires_at DATETIME NOT NULL,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ",
         'token_transactions' => "
             CREATE TABLE IF NOT EXISTS token_transactions (
-                id TEXT PRIMARY KEY,
-                store_id TEXT NOT NULL,
-                type TEXT NOT NULL,
-                amount INTEGER NOT NULL,
+                id VARCHAR(24) PRIMARY KEY,
+                store_id VARCHAR(24) NOT NULL,
+                type VARCHAR(20) NOT NULL,
+                amount INT NOT NULL,
                 description TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ",
         'product_categories' => "
             CREATE TABLE IF NOT EXISTS product_categories (
-                id TEXT PRIMARY KEY,
-                name TEXT UNIQUE NOT NULL,
-                sort_order INTEGER DEFAULT 0,
-                is_active INTEGER DEFAULT 1,
+                id VARCHAR(24) PRIMARY KEY,
+                name VARCHAR(100) UNIQUE NOT NULL,
+                sort_order INT DEFAULT 0,
+                is_active TINYINT(1) DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         "
     ];
 
@@ -124,39 +144,46 @@ function db_init_schema(PDO $db)
         }
     }
 
-    db_ensure_column($db, 'users', 'token_balance', 'INTEGER DEFAULT 0');
-    db_ensure_column($db, 'users', 'plan', "TEXT DEFAULT 'free'");
+    db_ensure_column($db, 'users', 'token_balance', 'INT DEFAULT 0');
+    db_ensure_column($db, 'users', 'plan', "VARCHAR(20) DEFAULT 'free'");
 
-    // Migrate existing store token balances to user balances
     $migrated = $db->query('SELECT COUNT(*) FROM users WHERE token_balance > 0')->fetchColumn();
     if ((int) $migrated === 0) {
         $db->exec('UPDATE users SET token_balance = (SELECT COALESCE(SUM(token_balance), 0) FROM stores WHERE stores.owner_id = users.id)');
         $db->exec("UPDATE users SET plan = 'premium' WHERE id IN (SELECT owner_id FROM stores WHERE plan = 'premium')");
     }
 
-    db_ensure_column($db, 'stores', 'contact_email', 'TEXT');
+    db_ensure_column($db, 'stores', 'contact_email', 'VARCHAR(255)');
     db_ensure_column($db, 'stores', 'logo_url', 'TEXT');
     db_ensure_column($db, 'stores', 'hero_image_url', 'TEXT');
-    db_ensure_column($db, 'stores', 'hero_color', "TEXT DEFAULT '#4f46e5'");
-    db_ensure_column($db, 'stores', 'accent_color', "TEXT DEFAULT '#8b5cf6'");
-    db_ensure_column($db, 'stores', 'social_facebook', 'TEXT');
-    db_ensure_column($db, 'stores', 'social_instagram', 'TEXT');
-    db_ensure_column($db, 'stores', 'social_twitter', 'TEXT');
-    db_ensure_column($db, 'stores', 'social_tiktok', 'TEXT');
-    db_ensure_column($db, 'stores', 'social_youtube', 'TEXT');
+    db_ensure_column($db, 'stores', 'hero_color', "VARCHAR(20) DEFAULT '#4f46e5'");
+    db_ensure_column($db, 'stores', 'accent_color', "VARCHAR(20) DEFAULT '#8b5cf6'");
+    db_ensure_column($db, 'stores', 'social_facebook', 'VARCHAR(255)');
+    db_ensure_column($db, 'stores', 'social_instagram', 'VARCHAR(255)');
+    db_ensure_column($db, 'stores', 'social_twitter', 'VARCHAR(255)');
+    db_ensure_column($db, 'stores', 'social_tiktok', 'VARCHAR(255)');
+    db_ensure_column($db, 'stores', 'social_youtube', 'VARCHAR(255)');
 
     db_ensure_column($db, 'products', 'media_url', 'TEXT');
-    db_ensure_column($db, 'products', 'media_type', "TEXT DEFAULT 'image'");
-    db_ensure_column($db, 'products', 'is_available', 'INTEGER DEFAULT 1');
-    db_ensure_column($db, 'products', 'category', "TEXT DEFAULT 'Others'");
-    db_ensure_column($db, 'products', 'product_condition', "TEXT DEFAULT 'Brand-New'");
-    db_ensure_column($db, 'products', 'location', 'TEXT');
+    db_ensure_column($db, 'products', 'media_type', "VARCHAR(20) DEFAULT 'image'");
+    db_ensure_column($db, 'products', 'is_available', "TINYINT(1) DEFAULT 1");
+    db_ensure_column($db, 'products', 'category', "VARCHAR(100) DEFAULT 'Others'");
+    db_ensure_column($db, 'products', 'product_condition', "VARCHAR(50) DEFAULT 'Brand-New'");
+    db_ensure_column($db, 'products', 'location', 'VARCHAR(255)');
 
-    $db->exec('CREATE INDEX IF NOT EXISTS idx_products_store_id ON products(store_id)');
-    $db->exec('CREATE INDEX IF NOT EXISTS idx_stores_owner_id ON stores(owner_id)');
-    $db->exec('CREATE INDEX IF NOT EXISTS idx_tokens_store_id ON token_transactions(store_id)');
+    $indexes = [
+        'idx_products_store_id' => 'CREATE INDEX idx_products_store_id ON products(store_id)',
+        'idx_stores_owner_id' => 'CREATE INDEX idx_stores_owner_id ON stores(owner_id)',
+        'idx_tokens_store_id' => 'CREATE INDEX idx_tokens_store_id ON token_transactions(store_id)',
+    ];
+    foreach ($indexes as $name => $sql) {
+        try {
+            $db->exec($sql);
+        } catch (PDOException $e) {
+            // Index might already exist
+        }
+    }
 
-    // Seed default categories if the table is empty
     $count = $db->query('SELECT COUNT(*) FROM product_categories')->fetchColumn();
     if ((int) $count === 0) {
         $defaults = [
@@ -170,25 +197,21 @@ function db_init_schema(PDO $db)
     }
 }
 
-/* Add a column to a table if it is missing. */
-
 function db_ensure_column(PDO $db, $table, $column, $definition)
 {
     try {
-        $query = $db->query("PRAGMA table_info($table)");
+        $query = $db->query("SHOW COLUMNS FROM `$table`");
         $columns = $query->fetchAll(PDO::FETCH_ASSOC);
         foreach ($columns as $existing) {
-            if (($existing['name'] ?? '') === $column) {
+            if (($existing['Field'] ?? '') === $column) {
                 return;
             }
         }
-        $db->exec("ALTER TABLE $table ADD COLUMN $column $definition");
+        $db->exec("ALTER TABLE `$table` ADD COLUMN `$column` $definition");
     } catch (PDOException $e) {
         // Ignore alter issues for existing installations.
     }
 }
-
-/* Prepare and execute a SQL query, returning the PDO statement. */
 
 function db_query($sql, $params = [])
 {
@@ -197,8 +220,6 @@ function db_query($sql, $params = [])
     $stmt->execute($params);
     return $stmt;
 }
-
-/* Insert a row into the specified table. */
 
 function db_insert($table, $data)
 {
@@ -211,8 +232,6 @@ function db_insert($table, $data)
     return $stmt->execute(array_values($data));
 }
 
-/* Update rows in the specified table based on a WHERE clause. */
-
 function db_update($table, $data, $where)
 {
     $db = db_get_connection();
@@ -224,23 +243,17 @@ function db_update($table, $data, $where)
     return $stmt->execute(array_merge(array_values($data), array_values($where)));
 }
 
-/* Execute a query and fetch a single row. */
-
 function db_fetch($sql, $params = [])
 {
     $stmt = db_query($sql, $params);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
-/* Execute a query and fetch all rows. */
-
 function db_fetch_all($sql, $params = [])
 {
     $stmt = db_query($sql, $params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
-
-/* Return the last inserted row ID from the database. */
 
 function db_last_insert_id()
 {

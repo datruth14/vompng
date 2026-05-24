@@ -46,8 +46,8 @@ ob_start();
                 </div>
                 <div id="pMediaField">
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Product Image</label>
-                    <input type="file" id="pMedia" accept="image/*" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-gray-400 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all file:bg-[#ff610a]/20 file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-[#ff8c3a] file:font-bold file:text-xs file:cursor-pointer">
-                    <p class="text-xs text-gray-500 mt-1">JPG, PNG, GIF or WebP (Max 5MB)</p>
+                    <input type="file" id="pMedia" accept="image/*" capture="environment" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-gray-400 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all file:bg-[#ff610a]/20 file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-[#ff8c3a] file:font-bold file:text-xs file:cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-1">JPG, PNG or WebP</p>
                 </div>
             </div>
             <div class="space-y-4">

@@ -1,12 +1,11 @@
 <?php
-/*
- * Application database configuration.
- * Defines the SQLite database path and connection settings.
- */
 
-// Database configuration
 return [
-    'driver' => 'sqlite',
-    'database' => __DIR__ . '/../database/vomp.db',
-    'prefix' => '',
+    'driver' => 'mysql',
+    'host' => getenv('DB_HOST') ?: '127.0.0.1',
+    'port' => getenv('DB_PORT') ?: '3306',
+    'database' => getenv('DB_NAME') ?: 'vomp',
+    'username' => getenv('DB_USER') ?: 'root',
+    'password' => getenv('DB_PASS') ?: '',
+    'charset' => 'utf8mb4',
 ];

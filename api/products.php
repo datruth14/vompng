@@ -58,12 +58,83 @@ if ($method === 'POST') {
         /* Handle file upload if present */
         if (!empty($_FILES['media'])) {
             $file = $_FILES['media'];
-            $maxSize = 10 * 1024 * 1024; // 10MB
 
+            $errCodes = [
+                1 => 'Image exceeds server upload limit',
+                2 => 'Image exceeds form size limit',
+                3 => 'Upload was incomplete',
+                4 => 'No file was selected',
+                6 => 'Server missing temp directory',
+                7 => 'Server failed to write file',
+            ];
             if ($file['error'] !== UPLOAD_ERR_OK) {
-                echo json_encode(['success' => false, 'error' => 'Upload failed: ' . $file['error']]);
+                echo json_encode(['success' => false, 'error' => $errCodes[$file['error']] ?? 'Upload error (' . $file['error'] . ')']);
                 exit;
             }
+
+            $maxSize = 10 * 1024 * 1024;
+            if ($file['size'] > $maxSize) {
+                echo json_encode(['success' => false, 'error' => 'Image too large. Max 10MB']);
+                exit;
+            }
+
+            list($width, $height, $imageType) = getimagesize($file['tmp_name']);
+            $allowedTypes = [IMAGETYPE_JPEG, IMAGETYPE_PNG, IMAGETYPE_WEBP];
+
+            if (!in_array($imageType, $allowedTypes)) {
+                echo json_encode(['success' => false, 'error' => 'Invalid image format. Use JPG, PNG, or WebP']);
+                exit;
+            }
+
+            if (!extension_loaded('gd')) {
+                echo json_encode(['success' => false, 'error' => 'Server missing GD image library']);
+                exit;
+            }
+
+            $targetDir = __DIR__ . '/../assets/media/images/product_images/';
+            if (!is_dir($targetDir)) {
+                mkdir($targetDir, 0777, true);
+            }
+
+            if (!is_writable($targetDir)) {
+                echo json_encode(['success' => false, 'error' => 'Upload directory not writable']);
+                exit;
+            }
+
+            $originalName = pathinfo($file['name'], PATHINFO_FILENAME);
+            $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
+            $cleanName = preg_replace("/[^a-zA-Z0-9_-]/", "", $originalName);
+            if (empty($cleanName)) $cleanName = "image";
+            $uniqueName = time() . "_" . $cleanName . "_" . uniqid() . "." . $extension;
+            $targetFile = $targetDir . $uniqueName;
+
+            switch ($imageType) {
+                case IMAGETYPE_JPEG:
+                    $image = imagecreatefromjpeg($file['tmp_name']);
+                    imagejpeg($image, $targetFile, 30);
+                    break;
+
+                case IMAGETYPE_PNG:
+                    $image = imagecreatefrompng($file['tmp_name']);
+                    imagepng($image, $targetFile, 9);
+                    break;
+
+                case IMAGETYPE_WEBP:
+                    $image = imagecreatefromwebp($file['tmp_name']);
+                    imagewebp($image, $targetFile, 30);
+                    break;
+
+                default:
+                    echo json_encode(['success' => false, 'error' => 'Unsupported image format']);
+                    exit;
+            }
+
+            if (isset($image)) {
+                imagedestroy($image);
+            }
+
+            $mediaUrl = '/assets/media/images/product_images/' . $uniqueName;
+        }
 
             if ($file['size'] > $maxSize) {
                 echo json_encode(['success' => false, 'error' => 'Image too large. Max 10MB']);
@@ -203,72 +274,3 @@ if ($method === 'POST') {
 http_response_code(405);
 echo json_encode(['error' => 'Method not allowed']);
 
-/* Helper function to optimize and convert images to WebP format with compression */
-function optimize_image_to_webp($sourcePath, $destPath)
-{
-    if (!extension_loaded('gd')) {
-        return false;
-    }
-
-    try {
-        /* Determine image type and create image resource */
-        $imageType = exif_imagetype($sourcePath);
-        
-        switch ($imageType) {
-            case IMAGETYPE_JPEG:
-                $image = imagecreatefromjpeg($sourcePath);
-                break;
-            case IMAGETYPE_PNG:
-                $image = imagecreatefrompng($sourcePath);
-                break;
-            case IMAGETYPE_GIF:
-                $image = imagecreatefromgif($sourcePath);
-                break;
-            case IMAGETYPE_WEBP:
-                $image = imagecreatefromwebp($sourcePath);
-                break;
-            default:
-                return false;
-        }
-
-        if (!$image) {
-            return false;
-        }
-
-        /* Get original dimensions */
-        $origWidth = imagesx($image);
-        $origHeight = imagesy($image);
-        
-        /* Calculate new dimensions (max 1200px on longest side) */
-        $maxDim = 1200;
-        $ratio = 1;
-        if ($origWidth > $maxDim || $origHeight > $maxDim) {
-            $ratio = min($maxDim / $origWidth, $maxDim / $origHeight);
-        }
-        
-        $newWidth = (int)($origWidth * $ratio);
-        $newHeight = (int)($origHeight * $ratio);
-
-        /* Create resampled image */
-        $resized = imagecreatetruecolor($newWidth, $newHeight);
-        
-        /* Preserve transparency for PNG and GIF */
-        if ($imageType === IMAGETYPE_PNG || $imageType === IMAGETYPE_GIF) {
-            imagealphablending($resized, false);
-            imagesavealpha($resized, true);
-        }
-
-        imagecopyresampled($resized, $image, 0, 0, 0, 0, $newWidth, $newHeight, $origWidth, $origHeight);
-
-        /* Save as highly compressed WebP (quality 75 for good balance) */
-        $quality = 75;
-        $result = imagewebp($resized, $destPath, $quality);
-
-        imagedestroy($image);
-        imagedestroy($resized);
-
-        return $result !== false;
-    } catch (Exception $e) {
-        return false;
-    }
-}
