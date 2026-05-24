@@ -182,71 +182,96 @@
     </button>
     <?php endif; ?>
 
-    <!-- Bottom Nav Toggle (stays on right edge when collapsed) -->
+    <!-- Nav Drawer Toggle (stays on right edge when collapsed) -->
     <button id="navToggleBtn" class="fixed bottom-6 right-4 z-50 w-12 h-12 rounded-full bg-[#ff610a] text-white shadow-lg shadow-[#ff610a]/30 hover:bg-[#e05500] transition-all flex items-center justify-center">
         <svg id="navToggleIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
     </button>
 
-    <!-- Bottom Nav (slides from right) -->
-    <div id="bottomNav" class="fixed bottom-0 left-0 right-0 z-40 transition-transform duration-300 translate-x-full">
-        <div class="max-w-lg mx-auto px-4 pb-4">
-            <div class="glass-morphism rounded-2xl px-3 py-3 border border-white/10 flex items-center justify-around gap-1">
-                <a href="/" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
-                    <span class="text-[10px] font-black uppercase tracking-wider">Home</span>
+    <!-- Overlay backdrop -->
+    <div id="navOverlay" class="fixed inset-0 z-40 bg-black/50 opacity-0 pointer-events-none transition-opacity duration-300"></div>
+
+    <!-- Nav Drawer (slides from right) -->
+    <div id="navDrawer" class="fixed top-0 right-0 z-40 h-full w-72 bg-gray-950/95 border-l border-white/10 shadow-2xl transition-transform duration-300 translate-x-full will-change-transform overflow-y-auto">
+        <div class="flex flex-col items-stretch gap-2 p-6 pt-20">
+            <a href="/" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
+                <span>Home</span>
+            </a>
+            <a href="/marketplace" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
+                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" /></svg>
+                <span>Marketplace</span>
+            </a>
+            <?php if ($currentUser): ?>
+                <a href="/orders" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
+                    <span>Orders</span>
                 </a>
-                <a href="/marketplace" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" /></svg>
-                    <span class="text-[10px] font-black uppercase tracking-wider">Marketplace</span>
+                <a href="/profile" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
+                    <span>Profile</span>
                 </a>
-                <?php if ($currentUser): ?>
-                    <a href="/orders" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
-                        <span class="text-[10px] font-black uppercase tracking-wider">Orders</span>
-                    </a>
-                    <a href="/profile" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-                        <span class="text-[10px] font-black uppercase tracking-wider">Profile</span>
-                    </a>
-                <?php else: ?>
-                    <a href="/login" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15a2.25 2.25 0 012.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" /></svg>
-                        <span class="text-[10px] font-black uppercase tracking-wider">Orders</span>
-                    </a>
-                    <a href="/login" class="flex flex-col items-center gap-0.5 py-1 px-3 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all group">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
-                        <span class="text-[10px] font-black uppercase tracking-wider">Profile</span>
-                    </a>
-                <?php endif; ?>
-            </div>
+                <div class="border-t border-white/10 my-2"></div>
+                <a href="/download" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                    <span>Download App</span>
+                </a>
+                <a href="/logout" class="flex items-center gap-3 py-3 px-4 rounded-xl text-rose-300 hover:text-rose-100 hover:bg-white/5 transition-all font-bold text-sm">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    <span>Logout</span>
+                </a>
+            <?php else: ?>
+                <div class="border-t border-white/10 my-2"></div>
+                <a href="/login" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                    <span>Login</span>
+                </a>
+                <a href="/register" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                    <span>Register</span>
+                </a>
+                <a href="/download" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
+                    <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+                    <span>Download App</span>
+                </a>
+            <?php endif; ?>
         </div>
     </div>
 
     <script>
-        /* Bottom nav slide from right toggle */
+        /* Nav drawer toggle */
         const navToggleBtn = document.getElementById('navToggleBtn');
-        const bottomNav = document.getElementById('bottomNav');
+        const navDrawer = document.getElementById('navDrawer');
+        const navOverlay = document.getElementById('navOverlay');
         const navToggleIcon = document.getElementById('navToggleIcon');
         const shareBtn = document.getElementById('shareBtn');
         let navOpen = false;
 
-        navToggleBtn.addEventListener('click', () => {
-            navOpen = !navOpen;
-            if (navOpen) {
-                bottomNav.classList.remove('translate-x-full');
-                navToggleBtn.style.bottom = '5.5rem';
-                shareBtn.style.bottom = '11rem';
-                navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
-            } else {
-                bottomNav.classList.add('translate-x-full');
-                navToggleBtn.style.bottom = '';
-                shareBtn.style.bottom = '';
-                navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />';
-            }
+        function openNav() {
+            navOpen = true;
+            navDrawer.classList.remove('translate-x-full');
+            navOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            navToggleBtn.style.bottom = '1rem';
+            if (shareBtn) shareBtn.style.bottom = '5.5rem';
+            navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+        }
+
+        function closeNav() {
+            navOpen = false;
+            navDrawer.classList.add('translate-x-full');
+            navOverlay.classList.add('opacity-0', 'pointer-events-none');
+            navToggleBtn.style.bottom = '';
+            if (shareBtn) shareBtn.style.bottom = '';
+            navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />';
+        }
+
+        navToggleBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (navOpen) closeNav(); else openNav();
         });
 
+        navOverlay.addEventListener('click', closeNav);
+
         /* Native share */
-        function shareCurrentPage() {
             const url = window.location.href;
             const title = document.title || 'vomp';
             if (navigator.share) {
@@ -276,13 +301,9 @@
             }
         }
 
-        /* Close when a link is clicked */
-        bottomNav.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                navOpen = false;
-                bottomNav.classList.add('translate-x-full');
-                navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />';
-            });
+        /* Close drawer when a link is clicked */
+        navDrawer.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', closeNav);
         });
     </script>
 </body>
