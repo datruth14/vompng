@@ -133,6 +133,17 @@ function db_init_schema(PDO $db)
                 is_active TINYINT(1) DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ",
+        'password_resets' => "
+            CREATE TABLE IF NOT EXISTS password_resets (
+                id VARCHAR(24) PRIMARY KEY,
+                email VARCHAR(255) NOT NULL,
+                otp VARCHAR(6) NOT NULL,
+                expires_at DATETIME NOT NULL,
+                used TINYINT(1) DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_password_resets_email (email)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         "
     ];
 

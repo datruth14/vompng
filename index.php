@@ -85,6 +85,18 @@ if ($method === 'GET') {
             include 'frontend/login.php';
             break;
 
+        case $requestPath === 'forgot-password':
+            include 'frontend/forgot_password.php';
+            break;
+
+        case $requestPath === 'reset-password':
+            if (empty($_GET['email'])) {
+                header('Location: /forgot-password');
+                exit;
+            }
+            include 'frontend/reset_password.php';
+            break;
+
         case $requestPath === 'products':
             $searchQuery = isset($_GET['q']) && $_GET['q'] !== '' ? trim($_GET['q']) : null;
             $activeCategory = isset($_GET['category']) && $_GET['category'] !== '' ? $_GET['category'] : null;
@@ -330,6 +342,12 @@ if ($method === 'GET') {
         case 'api/upgrade':
         case 'api/upgrade.php':
             include 'api/upgrade.php';
+            exit;
+        case 'api/forgot_password.php':
+            include 'api/forgot_password.php';
+            exit;
+        case 'api/reset_password.php':
+            include 'api/reset_password.php';
             exit;
         default:
             http_response_code(404);
