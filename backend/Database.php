@@ -158,6 +158,16 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'users', 'phone', 'VARCHAR(50)');
     db_ensure_column($db, 'users', 'token_balance', 'INT DEFAULT 0');
     db_ensure_column($db, 'users', 'plan', "VARCHAR(20) DEFAULT 'free'");
+    db_ensure_column($db, 'users', 'role', "VARCHAR(20) DEFAULT 'user'");
+
+    // Seed admin role for 14eter@gmail.com
+    $adminEmail = '14eter@gmail.com';
+    $adminCheck = $db->prepare("SELECT id, role FROM users WHERE email = ?");
+    $adminCheck->execute([$adminEmail]);
+    $adminUser = $adminCheck->fetch(PDO::FETCH_ASSOC);
+    if ($adminUser && $adminUser['role'] !== 'admin') {
+        $db->prepare("UPDATE users SET role = 'admin' WHERE email = ?")->execute([$adminEmail]);
+    }
 
     $migrated = $db->query('SELECT COUNT(*) FROM users WHERE token_balance > 0')->fetchColumn();
     if ((int) $migrated === 0) {

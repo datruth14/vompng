@@ -11,6 +11,7 @@ require_once 'backend/Auth.php';
 require_once 'backend/Store.php';
 require_once 'backend/Product.php';
 require_once 'backend/Token.php';
+require_once 'backend/Admin.php';
 
 $currentUser = auth_get_current_user();
 
@@ -295,6 +296,62 @@ if ($method === 'GET') {
             include 'frontend/storefront.php';
             break;
 
+        case str_starts_with($requestPath, 'admin'):
+            if (!auth_is_admin()) {
+                http_response_code(403);
+                $content = '<div class="text-center py-12"><h2 class="text-2xl font-bold">403 - Forbidden</h2></div>';
+                break;
+            }
+
+            switch ($requestPath) {
+                case 'admin':
+                    $totalUsers = admin_count_users();
+                    $totalStores = admin_count_stores();
+                    $totalProducts = admin_count_products();
+                    $totalTransactions = admin_count_transactions();
+                    include 'frontend/admin/dashboard.php';
+                    break;
+
+                case 'admin/users':
+                    $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
+                    $perPage = 20;
+                    $users = admin_get_users_paginated($page, $perPage);
+                    $totalPages = max(1, (int) ceil(admin_count_users_total() / $perPage));
+                    include 'frontend/admin/users.php';
+                    break;
+
+                case 'admin/stores':
+                    $success = $_GET['success'] ?? null;
+                    $error = $_GET['error'] ?? null;
+                    $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
+                    $perPage = 20;
+                    $stores = admin_get_stores_paginated($page, $perPage);
+                    $totalPages = max(1, (int) ceil(admin_count_stores_total() / $perPage));
+                    include 'frontend/admin/stores.php';
+                    break;
+
+                case 'admin/products':
+                    $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
+                    $perPage = 20;
+                    $products = admin_get_products_paginated($page, $perPage);
+                    $totalPages = max(1, (int) ceil(admin_count_products_total() / $perPage));
+                    include 'frontend/admin/products.php';
+                    break;
+
+                case 'admin/orders':
+                    $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
+                    $perPage = 30;
+                    $transactions = admin_get_transactions_paginated($page, $perPage);
+                    $totalPages = max(1, (int) ceil(admin_count_transactions_total() / $perPage));
+                    include 'frontend/admin/orders.php';
+                    break;
+
+                default:
+                    http_response_code(404);
+                    $content = '<div class="text-center py-12"><h2 class="text-2xl font-bold">404 - Admin page not found</h2></div>';
+            }
+            break;
+
         case $requestPath === 'logout':
             include 'api/logout.php';
             exit;
@@ -345,6 +402,9 @@ if ($method === 'GET') {
         case 'api/upgrade':
         case 'api/upgrade.php':
             include 'api/upgrade.php';
+            exit;
+        case 'api/admin/toggle-store':
+            include 'api/admin_toggle_store.php';
             exit;
         case 'api/forgot_password.php':
             include 'api/forgot_password.php';

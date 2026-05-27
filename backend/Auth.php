@@ -186,6 +186,13 @@ function auth_update_user($userId, $data)
     return $result ? ['success' => true, 'message' => 'Profile updated'] : ['success' => false, 'error' => 'Failed to update profile'];
 }
 
+/* Check if the current user is an admin. */
+function auth_is_admin()
+{
+    $user = auth_get_current_user();
+    return $user && ($user['role'] ?? 'user') === 'admin';
+}
+
 /* Normalize text into a URL-friendly store slug. */
 
 function auth_create_slug($text)
