@@ -12,8 +12,12 @@ require_once __DIR__ . '/Database.php';
 function product_get_products_by_store($storeId)
 {
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT * FROM products WHERE store_id = ? ORDER BY created_at DESC');
-    $stmt->execute([$storeId]);
+    $stmt = $db->prepare('
+        SELECT p.* FROM products p
+        WHERE p.store_id = ? OR p.store_id = (SELECT s.owner_id FROM stores s WHERE s.id = ?)
+        ORDER BY p.created_at DESC
+    ');
+    $stmt->execute([$storeId, $storeId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -22,8 +26,13 @@ function product_get_products_by_store($storeId)
 function product_get_available_products_by_store($storeId)
 {
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT * FROM products WHERE store_id = ? AND is_available = 1 ORDER BY created_at DESC');
-    $stmt->execute([$storeId]);
+    $stmt = $db->prepare('
+        SELECT * FROM products
+        WHERE (store_id = ? OR store_id = (SELECT owner_id FROM stores WHERE id = ?))
+        AND is_available = 1
+        ORDER BY created_at DESC
+    ');
+    $stmt->execute([$storeId, $storeId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
