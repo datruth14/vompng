@@ -12,7 +12,7 @@ ob_start();
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div class="rounded-3xl overflow-hidden skeleton-box border border-white/10 flex items-center justify-center">
                     <?php if (!empty($product['media_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($product['media_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full max-h-[500px] object-contain" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
+                        <img src="<?php echo htmlspecialchars($product['media_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full max-h-[500px] object-contain" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" onerror="this.parentElement.innerHTML='<div class=\'h-64 flex items-center justify-center text-gray-500 text-sm\'>Image not available</div>'" />
                     <?php else: ?>
                         <div class="h-64 flex items-center justify-center text-gray-500 text-sm">No image available</div>
                     <?php endif; ?>
