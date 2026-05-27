@@ -19,11 +19,11 @@ ob_start();
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
-            <p class="text-5xl font-black text-white"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
+            <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
         </article>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Live Products</p>
-            <p class="text-5xl font-black text-white"><?php echo count(array_filter($products, fn($p) => (int) ($p['is_available'] ?? 1) === 1)); ?></p>
+            <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo count(array_filter($products, fn($p) => (int) ($p['is_available'] ?? 1) === 1)); ?></p>
         </article>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>

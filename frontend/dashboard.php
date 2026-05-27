@@ -21,18 +21,18 @@ ob_start();
         <?php endif; ?>
     </header>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
-        <a href="/dashboard/stores" class="glass-morphism rounded-[2rem] p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
+        <a href="/dashboard/stores" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Your Stores</p>
-            <p class="text-5xl font-black text-white"><?php echo count($stores); ?></p>
+            <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo count($stores); ?></p>
         </a>
-        <a href="/dashboard/products" class="glass-morphism rounded-[2rem] p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
+        <a href="/dashboard/products" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Total Products</p>
-            <p class="text-5xl font-black text-white"><?php echo (int) $totalProducts; ?></p>
+            <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo (int) $totalProducts; ?></p>
         </a>
-        <a href="/dashboard/<?php echo htmlspecialchars($stores[0]['slug'] ?? ''); ?>/tokens" class="glass-morphism rounded-[2rem] p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
+        <a href="/dashboard/<?php echo htmlspecialchars($stores[0]['slug'] ?? ''); ?>/tokens" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
-            <p class="text-5xl font-black text-[#ff610a]"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
+            <p class="text-4xl md:text-5xl font-black text-[#ff610a] break-all"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
         </a>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
