@@ -174,8 +174,13 @@ function store_get_with_products($slug)
     }
 
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT * FROM products WHERE store_id = ? AND is_available = 1 ORDER BY created_at DESC');
-    $stmt->execute([$store['id']]);
+    $stmt = $db->prepare('
+        SELECT * FROM products
+        WHERE (store_id = ? OR store_id = (SELECT owner_id FROM stores WHERE id = ?))
+        AND is_available = 1
+        ORDER BY created_at DESC
+    ');
+    $stmt->execute([$store['id'], $store['id']]);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     return [

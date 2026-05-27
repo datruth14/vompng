@@ -189,8 +189,12 @@ function product_get_by_id($productId)
 function product_get_by_id_and_store($productId, $storeId)
 {
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT * FROM products WHERE id = ? AND store_id = ? AND is_available = 1');
-    $stmt->execute([$productId, $storeId]);
+    $stmt = $db->prepare('
+        SELECT * FROM products
+        WHERE id = ? AND (store_id = ? OR store_id = (SELECT owner_id FROM stores WHERE id = ?))
+        AND is_available = 1
+    ');
+    $stmt->execute([$productId, $storeId, $storeId]);
     return $stmt->fetch(PDO::FETCH_ASSOC);
 }
 
