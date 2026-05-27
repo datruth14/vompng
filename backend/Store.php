@@ -166,6 +166,14 @@ function store_search($query)
 
 /* Load a store and its available products for public display. */
 
+function store_owner_id($storeId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT owner_id FROM stores WHERE id = ?');
+    $stmt->execute([$storeId]);
+    return $stmt->fetchColumn();
+}
+
 function store_get_with_products($slug)
 {
     $store = store_get_by_slug($slug);
@@ -174,13 +182,14 @@ function store_get_with_products($slug)
     }
 
     $db = db_get_connection();
+    $ownerId = store_owner_id($store['id']);
     $stmt = $db->prepare('
         SELECT * FROM products
-        WHERE (store_id = ? OR store_id = (SELECT owner_id FROM stores WHERE id = ?))
+        WHERE (store_id = ? OR store_id = ?)
         AND is_available = 1
         ORDER BY created_at DESC
     ');
-    $stmt->execute([$store['id'], $store['id']]);
+    $stmt->execute([$store['id'], $ownerId]);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     return [
