@@ -74,5 +74,34 @@ if ($type === 'stores') {
     exit;
 }
 
+if ($type === 'products') {
+    $rows = db_fetch_all('
+        SELECT p.name, p.price, s.name AS store_name, p.category,
+               p.is_available, p.product_condition, p.location, p.created_at
+        FROM products p
+        JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        ORDER BY p.created_at DESC
+    ');
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="products_export_' . date('Y-m-d') . '.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['Product', 'Price (₦)', 'Store', 'Category', 'Available', 'Condition', 'Location', 'Created']);
+    foreach ($rows as $r) {
+        fputcsv($out, [
+            $r['name'],
+            number_format((float) $r['price'], 2),
+            $r['store_name'] ?? '',
+            $r['category'] ?? 'Others',
+            (int) ($r['is_available'] ?? 1) === 1 ? 'Yes' : 'No',
+            $r['product_condition'] ?? '',
+            $r['location'] ?? '',
+            $r['created_at'],
+        ]);
+    }
+    fclose($out);
+    exit;
+}
+
 http_response_code(400);
 echo 'Invalid export type';

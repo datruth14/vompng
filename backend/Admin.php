@@ -155,6 +155,41 @@ function admin_count_products_total()
     return (int) db_get_connection()->query('SELECT COUNT(*) FROM products')->fetchColumn();
 }
 
+function admin_search_products_paginated($query, $page = 1, $perPage = 20)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT p.*, s.name AS store_name, s.slug
+        FROM products p
+        JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE p.name LIKE ? OR s.name LIKE ? OR p.category LIKE ?
+        ORDER BY p.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, $like);
+    $stmt->bindValue(2, $like);
+    $stmt->bindValue(3, $like);
+    $stmt->bindValue(4, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(5, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function admin_count_search_products($query)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $stmt = $db->prepare('
+        SELECT COUNT(*) FROM products p
+        JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE p.name LIKE ? OR s.name LIKE ? OR p.category LIKE ?
+    ');
+    $stmt->execute([$like, $like, $like]);
+    return (int) $stmt->fetchColumn();
+}
+
 function admin_get_transactions_paginated($page = 1, $perPage = 30)
 {
     $db = db_get_connection();

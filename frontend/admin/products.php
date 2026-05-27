@@ -8,6 +8,17 @@ ob_start();
         <h1 class="text-5xl font-black text-white tracking-tight">All Products</h1>
     </header>
 
+    <div class="flex flex-wrap items-center gap-3">
+        <form method="GET" class="flex gap-3 flex-1 max-w-md">
+            <input type="text" name="q" value="<?php echo htmlspecialchars($_GET['q'] ?? ''); ?>" placeholder="Search by product, store, or category..." class="flex-1 bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm">
+            <button type="submit" class="px-5 py-3 rounded-2xl bg-[#ff610a] text-white font-bold text-sm hover:bg-[#e05500] transition-all">Search</button>
+            <?php if (!empty($_GET['q'])): ?>
+                <a href="/admin/products" class="px-5 py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-400 font-bold text-sm hover:bg-white/10 transition-all">Clear</a>
+            <?php endif; ?>
+        </form>
+        <a href="/api/admin/export?type=products" class="px-5 py-3 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 font-bold text-sm hover:bg-emerald-600/30 transition-all whitespace-nowrap">Export CSV</a>
+    </div>
+
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
@@ -50,18 +61,19 @@ ob_start();
 
     <?php if ($totalPages > 1): ?>
         <div class="flex items-center justify-center gap-2 mt-8">
+            <?php $qs = !empty($_GET['q']) ? '&q=' . urlencode($_GET['q']) : ''; ?>
             <?php if ($page > 1): ?>
-                <a href="/admin/products?page=<?php echo $page - 1; ?>" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">← Prev</a>
+                <a href="/admin/products?page=<?php echo $page - 1 . $qs; ?>" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">← Prev</a>
             <?php endif; ?>
             <?php
             $start = max(1, $page - 2);
             $end = min($totalPages, $page + 2);
             for ($i = $start; $i <= $end; $i++):
             ?>
-                <a href="/admin/products?page=<?php echo $i; ?>" class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all <?php echo $i === $page ? 'bg-[#ff610a] text-white' : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'; ?>"><?php echo $i; ?></a>
+                <a href="/admin/products?page=<?php echo $i . $qs; ?>" class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all <?php echo $i === $page ? 'bg-[#ff610a] text-white' : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'; ?>"><?php echo $i; ?></a>
             <?php endfor; ?>
             <?php if ($page < $totalPages): ?>
-                <a href="/admin/products?page=<?php echo $page + 1; ?>" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">Next →</a>
+                <a href="/admin/products?page=<?php echo $page + 1 . $qs; ?>" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">Next →</a>
             <?php endif; ?>
         </div>
     <?php endif; ?>

@@ -343,10 +343,16 @@ if ($method === 'GET') {
                     break;
 
                 case 'admin/products':
+                    $searchQuery = isset($_GET['q']) && $_GET['q'] !== '' ? trim($_GET['q']) : null;
                     $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
                     $perPage = 20;
-                    $products = admin_get_products_paginated($page, $perPage);
-                    $totalPages = max(1, (int) ceil(admin_count_products_total() / $perPage));
+                    if ($searchQuery) {
+                        $products = admin_search_products_paginated($searchQuery, $page, $perPage);
+                        $totalPages = max(1, (int) ceil(admin_count_search_products($searchQuery) / $perPage));
+                    } else {
+                        $products = admin_get_products_paginated($page, $perPage);
+                        $totalPages = max(1, (int) ceil(admin_count_products_total() / $perPage));
+                    }
                     include 'frontend/admin/products.php';
                     break;
 
