@@ -364,6 +364,10 @@ if ($method === 'GET') {
             }
             break;
 
+        case $requestPath === 'api/admin/export':
+            include 'api/admin_export.php';
+            exit;
+
         case $requestPath === 'logout':
             include 'api/logout.php';
             exit;
@@ -414,9 +418,6 @@ if ($method === 'GET') {
         case 'api/upgrade':
         case 'api/upgrade.php':
             include 'api/upgrade.php';
-            exit;
-        case 'api/admin/export':
-            include 'api/admin_export.php';
             exit;
         case 'api/admin/toggle-store':
             include 'api/admin_toggle_store.php';
