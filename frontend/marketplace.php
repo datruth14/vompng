@@ -56,7 +56,7 @@ ob_start();
             </h2>
         </div>
         <?php if (!empty($allProducts)): ?>
-                <a href="/products" class="hidden md:inline-flex items-center gap-2 text-xs text-[#ff610a] hover:text-[#ff8c3a] font-black uppercase tracking-wider transition-colors">
+                <a href="/products" class="inline-flex items-center gap-2 text-xs text-[#ff610a] hover:text-[#ff8c3a] font-black uppercase tracking-wider transition-colors">
                 More Products
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
             </a>
@@ -145,7 +145,7 @@ ob_start();
                     <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-1">Vendors</p>
                     <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">Explore Storefronts</h2>
                 </div>
-                <a href="/stores" class="hidden md:inline-flex items-center gap-2 text-xs text-[#ff610a] hover:text-[#ff8c3a] font-black uppercase tracking-wider transition-colors">
+                <a href="/stores" class="inline-flex items-center gap-2 text-xs text-[#ff610a] hover:text-[#ff8c3a] font-black uppercase tracking-wider transition-colors">
                     All Stores
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
                 </a>
