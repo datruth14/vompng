@@ -29,9 +29,7 @@ ob_start();
                     <h1 class="text-5xl font-black text-white tracking-tight mb-3"><?php echo htmlspecialchars($store['name']); ?></h1>
                     <p class="text-gray-300 max-w-2xl"><?php echo htmlspecialchars($store['description'] ?: 'Browse products and order directly via WhatsApp.'); ?></p>
                 </div>
-                <button onclick="shareStore()" class="shrink-0 mt-2 w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#ff610a] hover:border-[#ff610a]/30 hover:bg-[#ff610a]/10 transition-all" title="Share this store">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
-                </button>
+
             </div>
         </div>
     </header>
@@ -111,9 +109,6 @@ ob_start();
         <div>
             <h4 class="text-white font-black text-sm uppercase tracking-wider mb-4">Social Media</h4>
             <div class="flex flex-wrap gap-3">
-                <button onclick="shareStore()" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-[#ff610a] hover:border-[#ff610a]/30 hover:bg-[#ff610a]/10 transition-all" title="Share this store">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7.217 10.907a2.25 2.25 0 100 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186l9.566-5.314m-9.566 7.5l9.566 5.314m0 0a2.25 2.25 0 103.935 2.186 2.25 2.25 0 00-3.935-2.186zm0-12.814a2.25 2.25 0 103.933-2.185 2.25 2.25 0 00-3.933 2.185z" /></svg>
-                </button>
                 <?php if (!empty($store['social_facebook'])): ?>
                     <a href="<?php echo htmlspecialchars($store['social_facebook']); ?>" target="_blank" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                         <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
@@ -199,20 +194,6 @@ ob_start();
 </div>
 
 <script>
-function shareStore() {
-    const url = window.location.href;
-    if (navigator.share) {
-        navigator.share({ title: document.title, url: url }).catch(() => {});
-    } else {
-        navigator.clipboard.writeText(url).then(() => {
-            const btn = document.querySelector('[onclick="shareStore()"]');
-            const orig = btn.innerHTML;
-            btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>';
-            setTimeout(() => btn.innerHTML = orig, 2000);
-        }).catch(() => {});
-    }
-}
-
 let activeOrder = null;
 
 function openOrderModal(btn) {
