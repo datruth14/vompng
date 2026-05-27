@@ -11,8 +11,14 @@ ob_start();
         <div class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
                 <div class="rounded-3xl overflow-hidden skeleton-box border border-white/10 flex items-center justify-center">
+                    <?php
+                    $imgUrl = $product['media_url'];
+                    if ($imgUrl && $imgUrl[0] !== '/') {
+                        $imgUrl = '/' . $imgUrl;
+                    }
+                    ?>
                     <?php if (!empty($product['media_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($product['media_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full max-h-[500px] object-contain" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" onerror="this.parentElement.innerHTML='<div class=\'h-64 flex items-center justify-center text-gray-500 text-sm\'>Image not available</div>'" />
+                        <img src="<?php echo htmlspecialchars($imgUrl); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full max-h-[500px] object-contain" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" onerror="this.parentElement.innerHTML='<div class=\'h-64 flex items-center justify-center text-gray-500 text-sm\'>Image not available</div>'" />
                     <?php else: ?>
                         <div class="h-64 flex items-center justify-center text-gray-500 text-sm">No image available</div>
                     <?php endif; ?>
