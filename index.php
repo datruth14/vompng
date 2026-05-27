@@ -288,7 +288,7 @@ if ($method === 'GET') {
                 break;
             }
             $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
-            $perPage = 12;
+            $perPage = 6;
             $products = product_get_available_products_by_store_paginated($store['id'], $page, $perPage);
             $totalProducts = product_count_available_by_store($store['id']);
             $totalPages = max(1, (int) ceil($totalProducts / $perPage));
