@@ -24,10 +24,16 @@ ob_start();
 
     <!-- Category Pills -->
     <?php if (!empty($categories)): ?>
-    <div class="flex flex-wrap gap-2">
-        <a href="/products" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border <?php echo !$activeCategory ? 'bg-[#ff610a] text-white border-[#ff610a]' : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'; ?>">All</a>
+    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent -mx-4 px-4 snap-x snap-mandatory">
+        <a href="/products"
+           class="whitespace-nowrap px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border snap-start <?php echo !$activeCategory ? 'bg-[#ff610a] text-white border-[#ff610a]' : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'; ?>">
+            All
+        </a>
         <?php foreach ($categories as $cat): ?>
-            <a href="/products?category=<?php echo urlencode($cat); ?>" class="px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border <?php echo $activeCategory === $cat ? 'bg-[#ff610a] text-white border-[#ff610a]' : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'; ?>"><?php echo htmlspecialchars($cat); ?></a>
+            <a href="/products?category=<?php echo urlencode($cat); ?>"
+               class="whitespace-nowrap px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all border snap-start <?php echo $activeCategory === $cat ? 'bg-[#ff610a] text-white border-[#ff610a]' : 'bg-white/5 text-gray-400 border-white/10 hover:bg-white/10 hover:text-white'; ?>">
+                <?php echo htmlspecialchars($cat); ?>
+            </a>
         <?php endforeach; ?>
     </div>
     <?php endif; ?>
