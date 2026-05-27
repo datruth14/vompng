@@ -9,8 +9,10 @@ ob_start();
 <section class="py-8 space-y-10">
     <header class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10 overflow-hidden relative min-h-[260px] flex items-center">
         <?php if (!empty($store['hero_image_url'])): ?>
-            <div class="absolute inset-0 bg-cover bg-center" style="background-image: url('<?php echo htmlspecialchars($store['hero_image_url']); ?>');"></div>
-            <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/70 to-transparent"></div>
+            <div class="absolute inset-0 skeleton-box overflow-hidden">
+                <img src="<?php echo htmlspecialchars($store['hero_image_url']); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
+            </div>
+            <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/70 to-transparent" style="z-index: 10;"></div>
         <?php else: ?>
             <div class="absolute inset-0 opacity-20" style="background: radial-gradient(circle at top right, <?php echo htmlspecialchars($store['accent_color'] ?? '#8b5cf6'); ?>, transparent 45%), radial-gradient(circle at bottom left, <?php echo htmlspecialchars($store['hero_color'] ?? '#4f46e5'); ?>, transparent 45%);"></div>
         <?php endif; ?>

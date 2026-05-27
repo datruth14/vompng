@@ -155,9 +155,14 @@ ob_start();
                 <?php foreach ($stores as $s):
                     $hasHero = !empty($s['hero_image_url']);
                 ?>
-                    <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="rounded-3xl p-6 border border-white/10 hover:border-[#ff610a]/30 transition-all group block relative overflow-hidden min-h-[200px] <?php echo $hasHero ? '' : 'glass-morphism'; ?>" <?php if ($hasHero): ?>style="background-image: url('<?php echo htmlspecialchars($s['hero_image_url']); ?>'); background-size: cover; background-position: center;"<?php endif; ?>>
-                        <div class="absolute inset-0 <?php echo $hasHero ? 'bg-gradient-to-t from-black/80 via-black/40 to-transparent' : 'bg-gradient-to-t from-black/60 via-black/20 to-transparent'; ?>"></div>
-                        <div class="relative z-10 flex flex-col h-full min-h-[170px]">
+                    <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="rounded-3xl p-6 border border-white/10 hover:border-[#ff610a]/30 transition-all group block relative overflow-hidden min-h-[200px] <?php echo $hasHero ? '' : 'glass-morphism'; ?>">
+                        <?php if ($hasHero): ?>
+                        <div class="absolute inset-0 skeleton-box overflow-hidden">
+                            <img src="<?php echo htmlspecialchars($s['hero_image_url']); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
+                        </div>
+                        <?php endif; ?>
+                        <div class="absolute inset-0 <?php echo $hasHero ? 'z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent' : 'bg-gradient-to-t from-black/60 via-black/20 to-transparent'; ?>"></div>
+                        <div class="relative <?php echo $hasHero ? 'z-20' : 'z-10'; ?> flex flex-col h-full min-h-[170px]">
                             <div class="w-14 h-14 rounded-2xl bg-[#ff610a]/20 backdrop-blur-sm flex items-center justify-center text-xl font-black text-[#ff610a] mb-3">
                                 <?php echo strtoupper($s['name'][0]); ?>
                             </div>
