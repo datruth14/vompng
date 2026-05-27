@@ -74,6 +74,24 @@ ob_start();
             <p class="text-gray-400">This seller has not published any product right now.</p>
         </div>
     <?php endif; ?>
+
+    <?php if ($totalPages > 1): ?>
+        <div class="flex items-center justify-center gap-2 mt-10">
+            <?php if ($page > 1): ?>
+                <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>?page=<?php echo $page - 1; ?>" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">← Prev</a>
+            <?php endif; ?>
+            <?php
+            $start = max(1, $page - 2);
+            $end = min($totalPages, $page + 2);
+            for ($i = $start; $i <= $end; $i++):
+            ?>
+                <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>?page=<?php echo $i; ?>" class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all <?php echo $i === $page ? 'bg-[#ff610a] text-white' : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'; ?>"><?php echo $i; ?></a>
+            <?php endfor; ?>
+            <?php if ($page < $totalPages): ?>
+                <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>?page=<?php echo $page + 1; ?>" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">Next →</a>
+            <?php endif; ?>
+        </div>
+    <?php endif; ?>
 </section>
 
 <!-- Store Footer -->

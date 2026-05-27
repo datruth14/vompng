@@ -36,6 +36,37 @@ function product_get_available_products_by_store($storeId)
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+function product_get_available_products_by_store_paginated($storeId, $page = 1, $perPage = 12)
+{
+    $db = db_get_connection();
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT * FROM products
+        WHERE (store_id = ? OR store_id = (SELECT owner_id FROM stores WHERE id = ?))
+        AND is_available = 1
+        ORDER BY created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, $storeId);
+    $stmt->bindValue(2, $storeId);
+    $stmt->bindValue(3, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(4, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function product_count_available_by_store($storeId)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('
+        SELECT COUNT(*) FROM products
+        WHERE (store_id = ? OR store_id = (SELECT owner_id FROM stores WHERE id = ?))
+        AND is_available = 1
+    ');
+    $stmt->execute([$storeId, $storeId]);
+    return (int) $stmt->fetchColumn();
+}
+
 /* Return all available products across all stores with store info. */
 
 function product_get_all_available()

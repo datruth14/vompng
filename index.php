@@ -281,14 +281,17 @@ if ($method === 'GET') {
 
         case count($segments) === 2 && $segments[0] === 'store':
             $storeSlug = $segments[1];
-            $storeBundle = store_get_with_products($storeSlug);
-            if (!$storeBundle) {
+            $store = store_get_by_slug($storeSlug);
+            if (!$store) {
                 http_response_code(404);
                 $content = '<div class="text-center py-12"><h2 class="text-2xl font-bold">Store not found</h2></div>';
                 break;
             }
-            $store = $storeBundle['store'];
-            $products = $storeBundle['products'];
+            $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
+            $perPage = 12;
+            $products = product_get_available_products_by_store_paginated($store['id'], $page, $perPage);
+            $totalProducts = product_count_available_by_store($store['id']);
+            $totalPages = max(1, (int) ceil($totalProducts / $perPage));
             include 'frontend/storefront.php';
             break;
 
