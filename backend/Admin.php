@@ -52,7 +52,7 @@ function admin_get_stores_paginated($page = 1, $perPage = 20)
                (SELECT COUNT(*) FROM products p WHERE p.store_id = s.id OR p.store_id = s.owner_id) AS product_count
         FROM stores s
         LEFT JOIN users u ON s.owner_id = u.id
-        ORDER BY s.created_at DESC
+        ORDER BY product_count DESC
         LIMIT ? OFFSET ?
     ');
     $stmt->bindValue(1, (int) $perPage, PDO::PARAM_INT);
@@ -77,7 +77,7 @@ function admin_search_stores_paginated($query, $page = 1, $perPage = 20)
         FROM stores s
         LEFT JOIN users u ON s.owner_id = u.id
         WHERE s.name LIKE ? OR s.slug LIKE ? OR u.name LIKE ? OR u.email LIKE ?
-        ORDER BY s.created_at DESC
+        ORDER BY product_count DESC
         LIMIT ? OFFSET ?
     ');
     $stmt->bindValue(1, $like);
