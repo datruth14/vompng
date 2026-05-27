@@ -357,10 +357,16 @@ if ($method === 'GET') {
                     break;
 
                 case 'admin/orders':
+                    $searchQuery = isset($_GET['q']) && $_GET['q'] !== '' ? trim($_GET['q']) : null;
                     $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
                     $perPage = 30;
-                    $transactions = admin_get_transactions_paginated($page, $perPage);
-                    $totalPages = max(1, (int) ceil(admin_count_transactions_total() / $perPage));
+                    if ($searchQuery) {
+                        $transactions = admin_search_transactions_paginated($searchQuery, $page, $perPage);
+                        $totalPages = max(1, (int) ceil(admin_count_search_transactions($searchQuery) / $perPage));
+                    } else {
+                        $transactions = admin_get_transactions_paginated($page, $perPage);
+                        $totalPages = max(1, (int) ceil(admin_count_transactions_total() / $perPage));
+                    }
                     include 'frontend/admin/orders.php';
                     break;
 

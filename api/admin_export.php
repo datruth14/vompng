@@ -103,5 +103,30 @@ if ($type === 'products') {
     exit;
 }
 
+if ($type === 'transactions') {
+    $rows = db_fetch_all('
+        SELECT t.type, t.amount, t.description, s.name AS store_name, t.created_at
+        FROM token_transactions t
+        JOIN stores s ON t.store_id = s.id
+        ORDER BY t.created_at DESC
+    ');
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="transactions_export_' . date('Y-m-d') . '.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['Type', 'Amount', 'Description', 'Store', 'Date']);
+    foreach ($rows as $r) {
+        fputcsv($out, [
+            $r['type'],
+            ($r['type'] === 'credit' ? '+' : '-') . abs((int) $r['amount']),
+            $r['description'] ?? '',
+            $r['store_name'] ?? '',
+            $r['created_at'],
+        ]);
+    }
+    fclose($out);
+    exit;
+}
+
 http_response_code(400);
 echo 'Invalid export type';

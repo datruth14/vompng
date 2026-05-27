@@ -211,3 +211,38 @@ function admin_count_transactions_total()
 {
     return (int) db_get_connection()->query('SELECT COUNT(*) FROM token_transactions')->fetchColumn();
 }
+
+function admin_search_transactions_paginated($query, $page = 1, $perPage = 30)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT t.*, s.name AS store_name, s.slug AS store_slug
+        FROM token_transactions t
+        JOIN stores s ON t.store_id = s.id
+        WHERE s.name LIKE ? OR t.type LIKE ? OR t.description LIKE ?
+        ORDER BY t.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, $like);
+    $stmt->bindValue(2, $like);
+    $stmt->bindValue(3, $like);
+    $stmt->bindValue(4, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(5, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function admin_count_search_transactions($query)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $stmt = $db->prepare('
+        SELECT COUNT(*) FROM token_transactions t
+        JOIN stores s ON t.store_id = s.id
+        WHERE s.name LIKE ? OR t.type LIKE ? OR t.description LIKE ?
+    ');
+    $stmt->execute([$like, $like, $like]);
+    return (int) $stmt->fetchColumn();
+}
