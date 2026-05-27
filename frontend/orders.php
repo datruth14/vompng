@@ -34,7 +34,7 @@ ob_start();
                             <div>
                                 <h2 class="text-xl font-black text-white"><?php echo htmlspecialchars($s['name']); ?></h2>
                                 <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                                    <?php echo $availableCount; ?> active products · <?php echo (int)($currentUser['token_balance'] ?? 0); ?> Vomp Coins
+                                    <?php echo $availableCount; ?> active products · <?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coins
                                 </p>
                             </div>
                         </div>

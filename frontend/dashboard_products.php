@@ -20,11 +20,11 @@ ob_start();
                     <?php if ((int) ($currentUser['token_balance'] ?? 0) <= 0): ?>
                         No Vomp Coins &mdash; <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up to add products</a>
                     <?php else: ?>
-                        Only <?php echo (int) ($currentUser['token_balance'] ?? 0); ?> Vomp Coin<?php echo (int) ($currentUser['token_balance'] ?? 0) !== 1 ? 's' : ''; ?> left &mdash; need 10 to publish. <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up</a>
+                        Only <?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coin<?php echo (int) ($currentUser['token_balance'] ?? 0) !== 1 ? 's' : ''; ?> left &mdash; need 10 to publish. <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="underline">Top up</a>
                     <?php endif; ?>
                 </div>
             <?php else: ?>
-                <span class="text-xs text-gray-500 font-bold"><?php echo (int) ($currentUser['token_balance'] ?? 0); ?> Vomp Coins remaining &bull; 10 Vomp Coins per product</span>
+                <span class="text-xs text-gray-500 font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coins remaining &bull; 10 Vomp Coins per product</span>
             <?php endif; ?>
             <button onclick="toggleAddForm()" <?php echo (int) ($currentUser['token_balance'] ?? 0) < 10 ? 'disabled title="Need at least 10 Vomp Coins"' : ''; ?> class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all disabled:opacity-40 disabled:cursor-not-allowed">Add New Product</button>
         </div>

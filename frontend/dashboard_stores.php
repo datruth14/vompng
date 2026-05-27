@@ -34,7 +34,7 @@ ob_start();
                             </div>
                             <div class="flex gap-4 mt-2 text-xs text-gray-500 font-bold">
                                 <span><?php echo $productCount; ?> product<?php echo $productCount !== 1 ? 's' : ''; ?></span>
-                                <span><?php echo (int) ($currentUser['token_balance'] ?? 0); ?> Vomp Coins</span>
+                                <span><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coins</span>
                             </div>
                         </div>
                     </div>
