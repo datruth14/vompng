@@ -313,10 +313,16 @@ if ($method === 'GET') {
                     break;
 
                 case 'admin/users':
+                    $searchQuery = isset($_GET['q']) && $_GET['q'] !== '' ? trim($_GET['q']) : null;
                     $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
                     $perPage = 20;
-                    $users = admin_get_users_paginated($page, $perPage);
-                    $totalPages = max(1, (int) ceil(admin_count_users_total() / $perPage));
+                    if ($searchQuery) {
+                        $users = admin_search_users_paginated($searchQuery, $page, $perPage);
+                        $totalPages = max(1, (int) ceil(admin_count_search_users($searchQuery) / $perPage));
+                    } else {
+                        $users = admin_get_users_paginated($page, $perPage);
+                        $totalPages = max(1, (int) ceil(admin_count_users_total() / $perPage));
+                    }
                     include 'frontend/admin/users.php';
                     break;
 

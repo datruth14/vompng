@@ -43,6 +43,36 @@ function admin_count_users_total()
     return (int) db_get_connection()->query('SELECT COUNT(*) FROM users')->fetchColumn();
 }
 
+function admin_search_users_paginated($query, $page = 1, $perPage = 20)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT u.*, (SELECT COUNT(*) FROM stores WHERE owner_id = u.id) AS store_count
+        FROM users u
+        WHERE u.name LIKE ? OR u.email LIKE ? OR u.phone LIKE ?
+        ORDER BY u.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, $like);
+    $stmt->bindValue(2, $like);
+    $stmt->bindValue(3, $like);
+    $stmt->bindValue(4, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(5, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function admin_count_search_users($query)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $stmt = $db->prepare('SELECT COUNT(*) FROM users WHERE name LIKE ? OR email LIKE ? OR phone LIKE ?');
+    $stmt->execute([$like, $like, $like]);
+    return (int) $stmt->fetchColumn();
+}
+
 function admin_get_stores_paginated($page = 1, $perPage = 20)
 {
     $db = db_get_connection();
