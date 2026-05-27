@@ -44,8 +44,7 @@ function product_get_all_available()
     $stmt = $db->query('
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
-        JOIN stores s ON p.store_id = s.id
-        WHERE p.is_available = 1 AND s.is_active = 1
+        LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
         ORDER BY p.created_at DESC
     ');
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -58,8 +57,7 @@ function product_get_all_available_paginated($page = 1, $perPage = 50)
     $stmt = $db->prepare('
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
-        JOIN stores s ON p.store_id = s.id
-        WHERE p.is_available = 1 AND s.is_active = 1
+        LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
     ');
@@ -72,7 +70,7 @@ function product_get_all_available_paginated($page = 1, $perPage = 50)
 function product_count_all_available()
 {
     $db = db_get_connection();
-    return (int) $db->query('SELECT COUNT(*) FROM products p JOIN stores s ON p.store_id = s.id WHERE p.is_available = 1 AND s.is_active = 1')->fetchColumn();
+    return (int) $db->query('SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id')->fetchColumn();
 }
 
 function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
@@ -82,8 +80,8 @@ function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
     $stmt = $db->prepare('
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
-        JOIN stores s ON p.store_id = s.id
-        WHERE p.is_available = 1 AND s.is_active = 1 AND p.category = ?
+        LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE p.category = ?
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
     ');
@@ -97,7 +95,7 @@ function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
 function product_count_by_category($category)
 {
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT COUNT(*) FROM products p JOIN stores s ON p.store_id = s.id WHERE p.is_available = 1 AND s.is_active = 1 AND p.category = ?');
+    $stmt = $db->prepare('SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id WHERE p.category = ?');
     $stmt->execute([$category]);
     return (int) $stmt->fetchColumn();
 }
@@ -110,9 +108,8 @@ function product_search_paginated($query, $page = 1, $perPage = 50)
     $stmt = $db->prepare('
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
-        JOIN stores s ON p.store_id = s.id
-        WHERE p.is_available = 1 AND s.is_active = 1
-        AND (p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?)
+        LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?
         ORDER BY p.created_at DESC
         LIMIT ? OFFSET ?
     ');
@@ -129,12 +126,12 @@ function product_count_search($query)
 {
     $db = db_get_connection();
     $like = '%' . $query . '%';
-    $stmt = $db->prepare('SELECT COUNT(*) FROM products p JOIN stores s ON p.store_id = s.id WHERE p.is_available = 1 AND s.is_active = 1 AND (p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?)');
+    $stmt = $db->prepare('SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id WHERE p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?');
     $stmt->execute([$like, $like, $like]);
     return (int) $stmt->fetchColumn();
 }
 
-/* Return available products filtered by category. */
+/* Return products filtered by category. */
 
 function product_get_by_category($category)
 {
@@ -142,15 +139,15 @@ function product_get_by_category($category)
     $stmt = $db->prepare('
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
-        JOIN stores s ON p.store_id = s.id
-        WHERE p.is_available = 1 AND s.is_active = 1 AND p.category = ?
+        LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE p.category = ?
         ORDER BY p.created_at DESC
     ');
     $stmt->execute([$category]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-/* Search available products by name, description, or store name. */
+/* Search products by name, description, or store name. */
 
 function product_search($query)
 {
@@ -159,9 +156,8 @@ function product_search($query)
     $stmt = $db->prepare('
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
-        JOIN stores s ON p.store_id = s.id
-        WHERE p.is_available = 1 AND s.is_active = 1
-        AND (p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?)
+        LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?
         ORDER BY p.created_at DESC
     ');
     $stmt->execute([$like, $like, $like]);
