@@ -66,6 +66,43 @@ function admin_count_stores_total()
     return (int) db_get_connection()->query('SELECT COUNT(*) FROM stores')->fetchColumn();
 }
 
+function admin_search_stores_paginated($query, $page = 1, $perPage = 20)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT s.*, u.name AS owner_name, u.email AS owner_email,
+               (SELECT COUNT(*) FROM products p WHERE p.store_id = s.id OR p.store_id = s.owner_id) AS product_count
+        FROM stores s
+        LEFT JOIN users u ON s.owner_id = u.id
+        WHERE s.name LIKE ? OR s.slug LIKE ? OR u.name LIKE ? OR u.email LIKE ?
+        ORDER BY s.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, $like);
+    $stmt->bindValue(2, $like);
+    $stmt->bindValue(3, $like);
+    $stmt->bindValue(4, $like);
+    $stmt->bindValue(5, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(6, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function admin_count_search_stores($query)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $stmt = $db->prepare('
+        SELECT COUNT(*) FROM stores s
+        LEFT JOIN users u ON s.owner_id = u.id
+        WHERE s.name LIKE ? OR s.slug LIKE ? OR u.name LIKE ? OR u.email LIKE ?
+    ');
+    $stmt->execute([$like, $like, $like, $like]);
+    return (int) $stmt->fetchColumn();
+}
+
 function admin_get_products_paginated($page = 1, $perPage = 20)
 {
     $db = db_get_connection();

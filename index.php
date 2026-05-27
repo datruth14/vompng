@@ -323,10 +323,16 @@ if ($method === 'GET') {
                 case 'admin/stores':
                     $success = $_GET['success'] ?? null;
                     $error = $_GET['error'] ?? null;
+                    $searchQuery = isset($_GET['q']) && $_GET['q'] !== '' ? trim($_GET['q']) : null;
                     $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
                     $perPage = 20;
-                    $stores = admin_get_stores_paginated($page, $perPage);
-                    $totalPages = max(1, (int) ceil(admin_count_stores_total() / $perPage));
+                    if ($searchQuery) {
+                        $stores = admin_search_stores_paginated($searchQuery, $page, $perPage);
+                        $totalPages = max(1, (int) ceil(admin_count_search_stores($searchQuery) / $perPage));
+                    } else {
+                        $stores = admin_get_stores_paginated($page, $perPage);
+                        $totalPages = max(1, (int) ceil(admin_count_stores_total() / $perPage));
+                    }
                     include 'frontend/admin/stores.php';
                     break;
 
