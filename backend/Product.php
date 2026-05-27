@@ -12,14 +12,15 @@ require_once __DIR__ . '/Database.php';
 function product_get_products_by_store($storeId)
 {
     $db = db_get_connection();
-    $ownerId = store_owner_id($storeId);
+    $store = db_fetch('SELECT id, owner_id FROM stores WHERE id = ?', [$storeId]);
+    if (!$store) return [];
 
     $stmt = $db->prepare('
         SELECT p.* FROM products p
         WHERE p.store_id = ? OR p.store_id = ?
         ORDER BY p.created_at DESC
     ');
-    $stmt->execute([$storeId, $ownerId]);
+    $stmt->execute([$store['id'], $store['owner_id']]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
@@ -288,7 +289,13 @@ function product_delete($productId)
 function product_get_by_user_id($userId)
 {
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT p.*, s.name AS store_name, s.slug AS store_slug FROM products p JOIN stores s ON p.store_id = s.id WHERE s.owner_id = ? ORDER BY p.created_at DESC');
+    $stmt = $db->prepare('
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug
+        FROM products p
+        JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE s.owner_id = ?
+        ORDER BY p.created_at DESC
+    ');
     $stmt->execute([$userId]);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
@@ -297,7 +304,14 @@ function product_get_by_user_id_paginated($userId, $page = 1, $perPage = 50)
 {
     $db = db_get_connection();
     $offset = max(0, ($page - 1) * $perPage);
-    $stmt = $db->prepare('SELECT p.*, s.name AS store_name, s.slug AS store_slug FROM products p JOIN stores s ON p.store_id = s.id WHERE s.owner_id = ? ORDER BY p.created_at DESC LIMIT ? OFFSET ?');
+    $stmt = $db->prepare('
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug
+        FROM products p
+        JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE s.owner_id = ?
+        ORDER BY p.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
     $stmt->bindValue(1, $userId);
     $stmt->bindValue(2, (int) $perPage, PDO::PARAM_INT);
     $stmt->bindValue(3, (int) $offset, PDO::PARAM_INT);
@@ -308,7 +322,11 @@ function product_get_by_user_id_paginated($userId, $page = 1, $perPage = 50)
 function product_count_by_user_id($userId)
 {
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT COUNT(*) FROM products p JOIN stores s ON p.store_id = s.id WHERE s.owner_id = ?');
+    $stmt = $db->prepare('
+        SELECT COUNT(*) FROM products p
+        JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE s.owner_id = ?
+    ');
     $stmt->execute([$userId]);
     return (int) $stmt->fetchColumn();
 }
