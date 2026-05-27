@@ -7,10 +7,16 @@ $pageTitle = htmlspecialchars($store['name']) . ' - Storefront';
 ob_start();
 ?>
 <section class="py-8 space-y-10">
+    <?php
+    $heroUrl = $store['hero_image_url'] ?? '';
+    if ($heroUrl && $heroUrl[0] !== '/') {
+        $heroUrl = '/' . $heroUrl;
+    }
+    ?>
     <header class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10 overflow-hidden relative min-h-[260px] flex items-center">
         <?php if (!empty($store['hero_image_url'])): ?>
             <div class="absolute inset-0 skeleton-box overflow-hidden">
-                <img src="<?php echo htmlspecialchars($store['hero_image_url']); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
+                <img src="<?php echo htmlspecialchars($heroUrl); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
             </div>
             <div class="absolute inset-0 bg-gradient-to-t from-gray-950 via-gray-950/70 to-transparent" style="z-index: 10;"></div>
         <?php else: ?>
@@ -29,11 +35,16 @@ ob_start();
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <?php foreach ($products as $product): ?>
+        <?php foreach ($products as $product):
+            $pImgUrl = $product['media_url'] ?? '';
+            if ($pImgUrl && $pImgUrl[0] !== '/') {
+                $pImgUrl = '/' . $pImgUrl;
+            }
+        ?>
             <article class="glass-morphism rounded-3xl p-5 border border-white/10 flex flex-col gap-4">
                 <div class="h-52 rounded-2xl overflow-hidden skeleton-box border border-white/5">
                     <?php if (!empty($product['media_url'])): ?>
-                        <img src="<?php echo htmlspecialchars($product['media_url']); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')">
+                        <img src="<?php echo htmlspecialchars($pImgUrl); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')">
                     <?php else: ?>
                         <div class="w-full h-full flex items-center justify-center text-gray-600">
                             <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">

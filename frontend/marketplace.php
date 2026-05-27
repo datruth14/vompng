@@ -81,7 +81,7 @@ ob_start();
                 <a href="/store/<?php echo htmlspecialchars($p['store_slug']); ?>/<?php echo htmlspecialchars($p['id']); ?>" class="glass-morphism rounded-2xl border border-white/10 overflow-hidden hover:bg-white/[0.03] transition-all group">
                     <div class="aspect-square skeleton-box relative overflow-hidden">
                         <?php if (!empty($p['media_url'])): ?>
-                            <img src="<?php echo htmlspecialchars($p['media_url']); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="img-skeleton w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
+                            <img src="<?php echo htmlspecialchars(img_url($p['media_url'])); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="img-skeleton w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
                         <?php else: ?>
                             <div class="w-full h-full flex items-center justify-center text-gray-600">
                                 <svg class="w-12 h-12" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.41a2.25 2.25 0 013.182 0l2.909 2.91m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" /></svg>
@@ -158,7 +158,7 @@ ob_start();
                     <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="rounded-3xl p-6 border border-white/10 hover:border-[#ff610a]/30 transition-all group block relative overflow-hidden min-h-[200px] <?php echo $hasHero ? '' : 'glass-morphism'; ?>">
                         <?php if ($hasHero): ?>
                         <div class="absolute inset-0 skeleton-box overflow-hidden">
-                            <img src="<?php echo htmlspecialchars($s['hero_image_url']); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
+                            <img src="<?php echo htmlspecialchars(img_url($s['hero_image_url'])); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
                         </div>
                         <?php endif; ?>
                         <div class="absolute inset-0 <?php echo $hasHero ? 'z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent' : 'bg-gradient-to-t from-black/60 via-black/20 to-transparent'; ?>"></div>

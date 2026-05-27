@@ -271,3 +271,11 @@ function db_last_insert_id()
 {
     return db_get_connection()->lastInsertId();
 }
+
+function img_url($url)
+{
+    if ($url && $url[0] !== '/') {
+        return '/' . $url;
+    }
+    return $url;
+}

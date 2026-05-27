@@ -104,7 +104,7 @@ ob_start();
                 </div>
                 <?php if (!empty($store['hero_image_url'])): ?>
                     <div class="w-full rounded-xl overflow-hidden skeleton-box">
-                        <img src="<?php echo htmlspecialchars($store['hero_image_url']); ?>" class="img-skeleton w-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
+                        <img src="<?php echo htmlspecialchars(img_url($store['hero_image_url'])); ?>" class="img-skeleton w-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
                     </div>
                 <?php endif; ?>
                 <p class="text-gray-400 text-sm"><?php echo htmlspecialchars($store['description'] ?? ''); ?></p>

@@ -28,7 +28,7 @@ ob_start();
             <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="rounded-3xl p-6 border border-white/10 hover:border-[#ff610a]/30 transition-all group block relative overflow-hidden min-h-[200px] <?php echo $hasHero ? '' : 'glass-morphism'; ?>">
                 <?php if ($hasHero): ?>
                 <div class="absolute inset-0 skeleton-box overflow-hidden">
-                    <img src="<?php echo htmlspecialchars($s['hero_image_url']); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
+                    <img src="<?php echo htmlspecialchars(img_url($s['hero_image_url'])); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
                 </div>
                 <?php endif; ?>
                 <div class="absolute inset-0 <?php echo $hasHero ? 'z-10 bg-gradient-to-t from-black/80 via-black/40 to-transparent' : 'bg-gradient-to-t from-black/60 via-black/20 to-transparent'; ?>"></div>
