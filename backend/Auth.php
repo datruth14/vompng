@@ -10,7 +10,7 @@ require_once __DIR__ . '/Logger.php';
 
 /* Register a new user and create an associated store. */
 
-function auth_register($name, $email, $password, $storeName, $storeDescription, $contactPhone)
+function auth_register($name, $email, $password, $storeName, $storeDescription, $contactPhone, $phone = '')
 {
     try {
         if (empty($name) || empty($email) || empty($password) || empty($storeName) || empty($contactPhone)) {
@@ -40,14 +40,15 @@ function auth_register($name, $email, $password, $storeName, $storeDescription, 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         $userId = auth_generate_id();
         $storeId = auth_generate_id();
+        $userPhone = $phone ?: $contactPhone;
 
         $db->beginTransaction();
         try {
-            $userStmt = $db->prepare('INSERT INTO users (id, email, password, name, created_at, updated_at) VALUES (?, ?, ?, ?, NOW(), NOW())');
-            $userStmt->execute([$userId, $email, $hashedPassword, $name]);
+            $userStmt = $db->prepare('INSERT INTO users (id, email, password, name, phone, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())');
+            $userStmt->execute([$userId, $email, $hashedPassword, $name, $userPhone]);
 
-            $storeStmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, NOW(), NOW())');
-            $storeStmt->execute([$storeId, $storeName, $slug, $storeDescription, $userId, $phone]);
+            $storeStmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, contact_email, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())');
+            $storeStmt->execute([$storeId, $storeName, $slug, $storeDescription, $userId, $userPhone, $email]);
 
             // Seed the user with 50 free tokens
             $db->exec("UPDATE users SET token_balance = COALESCE(token_balance, 0) + 50 WHERE id = '{$userId}'");
@@ -148,7 +149,7 @@ function auth_logout()
 
 function auth_update_user($userId, $data)
 {
-    $allowed = ['name', 'email'];
+    $allowed = ['name', 'email', 'phone'];
     if (!empty($data['password'])) {
         $allowed[] = 'password';
     }

@@ -21,7 +21,10 @@ ob_start();
                 <input type="email" name="email" id="email" value="<?php echo htmlspecialchars($currentUser['email']); ?>" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors" />
             </div>
 
-            <hr class="border-white/10">
+            <div>
+                <label class="text-sm text-gray-300 font-bold">Phone Number</label>
+                <input type="tel" name="phone" id="phone" value="<?php echo htmlspecialchars($currentUser['phone'] ?? ''); ?>" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors" />
+            </div>
 
             <hr class="border-white/10">
 
@@ -76,6 +79,7 @@ document.getElementById('saveBtn').addEventListener('click', async function() {
     const body = {
         name: document.getElementById('name').value,
         email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
     };
     if (password) {
         if (!currentPassword) {

@@ -155,6 +155,7 @@ function db_init_schema(PDO $db)
         }
     }
 
+    db_ensure_column($db, 'users', 'phone', 'VARCHAR(50)');
     db_ensure_column($db, 'users', 'token_balance', 'INT DEFAULT 0');
     db_ensure_column($db, 'users', 'plan', "VARCHAR(20) DEFAULT 'free'");
 

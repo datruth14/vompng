@@ -16,7 +16,8 @@ $result = auth_register(
     $input['password'] ?? '',
     $input['storeName'] ?? '',
     $input['storeDescription'] ?? '',
-    $input['contactPhone'] ?? ''
+    $input['contactPhone'] ?? '',
+    $input['phone'] ?? ''
 );
 
 $accept = $_SERVER['HTTP_ACCEPT'] ?? '';

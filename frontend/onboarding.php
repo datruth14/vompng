@@ -31,6 +31,9 @@ ob_start();
                     <label class="field-label mt-5">Email Address</label>
                     <input id="email" type="email" name="email" class="field-input" placeholder="you@example.com" required>
 
+                    <label class="field-label mt-5">Phone Number</label>
+                    <input id="phone" type="tel" name="phone" class="field-input" placeholder="+234..." required>
+
                     <label class="field-label mt-5">Password</label>
                     <input id="password" type="password" name="password" class="field-input" placeholder="••••••••" required>
 
@@ -56,7 +59,7 @@ ob_start();
                     <textarea id="storeDescription" name="storeDescription" rows="3" class="field-input" placeholder="Describe your magic..."></textarea>
 
                     <label class="field-label mt-5">WhatsApp Number</label>
-                    <input id="contactPhone" name="contactPhone" class="field-input" placeholder="+234..." required>
+                    <input id="contactPhone" name="contactPhone" class="field-input" placeholder="+234..." readonly required>
 
                     <div class="mt-8 flex items-center justify-between gap-4">
                         <button type="button" id="back-2" class="btn-secondary px-8 py-3 rounded-2xl">Back</button>
@@ -125,11 +128,15 @@ ob_start();
   document.getElementById('next-1').addEventListener('click', () => {
     const name = document.getElementById('name').value.trim();
     const email = document.getElementById('email').value.trim();
+    const phone = document.getElementById('phone').value.trim();
     const password = document.getElementById('password').value;
     if (!name) return setError('Please enter your full name');
     if (!email.includes('@')) return setError('Please enter a valid email');
+    if (!phone) return setError('Please enter your phone number');
     if (password.length < 6) return setError('Password must be at least 6 characters');
     setError('');
+    // Auto-fill WhatsApp number from phone
+    document.getElementById('contactPhone').value = phone;
     setStep(2);
   });
 
@@ -139,6 +146,7 @@ ob_start();
     const payload = {
       name: document.getElementById('name').value.trim(),
       email: document.getElementById('email').value.trim(),
+      phone: document.getElementById('phone').value.trim(),
       password: document.getElementById('password').value,
       storeName: document.getElementById('storeName').value.trim(),
       storeDescription: document.getElementById('storeDescription').value.trim(),

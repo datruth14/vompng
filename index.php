@@ -183,7 +183,7 @@ if ($method === 'GET') {
                 header('Location: /dashboard');
                 exit;
             }
-            $defaultPhone = $userStores ? $userStores[0]['contact_phone'] : '';
+            $defaultPhone = $userStores ? $userStores[0]['contact_phone'] : ($currentUser['phone'] ?? '');
             $defaultEmail = $userStores ? $userStores[0]['contact_email'] : $currentUser['email'];
             include 'frontend/create_store.php';
             break;

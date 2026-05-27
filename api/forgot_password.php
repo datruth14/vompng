@@ -11,20 +11,26 @@ if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 $db = db_get_connection();
 
-$user = db_fetch('SELECT id, name, email FROM users WHERE email = ?', [$email]);
+$user = db_fetch('SELECT id, name, email, phone FROM users WHERE email = ?', [$email]);
 if (!$user) {
     header('Location: /forgot-password?error=' . urlencode('No account found with that email.'));
     exit;
 }
 
-// Get user's store phone number
-$store = db_fetch('SELECT contact_phone FROM stores WHERE owner_id = ? AND contact_phone IS NOT NULL AND contact_phone != "" LIMIT 1', [$user['id']]);
-$phone = $store ? preg_replace('/[^0-9]/', '', $store['contact_phone']) : '';
+// Get user's phone number
+$phone = $user['phone'] ?? '';
+if (empty($phone)) {
+    // Fallback: check store contact_phone
+    $store = db_fetch('SELECT contact_phone FROM stores WHERE owner_id = ? AND contact_phone IS NOT NULL AND contact_phone != "" LIMIT 1', [$user['id']]);
+    $phone = $store ? ($store['contact_phone'] ?? '') : '';
+}
 
 if (empty($phone)) {
-    header('Location: /forgot-password?error=' . urlencode('No phone number found on your store. Set a contact phone in store settings first.'));
+    header('Location: /forgot-password?error=' . urlencode('No phone number on your account. Set it in your profile settings first.'));
     exit;
 }
+
+$phone = preg_replace('/[^0-9]/', '', $phone);
 
 // Format phone for WhatsApp (remove leading 0 or +234)
 if (str_starts_with($phone, '0')) {
