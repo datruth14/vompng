@@ -10,7 +10,7 @@ ob_start();
 <!-- Hero Section -->
 <section class="py-12 md:py-20">
     <div class="max-w-4xl mx-auto text-center mb-14">
-        <h1 class="text-5xl md:text-7xl font-black tracking-tight text-white mb-4">Sell Smarter With <span class="text-gradient">vomp</span></h1>
+        <h1 class="text-5xl md:text-7xl font-black tracking-tight text-white mb-4">Sell Smarter With <span class="text-gradient">VOMP</span></h1>
         <p class="text-gray-400 text-lg md:text-xl font-medium">Create your online store in minutes, list products with zero upfront cost, and receive orders directly via WhatsApp. No technical skills required.</p>
         <div class="mt-10 flex flex-wrap justify-center gap-4">
             <?php if (!empty($currentUser)): ?>
