@@ -11,7 +11,7 @@ function mailer_send_otp($email, $name, $otp)
     $port = getenv('SMTP_PORT') ?: $_ENV['SMTP_PORT'] ?? '587';
     $user = getenv('SMTP_USER') ?: $_ENV['SMTP_USER'] ?? '';
     $pass = getenv('SMTP_PASS') ?: $_ENV['SMTP_PASS'] ?? '';
-    $from = getenv('SMTP_FROM') ?: $_ENV['SMTP_FROM'] ?? 'noreply@vomp.ng';
+    $from = getenv('SMTP_FROM') ?: $_ENV['SMTP_FROM'] ?? '_maintenance@vomp.ng';
     $fromName = getenv('SMTP_FROM_NAME') ?: $_ENV['SMTP_FROM_NAME'] ?? 'vomp';
 
     if (empty($host) || empty($user) || empty($pass)) {
