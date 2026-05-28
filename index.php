@@ -126,8 +126,8 @@ if ($method === 'GET') {
                 $stores = store_search_paginated($searchQuery, $page, $perPage);
                 $totalStores = store_count_search($searchQuery);
             } else {
-                $stores = store_get_all_active_paginated($page, $perPage);
-                $totalStores = store_count_all_active();
+                $stores = store_get_top_active_paginated($page, $perPage);
+                $totalStores = store_count_top_active();
             }
             $totalPages = max(1, (int) ceil($totalStores / $perPage));
             include 'frontend/stores.php';
@@ -135,7 +135,7 @@ if ($method === 'GET') {
 
         case $requestPath === 'marketplace':
             $searchQuery = isset($_GET['q']) && $_GET['q'] !== '' ? trim($_GET['q']) : null;
-            $stores = store_get_all_active_paginated(1, 6);
+            $stores = store_get_top_active_paginated(1, 6);
             $categories = product_get_categories();
             $activeCategory = isset($_GET['category']) && $_GET['category'] !== '' ? $_GET['category'] : null;
 

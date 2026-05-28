@@ -100,6 +100,30 @@ function store_count_all_active()
     return (int) $db->query('SELECT COUNT(*) FROM stores WHERE is_active = 1')->fetchColumn();
 }
 
+function store_get_top_active_paginated($page = 1, $perPage = 50)
+{
+    $db = db_get_connection();
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT s.*,
+            (SELECT COUNT(*) FROM products p WHERE p.store_id = s.id OR p.store_id = s.owner_id) AS product_count
+        FROM stores s
+        WHERE s.is_active = 1
+        ORDER BY product_count DESC, s.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(2, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function store_count_top_active()
+{
+    $db = db_get_connection();
+    return (int) $db->query('SELECT COUNT(*) FROM stores WHERE is_active = 1')->fetchColumn();
+}
+
 function store_search_paginated($query, $page = 1, $perPage = 50)
 {
     $db = db_get_connection();
