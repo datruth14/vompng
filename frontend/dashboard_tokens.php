@@ -95,14 +95,26 @@ ob_start();
                     </div>
                     <div class="border-t border-white/10 pt-6 space-y-6">
                         <div class="w-full">
+                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
+                            <select id="withdrawBank" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black appearance-none">
+                                <option value="" class="bg-gray-900 text-gray-500">Select your bank...</option>
+                            </select>
+                            <div id="withdrawBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
+                        </div>
+                        <div class="w-full">
                             <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Number</label>
-                            <input type="text" id="withdrawAccount" maxlength="10" placeholder="Enter 10-digit account number" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black" autocomplete="off">
+                            <div class="flex gap-3 items-end">
+                                <div class="flex-1">
+                                    <input type="text" id="withdrawAccount" maxlength="10" placeholder="0123456789" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black" autocomplete="off">
+                                </div>
+                                <button id="withdrawVerifyBtn" class="px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm hover:bg-[#e05500] transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>Verify</button>
+                            </div>
+                            <div id="withdrawResolving" class="hidden mt-3 text-center py-3">
+                                <div class="inline-block w-5 h-5 border-2 border-[#ff610a] border-t-transparent rounded-full animate-spin"></div>
+                                <p class="text-gray-400 text-xs mt-2 font-medium">Verifying account...</p>
+                            </div>
+                            <div id="withdrawAccountName" class="hidden mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold"></div>
                         </div>
-                        <div id="withdrawResolving" class="hidden text-center py-4">
-                            <div class="inline-block w-6 h-6 border-2 border-[#ff610a] border-t-transparent rounded-full animate-spin"></div>
-                            <p class="text-gray-400 text-sm mt-2 font-medium">Checking all banks...</p>
-                        </div>
-                        <div id="withdrawResults" class="hidden space-y-2"></div>
                         <input type="hidden" id="withdrawBankCode" value="">
                         <p class="text-xs text-gray-500 ml-1">Your balance: <span id="withdrawBalance" class="text-white font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></span> Vomp Coins</p>
                     </div>
@@ -303,60 +315,90 @@ if (transferBtn) {
     });
 }
 
-let withdrawSelectedBankCode = '';
-let withdrawSelectedBankName = '';
-let withdrawSelectedAccountName = '';
+let withdrawBankCode = '';
+let withdrawBankName = '';
+let withdrawAccountName = '';
+
+// Load banks into dropdown
+fetch('/api/list_banks.php')
+    .then(r => r.json())
+    .then(data => {
+        const select = document.getElementById('withdrawBank');
+        document.getElementById('withdrawBankLoading').classList.add('hidden');
+        if (data.success && data.banks.length > 0) {
+            data.banks.sort((a, b) => a.name.localeCompare(b.name));
+            data.banks.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b.code;
+                opt.textContent = b.name;
+                select.appendChild(opt);
+            });
+        }
+    })
+    .catch(() => {
+        document.getElementById('withdrawBankLoading').textContent = 'Failed to load banks';
+    });
+
+// Enable verify button when bank + account are filled
+function checkVerifyReady() {
+    const bank = document.getElementById('withdrawBank').value;
+    const acct = document.getElementById('withdrawAccount').value.replace(/\D/g, '');
+    document.getElementById('withdrawVerifyBtn').disabled = !(bank && acct.length === 10);
+}
+
+document.getElementById('withdrawBank').addEventListener('change', function () {
+    withdrawBankCode = this.value;
+    withdrawBankName = this.options[this.selectedIndex]?.text || '';
+    document.getElementById('withdrawAccountName').classList.add('hidden');
+    document.getElementById('withdrawBtn').classList.add('hidden');
+    checkVerifyReady();
+});
 
 document.getElementById('withdrawAccount').addEventListener('input', function () {
     const num = this.value.replace(/\D/g, '').slice(0, 10);
     this.value = num;
-    document.getElementById('withdrawResults').classList.add('hidden');
+    document.getElementById('withdrawAccountName').classList.add('hidden');
     document.getElementById('withdrawBtn').classList.add('hidden');
-    withdrawSelectedBankCode = '';
-    withdrawSelectedBankName = '';
-    withdrawSelectedAccountName = '';
+    checkVerifyReady();
+});
 
-    if (num.length === 10) {
-        const resolving = document.getElementById('withdrawResolving');
-        const results = document.getElementById('withdrawResults');
-        resolving.classList.remove('hidden');
-        results.classList.add('hidden');
+// Verify account
+document.getElementById('withdrawVerifyBtn').addEventListener('click', async function () {
+    const bankCode = document.getElementById('withdrawBank').value;
+    const acct = document.getElementById('withdrawAccount').value.replace(/\D/g, '');
+    if (!bankCode || acct.length !== 10) return;
 
-        fetch('/api/resolve_account.php', {
+    const resolving = document.getElementById('withdrawResolving');
+    const nameEl = document.getElementById('withdrawAccountName');
+    resolving.classList.remove('hidden');
+    nameEl.classList.add('hidden');
+    document.getElementById('withdrawBtn').classList.add('hidden');
+
+    try {
+        const res = await fetch('/api/resolve_account.php', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ account_number: num })
-        })
-        .then(r => r.json())
-        .then(data => {
-            resolving.classList.add('hidden');
-            if (data.success && data.results.length > 0) {
-                results.innerHTML = '<p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-3 ml-1">Select your bank</p>';
-                data.results.forEach(r => {
-                    const div = document.createElement('div');
-                    div.className = 'p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#ff610a]/30 cursor-pointer transition-all';
-                    div.innerHTML = '<p class="text-white font-black">' + r.bank_name + '</p><p class="text-gray-400 text-sm mt-1">' + r.account_name + '</p>';
-                    div.addEventListener('click', function () {
-                        document.querySelectorAll('#withdrawResults > div:not(:first-child)').forEach(el => el.className = 'p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer transition-all');
-                        this.className = 'p-4 rounded-xl bg-[#ff610a]/10 border border-[#ff610a]/40 cursor-pointer transition-all';
-                        withdrawSelectedBankCode = r.bank_code;
-                        withdrawSelectedBankName = r.bank_name;
-                        withdrawSelectedAccountName = r.account_name;
-                        document.getElementById('withdrawBtn').classList.remove('hidden');
-                    });
-                    results.appendChild(div);
-                });
-                results.classList.remove('hidden');
-            } else {
-                results.innerHTML = '<div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-medium">No bank account found with this number across any Nigerian bank</div>';
-                results.classList.remove('hidden');
-            }
-        })
-        .catch(() => {
-            resolving.classList.add('hidden');
-            document.getElementById('withdrawResults').innerHTML = '<div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-medium">Network error. Please try again.</div>';
-            document.getElementById('withdrawResults').classList.remove('hidden');
+            body: JSON.stringify({ account_number: acct, bank_code: bankCode })
         });
+        const data = await res.json();
+        resolving.classList.add('hidden');
+        if (data.success && data.results.length > 0) {
+            const r = data.results[0];
+            withdrawAccountName = r.account_name;
+            nameEl.textContent = '✓ ' + r.account_name;
+            nameEl.className = 'mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold';
+            nameEl.classList.remove('hidden');
+            document.getElementById('withdrawBtn').classList.remove('hidden');
+        } else {
+            nameEl.textContent = '✗ Account not found for this bank';
+            nameEl.className = 'mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
+            nameEl.classList.remove('hidden');
+        }
+    } catch (err) {
+        resolving.classList.add('hidden');
+        document.getElementById('withdrawAccountName').textContent = 'Network error. Try again.';
+        document.getElementById('withdrawAccountName').className = 'mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
+        document.getElementById('withdrawAccountName').classList.remove('hidden');
     }
 });
 

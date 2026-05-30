@@ -15,6 +15,7 @@ if (!$currentUser) {
 
 $data = json_decode(file_get_contents('php://input'), true);
 $accountNumber = trim($data['account_number'] ?? '');
+$bankCode = trim($data['bank_code'] ?? '');
 
 if (!preg_match('/^\d{10}$/', $accountNumber)) {
     http_response_code(400);
@@ -22,23 +23,41 @@ if (!preg_match('/^\d{10}$/', $accountNumber)) {
     exit;
 }
 
-$banks = paystack_list_banks();
 $results = [];
 
-// Try resolving against all banks
-foreach ($banks as $bank) {
-    $code = $bank['code'] ?? '';
-    $name = $bank['name'] ?? '';
-    if (!$code || !$name) continue;
-
-    $resolved = paystack_resolve_account($accountNumber, $code);
+if ($bankCode) {
+    // Resolve for a specific bank only
+    $resolved = paystack_resolve_account($accountNumber, $bankCode);
     if ($resolved !== null) {
+        $banks = paystack_list_banks();
+        $bankName = '';
+        foreach ($banks as $b) {
+            if ($b['code'] === $bankCode) { $bankName = $b['name']; break; }
+        }
         $results[] = [
-            'bank_code' => $code,
-            'bank_name' => $name,
+            'bank_code' => $bankCode,
+            'bank_name' => $bankName,
             'account_number' => $resolved['account_number'],
             'account_name' => $resolved['account_name'],
         ];
+    }
+} else {
+    // Legacy: resolve against all banks
+    $banks = paystack_list_banks();
+    foreach ($banks as $bank) {
+        $code = $bank['code'] ?? '';
+        $name = $bank['name'] ?? '';
+        if (!$code || !$name) continue;
+
+        $resolved = paystack_resolve_account($accountNumber, $code);
+        if ($resolved !== null) {
+            $results[] = [
+                'bank_code' => $code,
+                'bank_name' => $name,
+                'account_number' => $resolved['account_number'],
+                'account_name' => $resolved['account_name'],
+            ];
+        }
     }
 }
 
