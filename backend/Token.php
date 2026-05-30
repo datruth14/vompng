@@ -273,7 +273,7 @@ function token_transfer($fromUserId, $toEmail, $amount)
     }
 
     // Check sender balance
-    $senderStmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
+    $senderStmt = $db->prepare('SELECT id, name, email, token_balance FROM users WHERE id = ?');
     $senderStmt->execute([$fromUserId]);
     $sender = $senderStmt->fetch(PDO::FETCH_ASSOC);
     if (!$sender) {
@@ -314,7 +314,7 @@ function token_transfer($fromUserId, $toEmail, $amount)
             bin2hex(random_bytes(12)),
             $recipient['id'],
             $amount,
-            "Received {$amount} Vomp Coins from transfer",
+            "Received {$amount} Vomp Coins from {$sender['name']} ({$sender['email']})",
         ]);
 
         $db->commit();
