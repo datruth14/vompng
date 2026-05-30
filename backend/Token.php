@@ -391,7 +391,7 @@ function token_upgrade_to_premium($userId, $logStoreId = null)
     }
 }
 
-const TOKEN_WITHDRAW_MIN = 50;
+const TOKEN_WITHDRAW_MIN = 5;
 
 /* Submit a withdrawal request for Vomp Coins to a bank account via Paystack transfer. */
 

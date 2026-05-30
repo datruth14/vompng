@@ -155,13 +155,13 @@ ob_start();
                 <div class="border-t border-white/10 pt-6 mt-6 space-y-6">
                     <div class="w-full">
                         <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Vomp Coins to Withdraw</label>
-                        <input type="text" id="withdrawAmount" inputmode="numeric" value="50"
+                        <input type="text" id="withdrawAmount" inputmode="numeric" value="5"
                                class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
-                        <p class="text-xs text-gray-500 mt-2 ml-1">Minimum: <span class="text-white font-bold">50 Vomp Coins</span> (₦1,000) &middot; Rate: ₦20 per Vomp Coin</p>
+                        <p class="text-xs text-gray-500 mt-2 ml-1">Minimum: <span class="text-white font-bold">5 Vomp Coins</span> (₦100) &middot; Rate: ₦20 per Vomp Coin</p>
                     </div>
                     <div class="w-full">
                         <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-2 ml-1">You'll receive</p>
-                        <p id="withdrawNaira" class="text-3xl font-black text-[#ff610a] ml-1">₦1,000</p>
+                        <p id="withdrawNaira" class="text-3xl font-black text-[#ff610a] ml-1">₦100</p>
                     </div>
                     <p class="text-xs text-gray-500 ml-1">Your balance: <span id="withdrawBalance" class="text-white font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></span> Vomp Coins</p>
                 </div>
@@ -443,8 +443,8 @@ if (withdrawBtn) {
             }
         }
 
-        if (amount < 50) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum withdrawal is 50 Vomp Coins (₦1,000)</div>';
+        if (amount < 5) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum withdrawal is 5 Vomp Coins (₦100)</div>';
             return;
         }
 
@@ -462,7 +462,7 @@ if (withdrawBtn) {
             if (result.success) {
                 document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + bankName + ' ' + accountNumber + ' (' + accountName + ')</div>';
                 document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
-                document.getElementById('withdrawAmount').value = '50';
+                document.getElementById('withdrawAmount').value = '5';
                 updateWithdrawNaira();
             } else {
                 document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
