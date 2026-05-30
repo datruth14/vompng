@@ -128,5 +128,38 @@ if ($type === 'transactions') {
     exit;
 }
 
+if ($type === 'withdrawals') {
+    $rows = db_fetch_all('
+        SELECT u.name AS user_name, u.email AS user_email,
+               w.amount, w.naira_amount, w.bank_name, w.account_number, w.account_name,
+               w.status, w.created_at
+        FROM withdrawals w
+        LEFT JOIN users u ON w.user_id = u.id
+        ORDER BY w.created_at DESC
+    ');
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="withdrawals_export_' . date('Y-m-d') . '.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['User', 'Email', 'Tokens', 'NGN Amount', 'Platform Commission (2%)', 'Bank', 'Account Number', 'Account Name', 'Status', 'Date']);
+    foreach ($rows as $r) {
+        $commission = (int) ($r['naira_amount'] * 0.02);
+        fputcsv($out, [
+            $r['user_name'] ?? '',
+            $r['user_email'] ?? '',
+            (int) ($r['amount'] ?? 0),
+            number_format((int) ($r['naira_amount'] ?? 0)),
+            number_format($commission),
+            $r['bank_name'] ?? '',
+            $r['account_number'] ?? '',
+            $r['account_name'] ?? '',
+            $r['status'] ?? '',
+            $r['created_at'] ?? '',
+        ]);
+    }
+    fclose($out);
+    exit;
+}
+
 http_response_code(400);
 echo 'Invalid export type';

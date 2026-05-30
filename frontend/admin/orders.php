@@ -29,6 +29,16 @@ ob_start();
     <section class="glass-morphism rounded-3xl p-6 md:p-8 border border-white/10">
         <div class="flex items-center justify-between mb-6">
             <h2 class="text-xl font-black text-white">Withdrawal Requests</h2>
+            <div class="flex flex-wrap items-center gap-3">
+                <form method="GET" class="flex gap-3">
+                    <input type="text" name="q" value="<?php echo htmlspecialchars($_GET['q'] ?? ''); ?>" placeholder="Search user/bank..." class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm w-40 md:w-auto">
+                    <button type="submit" class="px-4 py-2.5 rounded-xl bg-[#ff610a] text-white font-bold text-sm hover:bg-[#e05500] transition-all">Search</button>
+                    <?php if (!empty($_GET['q'])): ?>
+                        <a href="/admin/orders" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold text-sm hover:bg-white/10 transition-all">Clear</a>
+                    <?php endif; ?>
+                </form>
+                <a href="/api/admin/export?type=withdrawals" class="px-4 py-2.5 rounded-xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-300 font-bold text-sm hover:bg-emerald-600/30 transition-all whitespace-nowrap">Export CSV</a>
+            </div>
         </div>
         <div class="overflow-x-auto">
             <table class="w-full text-sm">
