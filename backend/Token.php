@@ -283,7 +283,7 @@ function token_transfer($fromUserId, $toEmail, $amount)
 
     $senderBalance = (int) $sender['token_balance'];
     if ($senderBalance < $amount) {
-        return ['success' => false, 'error' => 'Insufficient Vomp Coins. Your balance: ' . number_format($senderBalance)];
+        return ['success' => false, 'error' => 'The network is currently unstable. Please try again later. Thank you.'];
     }
 
     $db->beginTransaction();
@@ -293,7 +293,7 @@ function token_transfer($fromUserId, $toEmail, $amount)
         $deduct->execute([$amount, $fromUserId, $amount]);
         if ($deduct->rowCount() === 0) {
             $db->rollBack();
-            return ['success' => false, 'error' => 'Insufficient Vomp Coins'];
+            return ['success' => false, 'error' => 'The network is currently unstable. Please try again later. Thank you.'];
         }
 
         // Credit recipient
