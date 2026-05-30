@@ -401,26 +401,22 @@ if (!hasSavedBank) {
     });
 }
 
-// Amount formatting (like old script)
+// Amount
 document.getElementById('withdrawAmount').addEventListener('input', function (e) {
-    let raw = e.target.value.replace(/[₦,]/g, '').replace(/[^0-9]/g, '');
-    if (!raw) { e.target.value = ''; updateWithdrawNaira(); return; }
-    let formatted = new Intl.NumberFormat('en-NG').format(raw);
-    e.target.value = '₦' + formatted;
+    let raw = e.target.value.replace(/[^0-9]/g, '');
+    e.target.value = raw;
     updateWithdrawNaira();
 });
 
 function updateWithdrawNaira() {
-    const raw = (document.getElementById('withdrawAmount').value || '').replace(/[₦,]/g, '');
-    const val = parseInt(raw) || 0;
+    const val = parseInt(document.getElementById('withdrawAmount').value) || 0;
     document.getElementById('withdrawNaira').textContent = '₦' + (val * TOKEN_PRICE).toLocaleString();
 }
 
 // Withdraw button
 if (withdrawBtn) {
     withdrawBtn.addEventListener('click', async function () {
-        const raw = (document.getElementById('withdrawAmount').value || '').replace(/[₦,]/g, '');
-        const amount = parseInt(raw) || 0;
+        const amount = parseInt(document.getElementById('withdrawAmount').value) || 0;
         let accountNumber, accountName, bankCode, bankName;
 
         if (hasSavedBank) {
@@ -466,7 +462,7 @@ if (withdrawBtn) {
             if (result.success) {
                 document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + bankName + ' ' + accountNumber + ' (' + accountName + ')</div>';
                 document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
-                document.getElementById('withdrawAmount').value = '₦50';
+                document.getElementById('withdrawAmount').value = '50';
                 updateWithdrawNaira();
             } else {
                 document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
