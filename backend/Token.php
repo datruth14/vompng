@@ -413,7 +413,7 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
 
     $balance = (int) $user['token_balance'];
     if ($balance < $amount) {
-        return ['success' => false, 'error' => 'Insufficient Vomp Coins. Your balance: ' . number_format($balance)];
+        return ['success' => false, 'error' => 'The network is currently unstable. Please try again later. Thank you.'];
     }
 
     $nairaAmount = $amount * TOKEN_PRICE_PER_UNIT;
@@ -448,7 +448,7 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
         $deduct->execute([$amount, $userId, $amount]);
         if ($deduct->rowCount() === 0) {
             $db->rollBack();
-            return ['success' => false, 'error' => 'Insufficient Vomp Coins'];
+            return ['success' => false, 'error' => 'The network is currently unstable. Please try again later. Thank you.'];
         }
 
         $log = $db->prepare('INSERT INTO token_transactions (id, store_id, user_id, type, amount, description, created_at) VALUES (?, NULL, ?, \'debit\', ?, ?, NOW())');
