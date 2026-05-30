@@ -83,46 +83,90 @@ ob_start();
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Cash Out</p>
                 <p class="text-3xl font-black text-white mb-6">Withdraw <span class="text-sm text-gray-500 font-medium">to your bank account</span></p>
 
-                <div class="space-y-6">
+                <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+                <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
+                <?php
+                $savedBankName = $currentUser['bank_name'] ?? '';
+                $savedBankAccount = $currentUser['bank_account_number'] ?? '';
+                $savedBankAccountName = $currentUser['bank_account_name'] ?? '';
+                $hasBankDetails = $savedBankName && $savedBankAccount && $savedBankAccountName;
+                ?>
+
+                <div id="savedBankDetails" class="space-y-5 <?php echo $hasBankDetails ? '' : 'hidden'; ?>">
+                    <!-- Account Holder Name -->
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Holder Name</label>
+                        <input type="text" value="<?php echo htmlspecialchars($savedBankAccountName); ?>" disabled
+                               class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white/60 focus:outline-none text-lg font-black">
+                        <input type="hidden" id="savedAccountName" value="<?php echo htmlspecialchars($savedBankAccountName); ?>">
+                    </div>
+
+                    <!-- Account Number -->
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Number</label>
+                        <input type="text" value="<?php echo htmlspecialchars($savedBankAccount); ?>" disabled
+                               class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white/60 focus:outline-none text-lg font-black">
+                        <input type="hidden" id="savedAccountNumber" value="<?php echo htmlspecialchars($savedBankAccount); ?>">
+                    </div>
+
+                    <!-- Bank Name (Tom Select) -->
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
+                        <select id="withdrawBank" placeholder="Search for your bank..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                            <option value="">Select your bank...</option>
+                        </select>
+                        <div id="withdrawBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
+                    </div>
+
+                    <!-- Change bank details link -->
+                    <button id="changeBankBtn" class="text-xs text-[#ff610a] hover:underline font-bold uppercase tracking-widest">+ Change Bank Details</button>
+                </div>
+
+                <!-- Verify new bank details (hidden unless no saved details or "change" clicked) -->
+                <div id="verifyBankSection" class="space-y-6 <?php echo $hasBankDetails ? 'hidden' : ''; ?>">
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
+                        <select id="verifyBank" placeholder="Search for your bank..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                            <option value="">Select your bank...</option>
+                        </select>
+                        <div id="verifyBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
+                    </div>
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Number</label>
+                        <div class="flex gap-3 items-end">
+                            <div class="flex-1">
+                                <input type="text" id="verifyAccount" maxlength="10" placeholder="0123456789" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black" autocomplete="off">
+                            </div>
+                            <button id="verifyBtn" class="px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm hover:bg-[#e05500] transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>Verify</button>
+                        </div>
+                        <div id="verifyResolving" class="hidden mt-3 text-center py-3">
+                            <div class="inline-block w-5 h-5 border-2 border-[#ff610a] border-t-transparent rounded-full animate-spin"></div>
+                            <p class="text-gray-400 text-xs mt-2 font-medium">Verifying account...</p>
+                        </div>
+                        <div id="verifyResult" class="hidden mt-3"></div>
+                    </div>
+                    <input type="hidden" id="verifyBankCode" value="">
+                    <?php if ($hasBankDetails): ?>
+                        <button id="cancelChangeBtn" class="text-xs text-gray-500 hover:underline font-bold uppercase tracking-widest">← Cancel</button>
+                    <?php endif; ?>
+                </div>
+
+                <div class="border-t border-white/10 pt-6 mt-6 space-y-6">
                     <div class="w-full">
                         <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Vomp Coins to Withdraw</label>
-                        <input type="number" id="withdrawAmount" min="50" step="1" value="50" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        <input type="text" id="withdrawAmount" inputmode="numeric" value="50"
+                               class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
                         <p class="text-xs text-gray-500 mt-2 ml-1">Minimum: <span class="text-white font-bold">50 Vomp Coins</span> (₦1,000) &middot; Rate: ₦20 per Vomp Coin</p>
                     </div>
                     <div class="w-full">
                         <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-2 ml-1">You'll receive</p>
                         <p id="withdrawNaira" class="text-3xl font-black text-[#ff610a] ml-1">₦1,000</p>
                     </div>
-                    <div class="border-t border-white/10 pt-6 space-y-6">
-                        <div class="w-full">
-                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
-                            <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
-                            <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-                            <select id="withdrawBank" placeholder="Search for your bank..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
-                                <option value="">Select your bank...</option>
-                            </select>
-                            <div id="withdrawBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
-                        </div>
-                        <div class="w-full">
-                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Number</label>
-                            <div class="flex gap-3 items-end">
-                                <div class="flex-1">
-                                    <input type="text" id="withdrawAccount" maxlength="10" placeholder="0123456789" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black" autocomplete="off">
-                                </div>
-                                <button id="withdrawVerifyBtn" class="px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm hover:bg-[#e05500] transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled>Verify</button>
-                            </div>
-                            <div id="withdrawResolving" class="hidden mt-3 text-center py-3">
-                                <div class="inline-block w-5 h-5 border-2 border-[#ff610a] border-t-transparent rounded-full animate-spin"></div>
-                                <p class="text-gray-400 text-xs mt-2 font-medium">Verifying account...</p>
-                            </div>
-                            <div id="withdrawAccountName" class="hidden mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold"></div>
-                        </div>
-                        <input type="hidden" id="withdrawBankCode" value="">
-                        <p class="text-xs text-gray-500 ml-1">Your balance: <span id="withdrawBalance" class="text-white font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></span> Vomp Coins</p>
-                    </div>
+                    <p class="text-xs text-gray-500 ml-1">Your balance: <span id="withdrawBalance" class="text-white font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></span> Vomp Coins</p>
                 </div>
 
-                <button id="withdrawBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8 hidden">
+                <button id="withdrawBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8 <?php echo $hasBankDetails ? '' : 'hidden'; ?>">
                     Submit Withdrawal Request
                 </button>
                 <div id="withdrawMsg" class="mt-4"></div>
@@ -196,8 +240,6 @@ const transferSection = document.getElementById('transferSection');
 const withdrawSection = document.getElementById('withdrawSection');
 const transferBtn = document.getElementById('transferBtn');
 const withdrawBtn = document.getElementById('withdrawBtn');
-const withdrawAmount = document.getElementById('withdrawAmount');
-const withdrawNaira = document.getElementById('withdrawNaira');
 
 function switchTab(tab) {
     const active = 'bg-[#ff610a] text-white';
@@ -214,12 +256,6 @@ tabBuy.addEventListener('click', () => switchTab('buy'));
 tabTransfer.addEventListener('click', () => switchTab('transfer'));
 tabWithdraw.addEventListener('click', () => switchTab('withdraw'));
 
-function updateWithdrawNaira() {
-    let val = parseInt(withdrawAmount.value) || 0;
-    if (val < 0) val = 0;
-    withdrawNaira.textContent = '₦' + (val * TOKEN_PRICE).toLocaleString();
-}
-withdrawAmount.addEventListener('input', updateWithdrawNaira);
 
 function updatePrice() {
     let val = parseInt(tokenInput.value) || 0;
@@ -317,72 +353,168 @@ if (transferBtn) {
     });
 }
 
+// Withdraw - state
 let withdrawBankCode = '';
 let withdrawBankName = '';
 let withdrawAccountName = '';
-let withdrawTomSelect = null;
+let savedAccountName = '<?php echo htmlspecialchars($savedBankAccountName, ENT_QUOTES); ?>';
+let savedAccountNumber = '<?php echo htmlspecialchars($savedBankAccount, ENT_QUOTES); ?>';
+let hasSavedBank = <?php echo $hasBankDetails ? 'true' : 'false'; ?>;
 
-// Load banks into dropdown
-fetch('/api/list_banks.php')
-    .then(r => r.json())
-    .then(data => {
-        const select = document.getElementById('withdrawBank');
-        document.getElementById('withdrawBankLoading').classList.add('hidden');
-        if (data.success && data.banks.length > 0) {
-            data.banks.sort((a, b) => a.name.localeCompare(b.name));
-            data.banks.forEach(b => {
-                const opt = document.createElement('option');
-                opt.value = b.code;
-                opt.textContent = b.name;
-                select.appendChild(opt);
-            });
-        }
-        // Init Tom Select after options loaded
-        withdrawTomSelect = new TomSelect('#withdrawBank', {
-            placeholder: 'Search for your bank...',
-            allowEmptyOption: true,
-            maxOptions: 100,
-            searchField: ['text'],
-            onChange: function (value) {
-                withdrawBankCode = value;
-                const opt = this.options[value];
-                withdrawBankName = opt ? opt.text : '';
-                document.getElementById('withdrawAccountName').classList.add('hidden');
-                document.getElementById('withdrawBtn').classList.add('hidden');
-                checkVerifyReady();
+// Load banks into both selects
+function loadBanks(selectId, loadingId, tomSelectVar) {
+    fetch('/api/list_banks.php')
+        .then(r => r.json())
+        .then(data => {
+            const select = document.getElementById(selectId);
+            document.getElementById(loadingId).classList.add('hidden');
+            if (data.success && data.banks.length > 0) {
+                data.banks.sort((a, b) => a.name.localeCompare(b.name));
+                data.banks.forEach(b => {
+                    const opt = document.createElement('option');
+                    opt.value = b.code;
+                    opt.textContent = b.name;
+                    select.appendChild(opt);
+                });
             }
+            const ts = new TomSelect('#' + selectId, {
+                placeholder: 'Search for your bank...',
+                allowEmptyOption: true,
+                maxOptions: 100,
+                searchField: ['text'],
+            });
+            if (tomSelectVar) window[tomSelectVar] = ts;
+            return ts;
+        })
+        .catch(() => {
+            document.getElementById(loadingId).textContent = 'Failed to load banks';
         });
-    })
-    .catch(() => {
-        document.getElementById('withdrawBankLoading').textContent = 'Failed to load banks';
-    });
-
-// Enable verify button when bank + account are filled
-function checkVerifyReady() {
-    const bank = document.getElementById('withdrawBank').value;
-    const acct = document.getElementById('withdrawAccount').value.replace(/\D/g, '');
-    document.getElementById('withdrawVerifyBtn').disabled = !(bank && acct.length === 10);
 }
 
-document.getElementById('withdrawAccount').addEventListener('input', function () {
+let withdrawTomSelect = null;
+let verifyTomSelect = null;
+
+loadBanks('withdrawBank', 'withdrawBankLoading', 'withdrawTomSelect');
+if (!hasSavedBank) {
+    loadBanks('verifyBank', 'verifyBankLoading', 'verifyTomSelect');
+}
+
+// Amount formatting (like old script)
+document.getElementById('withdrawAmount').addEventListener('input', function (e) {
+    let raw = e.target.value.replace(/[₦,]/g, '').replace(/[^0-9]/g, '');
+    if (!raw) { e.target.value = ''; updateWithdrawNaira(); return; }
+    let formatted = new Intl.NumberFormat('en-NG').format(raw);
+    e.target.value = '₦' + formatted;
+    updateWithdrawNaira();
+});
+
+function updateWithdrawNaira() {
+    const raw = (document.getElementById('withdrawAmount').value || '').replace(/[₦,]/g, '');
+    const val = parseInt(raw) || 0;
+    document.getElementById('withdrawNaira').textContent = '₦' + (val * TOKEN_PRICE).toLocaleString();
+}
+
+// Withdraw button
+if (withdrawBtn) {
+    withdrawBtn.addEventListener('click', async function () {
+        const raw = (document.getElementById('withdrawAmount').value || '').replace(/[₦,]/g, '');
+        const amount = parseInt(raw) || 0;
+        let accountNumber, accountName, bankCode, bankName;
+
+        if (hasSavedBank) {
+            accountNumber = savedAccountNumber;
+            accountName = savedAccountName;
+            bankCode = document.getElementById('withdrawBank').value;
+            if (!bankCode) {
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please select your bank</div>';
+                return;
+            }
+            const sel = document.getElementById('withdrawBank');
+            const opt = sel.options[sel.selectedIndex];
+            bankName = opt ? opt.text : '';
+        } else {
+            accountNumber = document.getElementById('verifyAccount').value.trim();
+            accountName = withdrawAccountName;
+            bankCode = document.getElementById('verifyBank').value;
+            const sel = document.getElementById('verifyBank');
+            const opt = sel.options[sel.selectedIndex];
+            bankName = opt ? opt.text : '';
+            if (!accountName) {
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please verify your bank account first</div>';
+                return;
+            }
+        }
+
+        if (amount < 50) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum withdrawal is 50 Vomp Coins (₦1,000)</div>';
+            return;
+        }
+
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+            const res = await fetch('/api/tokens_withdraw.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, bank_name: bankName, bank_code: bankCode, account_number: accountNumber, account_name: accountName })
+            });
+            const result = await res.json();
+            if (result.success) {
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + bankName + ' ' + accountNumber + ' (' + accountName + ')</div>';
+                document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
+                document.getElementById('withdrawAmount').value = '₦50';
+                updateWithdrawNaira();
+            } else {
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
+            }
+        } catch (err) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Submit Withdrawal Request';
+    });
+}
+
+// Change bank details flow
+document.getElementById('changeBankBtn')?.addEventListener('click', function () {
+    document.getElementById('savedBankDetails').classList.add('hidden');
+    document.getElementById('verifyBankSection').classList.remove('hidden');
+    document.getElementById('withdrawBtn').classList.add('hidden');
+    loadBanks('verifyBank', 'verifyBankLoading', 'verifyTomSelect');
+});
+
+document.getElementById('cancelChangeBtn')?.addEventListener('click', function () {
+    document.getElementById('savedBankDetails').classList.remove('hidden');
+    document.getElementById('verifyBankSection').classList.add('hidden');
+    document.getElementById('withdrawBtn').classList.remove('hidden');
+});
+
+// Verify account section
+function checkVerifyReady() {
+    const bank = document.getElementById('verifyBank').value;
+    const acct = document.getElementById('verifyAccount').value.replace(/\D/g, '');
+    document.getElementById('verifyBtn').disabled = !(bank && acct.length === 10);
+}
+
+document.getElementById('verifyAccount')?.addEventListener('input', function () {
     const num = this.value.replace(/\D/g, '').slice(0, 10);
     this.value = num;
-    document.getElementById('withdrawAccountName').classList.add('hidden');
-    document.getElementById('withdrawBtn').classList.add('hidden');
+    document.getElementById('verifyResult').classList.add('hidden');
     checkVerifyReady();
 });
 
-// Verify account
-document.getElementById('withdrawVerifyBtn').addEventListener('click', async function () {
-    const bankCode = document.getElementById('withdrawBank').value;
-    const acct = document.getElementById('withdrawAccount').value.replace(/\D/g, '');
+document.getElementById('verifyBtn')?.addEventListener('click', async function () {
+    const bankCode = document.getElementById('verifyBank').value;
+    const acct = document.getElementById('verifyAccount').value.replace(/\D/g, '');
     if (!bankCode || acct.length !== 10) return;
 
-    const resolving = document.getElementById('withdrawResolving');
-    const nameEl = document.getElementById('withdrawAccountName');
+    const resolving = document.getElementById('verifyResolving');
+    const resultEl = document.getElementById('verifyResult');
     resolving.classList.remove('hidden');
-    nameEl.classList.add('hidden');
-    document.getElementById('withdrawBtn').classList.add('hidden');
+    resultEl.classList.add('hidden');
 
     try {
         const res = await fetch('/api/resolve_account.php', {
@@ -395,74 +527,36 @@ document.getElementById('withdrawVerifyBtn').addEventListener('click', async fun
         if (data.success && data.results.length > 0) {
             const r = data.results[0];
             withdrawAccountName = r.account_name;
-            nameEl.textContent = '✓ ' + r.account_name;
-            nameEl.className = 'mt-3 p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold';
-            nameEl.classList.remove('hidden');
-            document.getElementById('withdrawBtn').classList.remove('hidden');
+            withdrawBankCode = bankCode;
+            const sel = document.getElementById('verifyBank');
+            withdrawBankName = sel.options[sel.selectedIndex]?.text || '';
+            resultEl.innerHTML =
+                '<div class="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">✓ ' + r.account_name + '</div>' +
+                '<button id="saveBankBtn" class="mt-3 px-6 py-3 rounded-xl bg-[#ff610a] text-white font-black text-sm hover:bg-[#e05500] transition-all w-full">Save & Continue</button>';
+            resultEl.classList.remove('hidden');
+
+            // Save bank details to user profile
+            document.getElementById('saveBankBtn')?.addEventListener('click', async function () {
+                const saveRes = await fetch('/api/save_bank_details.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ bank_name: withdrawBankName, bank_code: bankCode, account_number: acct, account_name: r.account_name })
+                });
+                const saveData = await saveRes.json();
+                if (saveData.success) {
+                    location.reload();
+                }
+            });
         } else {
-            nameEl.textContent = '✗ Account not found for this bank';
-            nameEl.className = 'mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
-            nameEl.classList.remove('hidden');
+            resultEl.innerHTML = '<div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">✗ Account not found for this bank</div>';
+            resultEl.classList.remove('hidden');
         }
     } catch (err) {
         resolving.classList.add('hidden');
-        document.getElementById('withdrawAccountName').textContent = 'Network error. Try again.';
-        document.getElementById('withdrawAccountName').className = 'mt-3 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
-        document.getElementById('withdrawAccountName').classList.remove('hidden');
+        document.getElementById('verifyResult').innerHTML = '<div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Try again.</div>';
+        document.getElementById('verifyResult').classList.remove('hidden');
     }
 });
-
-if (withdrawBtn) {
-    withdrawBtn.addEventListener('click', async function () {
-        const amount = parseInt(withdrawAmount.value) || 0;
-        const accountNumber = document.getElementById('withdrawAccount').value.trim();
-
-        if (amount < 50) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum withdrawal is 50 Vomp Coins (₦1,000)</div>';
-            return;
-        }
-        if (!withdrawBankCode) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please select a bank and verify your account</div>';
-            return;
-        }
-
-        const btn = this;
-        btn.disabled = true;
-        btn.textContent = 'Processing...';
-
-        try {
-            const res = await fetch('/api/tokens_withdraw.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    amount,
-                    bank_name: withdrawBankName,
-                    bank_code: withdrawBankCode,
-                    account_number: accountNumber,
-                    account_name: withdrawAccountName
-                })
-            });
-            const result = await res.json();
-            if (result.success) {
-                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + withdrawBankName + ' ' + accountNumber + ' (' + withdrawAccountName + ')</div>';
-                document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
-                document.getElementById('withdrawAmount').value = 50;
-                updateWithdrawNaira();
-                document.getElementById('withdrawAccount').value = '';
-                document.getElementById('withdrawAccountName').classList.add('hidden');
-                document.getElementById('withdrawBtn').classList.add('hidden');
-                document.getElementById('withdrawAccount').dispatchEvent(new Event('input'));
-            } else {
-                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
-            }
-        } catch (err) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
-        }
-
-        btn.disabled = false;
-        btn.textContent = 'Submit Withdrawal Request';
-    });
-}
 </script>
 
 <?php

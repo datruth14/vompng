@@ -227,6 +227,11 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'withdrawals', 'recipient_code', 'VARCHAR(100)');
     db_ensure_column($db, 'withdrawals', 'transfer_code', 'VARCHAR(100)');
 
+    // bank details on users table (for saved withdrawal account)
+    db_ensure_column($db, 'users', 'bank_name', 'VARCHAR(255)');
+    db_ensure_column($db, 'users', 'bank_account_number', 'VARCHAR(10)');
+    db_ensure_column($db, 'users', 'bank_account_name', 'VARCHAR(255)');
+
     $indexes = [
         'idx_products_store_id' => 'CREATE INDEX idx_products_store_id ON products(store_id)',
         'idx_stores_owner_id' => 'CREATE INDEX idx_stores_owner_id ON stores(owner_id)',

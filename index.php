@@ -65,6 +65,7 @@ if (
         str_starts_with($requestPath, 'api/tokens_transfer.php') ||
         str_starts_with($requestPath, 'api/tokens/withdraw') ||
         str_starts_with($requestPath, 'api/tokens_withdraw.php') ||
+        str_starts_with($requestPath, 'api/save_bank_details.php') ||
         str_starts_with($requestPath, 'api/resolve_account') ||
         str_starts_with($requestPath, 'api/list_banks') ||
         str_starts_with($requestPath, 'api/store/') ||
@@ -458,6 +459,9 @@ if ($method === 'GET') {
         case 'api/tokens/withdraw':
         case 'api/tokens_withdraw.php':
             include 'api/tokens_withdraw.php';
+            exit;
+        case 'api/save_bank_details.php':
+            include 'api/save_bank_details.php';
             exit;
         case 'api/resolve_account.php':
             include 'api/resolve_account.php';

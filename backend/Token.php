@@ -464,6 +464,10 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
             $transfer['status'],
         ]);
 
+        // Save bank details on user for next time
+        $saveBank = $db->prepare('UPDATE users SET bank_name = ?, bank_account_number = ?, bank_account_name = ? WHERE id = ?');
+        $saveBank->execute([$bankName, $accountNumber, $accountName, $userId]);
+
         $db->commit();
         return ['success' => true, 'token_balance' => $balance - $amount, 'withdrawn' => $amount, 'transfer_status' => $transfer['status']];
     } catch (Exception $e) {
