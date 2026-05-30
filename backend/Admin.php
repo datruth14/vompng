@@ -2,6 +2,81 @@
 
 require_once __DIR__ . '/Database.php';
 
+function admin_commission_summary()
+{
+    $db = db_get_connection();
+    // Commission = 2% platform fee on each withdrawal naira_amount
+    $stmt = $db->query("SELECT COUNT(*) AS total_withdrawals, COALESCE(SUM(naira_amount), 0) AS total_naira_withdrawn FROM withdrawals WHERE status IN ('success', 'otp')");
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    $totalNaira = (int) $row['total_naira_withdrawn'];
+    $totalWithdrawals = (int) $row['total_withdrawals'];
+    $commission = (int) ($totalNaira * 0.02); // 2% platform fee
+    return [
+        'total_withdrawals' => $totalWithdrawals,
+        'total_naira_withdrawn' => $totalNaira,
+        'total_commission' => $commission,
+    ];
+}
+
+function admin_get_withdrawals_paginated($page = 1, $perPage = 30)
+{
+    $db = db_get_connection();
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT w.*, u.name AS user_name, u.email AS user_email
+        FROM withdrawals w
+        LEFT JOIN users u ON w.user_id = u.id
+        ORDER BY w.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(2, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function admin_count_withdrawals_total()
+{
+    return (int) db_get_connection()->query('SELECT COUNT(*) FROM withdrawals')->fetchColumn();
+}
+
+function admin_search_withdrawals_paginated($query, $page = 1, $perPage = 30)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT w.*, u.name AS user_name, u.email AS user_email
+        FROM withdrawals w
+        LEFT JOIN users u ON w.user_id = u.id
+        WHERE u.name LIKE ? OR u.email LIKE ? OR w.bank_name LIKE ? OR w.account_name LIKE ? OR w.account_number LIKE ?
+        ORDER BY w.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, $like);
+    $stmt->bindValue(2, $like);
+    $stmt->bindValue(3, $like);
+    $stmt->bindValue(4, $like);
+    $stmt->bindValue(5, $like);
+    $stmt->bindValue(6, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(7, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function admin_count_search_withdrawals($query)
+{
+    $db = db_get_connection();
+    $like = '%' . $query . '%';
+    $stmt = $db->prepare('
+        SELECT COUNT(*) FROM withdrawals w
+        LEFT JOIN users u ON w.user_id = u.id
+        WHERE u.name LIKE ? OR u.email LIKE ? OR w.bank_name LIKE ? OR w.account_name LIKE ? OR w.account_number LIKE ?
+    ');
+    $stmt->execute([$like, $like, $like, $like, $like]);
+    return (int) $stmt->fetchColumn();
+}
+
 function admin_count_users()
 {
     return (int) db_get_connection()->query('SELECT COUNT(*) FROM users')->fetchColumn();

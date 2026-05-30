@@ -384,10 +384,15 @@ if ($method === 'GET') {
                     if ($searchQuery) {
                         $transactions = admin_search_transactions_paginated($searchQuery, $page, $perPage);
                         $totalPages = max(1, (int) ceil(admin_count_search_transactions($searchQuery) / $perPage));
+                        $withdrawals = admin_search_withdrawals_paginated($searchQuery, $page, $perPage);
+                        $withdrawTotalPages = max(1, (int) ceil(admin_count_search_withdrawals($searchQuery) / $perPage));
                     } else {
                         $transactions = admin_get_transactions_paginated($page, $perPage);
                         $totalPages = max(1, (int) ceil(admin_count_transactions_total() / $perPage));
+                        $withdrawals = admin_get_withdrawals_paginated($page, $perPage);
+                        $withdrawTotalPages = max(1, (int) ceil(admin_count_withdrawals_total() / $perPage));
                     }
+                    $commissionSummary = admin_commission_summary();
                     include 'frontend/admin/orders.php';
                     break;
 
