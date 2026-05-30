@@ -389,3 +389,66 @@ function token_upgrade_to_premium($userId, $logStoreId = null)
         return ['success' => false, 'error' => 'Failed to upgrade to premium'];
     }
 }
+
+const TOKEN_WITHDRAW_MIN = 50;
+
+/* Submit a withdrawal request for Vomp Coins to a bank account. */
+
+function token_withdraw($userId, $amount, $bankName, $accountNumber, $accountName)
+{
+    $amount = (int) $amount;
+    if ($amount < TOKEN_WITHDRAW_MIN) {
+        return ['success' => false, 'error' => 'Minimum withdrawal is ' . TOKEN_WITHDRAW_MIN . ' Vomp Coins (₦' . number_format(TOKEN_WITHDRAW_MIN * TOKEN_PRICE_PER_UNIT) . ')'];
+    }
+
+    $db = db_get_connection();
+
+    $userStmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
+    $userStmt->execute([$userId]);
+    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$user) {
+        return ['success' => false, 'error' => 'User not found'];
+    }
+
+    $balance = (int) $user['token_balance'];
+    if ($balance < $amount) {
+        return ['success' => false, 'error' => 'Insufficient Vomp Coins. Your balance: ' . number_format($balance)];
+    }
+
+    $nairaAmount = $amount * TOKEN_PRICE_PER_UNIT;
+
+    $db->beginTransaction();
+    try {
+        $deduct = $db->prepare('UPDATE users SET token_balance = token_balance - ? WHERE id = ? AND token_balance >= ?');
+        $deduct->execute([$amount, $userId, $amount]);
+        if ($deduct->rowCount() === 0) {
+            $db->rollBack();
+            return ['success' => false, 'error' => 'Insufficient Vomp Coins'];
+        }
+
+        $log = $db->prepare('INSERT INTO token_transactions (id, store_id, user_id, type, amount, description, created_at) VALUES (?, NULL, ?, \'debit\', ?, ?, NOW())');
+        $log->execute([
+            bin2hex(random_bytes(12)),
+            $userId,
+            $amount,
+            "Withdrawal request — {$amount} Vomp Coins (₦" . number_format($nairaAmount) . ") to {$bankName} {$accountNumber}",
+        ]);
+
+        $withdraw = $db->prepare('INSERT INTO withdrawals (id, user_id, amount, naira_amount, bank_name, account_number, account_name, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, \'pending\', NOW())');
+        $withdraw->execute([
+            bin2hex(random_bytes(12)),
+            $userId,
+            $amount,
+            $nairaAmount,
+            $bankName,
+            $accountNumber,
+            $accountName,
+        ]);
+
+        $db->commit();
+        return ['success' => true, 'token_balance' => $balance - $amount, 'withdrawn' => $amount];
+    } catch (Exception $e) {
+        $db->rollBack();
+        return ['success' => false, 'error' => 'Withdrawal request failed. Please try again.'];
+    }
+}

@@ -63,6 +63,8 @@ if (
         str_starts_with($requestPath, 'api/tokens_purchase.php') ||
         str_starts_with($requestPath, 'api/tokens/transfer') ||
         str_starts_with($requestPath, 'api/tokens_transfer.php') ||
+        str_starts_with($requestPath, 'api/tokens/withdraw') ||
+        str_starts_with($requestPath, 'api/tokens_withdraw.php') ||
         str_starts_with($requestPath, 'api/store/') ||
         str_starts_with($requestPath, 'api/upgrade')
     )
@@ -450,6 +452,10 @@ if ($method === 'GET') {
         case 'api/tokens/transfer':
         case 'api/tokens_transfer.php':
             include 'api/tokens_transfer.php';
+            exit;
+        case 'api/tokens/withdraw':
+        case 'api/tokens_withdraw.php':
+            include 'api/tokens_withdraw.php';
             exit;
         case 'api/admin/toggle-store':
             include 'api/admin_toggle_store.php';

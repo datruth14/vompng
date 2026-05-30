@@ -117,12 +117,26 @@ function db_init_schema(PDO $db)
         'token_transactions' => "
             CREATE TABLE IF NOT EXISTS token_transactions (
                 id VARCHAR(24) PRIMARY KEY,
-                store_id VARCHAR(24) NOT NULL,
+                store_id VARCHAR(24) NULL,
+                user_id VARCHAR(24) NULL,
                 type VARCHAR(20) NOT NULL,
                 amount INT NOT NULL,
                 description TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ",
+        'withdrawals' => "
+            CREATE TABLE IF NOT EXISTS withdrawals (
+                id VARCHAR(24) PRIMARY KEY,
+                user_id VARCHAR(24) NOT NULL,
+                amount INT NOT NULL,
+                naira_amount INT NOT NULL,
+                bank_name VARCHAR(255) NOT NULL,
+                account_number VARCHAR(20) NOT NULL,
+                account_name VARCHAR(255) NOT NULL,
+                status VARCHAR(20) DEFAULT 'pending',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
+                processed_at DATETIME NULL
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ",
         'product_categories' => "

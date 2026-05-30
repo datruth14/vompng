@@ -27,8 +27,9 @@ ob_start();
 
         <div class="md:col-span-2 space-y-8">
             <div class="flex gap-2 mb-4 bg-white/5 rounded-xl p-1.5 w-fit">
-                <button id="tabBuy" class="px-6 py-3 rounded-xl font-black text-sm transition-all bg-[#ff610a] text-white">Buy Vomp Coins</button>
-                <button id="tabTransfer" class="px-6 py-3 rounded-xl font-black text-sm transition-all bg-white/5 text-gray-400 hover:text-white">Transfer Vomp Coins</button>
+                <button id="tabBuy" class="px-6 py-3 rounded-xl font-black text-sm transition-all bg-[#ff610a] text-white">Buy</button>
+                <button id="tabTransfer" class="px-6 py-3 rounded-xl font-black text-sm transition-all bg-white/5 text-gray-400 hover:text-white">Transfer</button>
+                <button id="tabWithdraw" class="px-6 py-3 rounded-xl font-black text-sm transition-all bg-white/5 text-gray-400 hover:text-white">Withdraw</button>
             </div>
 
             <!-- Buy Section -->
@@ -75,6 +76,47 @@ ob_start();
                     Transfer Vomp Coins
                 </button>
                 <div id="transferMsg" class="mt-4"></div>
+            </div>
+
+            <!-- Withdraw Section -->
+            <div id="withdrawSection" class="glass-morphism rounded-3xl p-8 border border-white/10 hidden">
+                <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Cash Out</p>
+                <p class="text-3xl font-black text-white mb-6">Withdraw <span class="text-sm text-gray-500 font-medium">to your bank account</span></p>
+
+                <div class="space-y-6">
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Vomp Coins to Withdraw</label>
+                        <input type="number" id="withdrawAmount" min="50" step="1" value="50" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        <p class="text-xs text-gray-500 mt-2 ml-1">Minimum: <span class="text-white font-bold">50 Vomp Coins</span> (₦1,000) &middot; Rate: ₦20 per Vomp Coin</p>
+                    </div>
+                    <div class="w-full">
+                        <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-2 ml-1">You'll receive</p>
+                        <p id="withdrawNaira" class="text-3xl font-black text-[#ff610a] ml-1">₦1,000</p>
+                    </div>
+                    <div class="border-t border-white/10 pt-6 space-y-6">
+                        <div class="w-full">
+                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank Name</label>
+                            <input type="text" id="withdrawBank" list="bankList" placeholder="e.g. GTBank" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                            <datalist id="bankList">
+                                <option value="Access Bank"><option value="Fidelity Bank"><option value="First Bank"><option value="GTBank"><option value="Opay"><option value="PalmPay"><option value="Moniepoint"><option value="Kuda Bank"><option value="UBA"><option value="Union Bank"><option value="Zenith Bank"><option value="Polaris Bank"><option value="Stanbic IBTC"><option value="FCMB"><option value="Wema Bank"><option value="Sterling Bank"><option value="Providus Bank"><option value="Ecobank"><option value="Heritage Bank"><option value="Keystone Bank">
+                            </datalist>
+                        </div>
+                        <div class="w-full">
+                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Number</label>
+                            <input type="text" id="withdrawAccount" maxlength="10" placeholder="0123456789" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        </div>
+                        <div class="w-full">
+                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Name</label>
+                            <input type="text" id="withdrawName" placeholder="Full name on bank account" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        </div>
+                        <p class="text-xs text-gray-500 ml-1">Your balance: <span id="withdrawBalance" class="text-white font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></span> Vomp Coins</p>
+                    </div>
+                </div>
+
+                <button id="withdrawBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8">
+                    Submit Withdrawal Request
+                </button>
+                <div id="withdrawMsg" class="mt-4"></div>
             </div>
         </div>
     </div>
@@ -139,19 +181,36 @@ const totalPrice = document.getElementById('totalPrice');
 const purchaseBtn = document.getElementById('purchaseBtn');
 const tabBuy = document.getElementById('tabBuy');
 const tabTransfer = document.getElementById('tabTransfer');
+const tabWithdraw = document.getElementById('tabWithdraw');
 const buySection = document.getElementById('buySection');
 const transferSection = document.getElementById('transferSection');
+const withdrawSection = document.getElementById('withdrawSection');
 const transferBtn = document.getElementById('transferBtn');
+const withdrawBtn = document.getElementById('withdrawBtn');
+const withdrawAmount = document.getElementById('withdrawAmount');
+const withdrawNaira = document.getElementById('withdrawNaira');
 
 function switchTab(tab) {
-    tabBuy.className = 'px-6 py-3 rounded-xl font-black text-sm transition-all ' + (tab === 'buy' ? 'bg-[#ff610a] text-white' : 'bg-white/5 text-gray-400 hover:text-white');
-    tabTransfer.className = 'px-6 py-3 rounded-xl font-black text-sm transition-all ' + (tab === 'transfer' ? 'bg-[#ff610a] text-white' : 'bg-white/5 text-gray-400 hover:text-white');
+    const active = 'bg-[#ff610a] text-white';
+    const inactive = 'bg-white/5 text-gray-400 hover:text-white';
+    tabBuy.className = 'px-6 py-3 rounded-xl font-black text-sm transition-all ' + (tab === 'buy' ? active : inactive);
+    tabTransfer.className = 'px-6 py-3 rounded-xl font-black text-sm transition-all ' + (tab === 'transfer' ? active : inactive);
+    tabWithdraw.className = 'px-6 py-3 rounded-xl font-black text-sm transition-all ' + (tab === 'withdraw' ? active : inactive);
     buySection.classList.toggle('hidden', tab !== 'buy');
     transferSection.classList.toggle('hidden', tab !== 'transfer');
+    withdrawSection.classList.toggle('hidden', tab !== 'withdraw');
 }
 
 tabBuy.addEventListener('click', () => switchTab('buy'));
 tabTransfer.addEventListener('click', () => switchTab('transfer'));
+tabWithdraw.addEventListener('click', () => switchTab('withdraw'));
+
+function updateWithdrawNaira() {
+    let val = parseInt(withdrawAmount.value) || 0;
+    if (val < 0) val = 0;
+    withdrawNaira.textContent = '₦' + (val * TOKEN_PRICE).toLocaleString();
+}
+withdrawAmount.addEventListener('input', updateWithdrawNaira);
 
 function updatePrice() {
     let val = parseInt(tokenInput.value) || 0;
@@ -246,6 +305,58 @@ if (transferBtn) {
 
         btn.disabled = false;
         btn.textContent = 'Transfer Vomp Coins';
+    });
+}
+
+if (withdrawBtn) {
+    withdrawBtn.addEventListener('click', async function () {
+        const amount = parseInt(withdrawAmount.value) || 0;
+        const bankName = document.getElementById('withdrawBank').value.trim();
+        const accountNumber = document.getElementById('withdrawAccount').value.trim();
+        const accountName = document.getElementById('withdrawName').value.trim();
+
+        if (amount < 50) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum withdrawal is 50 Vomp Coins (₦1,000)</div>';
+            return;
+        }
+        if (!bankName) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please enter your bank name</div>';
+            return;
+        }
+        if (!/^\d{10}$/.test(accountNumber)) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please enter a valid 10-digit account number</div>';
+            return;
+        }
+        if (!accountName) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please enter the account holder name</div>';
+            return;
+        }
+
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+            const res = await fetch('/api/tokens_withdraw.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ amount, bank_name: bankName, account_number: accountNumber, account_name: accountName })
+            });
+            const result = await res.json();
+            if (result.success) {
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal request submitted! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') will be sent to ' + bankName + ' ' + accountNumber + ' after review.</div>';
+                document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
+                document.getElementById('withdrawAmount').value = 50;
+                updateWithdrawNaira();
+            } else {
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
+            }
+        } catch (err) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Submit Withdrawal Request';
     });
 }
 </script>
