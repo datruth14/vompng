@@ -83,6 +83,9 @@ ob_start();
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Cash Out</p>
                 <p class="text-3xl font-black text-white mb-6">Withdraw <span class="text-sm text-gray-500 font-medium">to your bank account</span></p>
 
+                <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+                <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+
                 <?php
                 $savedBankName = $currentUser['bank_name'] ?? '';
                 $savedBankAccount = $currentUser['bank_account_number'] ?? '';
@@ -247,6 +250,7 @@ function switchTab(tab) {
     buySection.classList.toggle('hidden', tab !== 'buy');
     transferSection.classList.toggle('hidden', tab !== 'transfer');
     withdrawSection.classList.toggle('hidden', tab !== 'withdraw');
+    if (tab === 'withdraw') loadWithdrawBanks();
 }
 
 tabBuy.addEventListener('click', () => switchTab('buy'));
@@ -358,9 +362,9 @@ let savedAccountName = '<?php echo htmlspecialchars($savedBankAccountName, ENT_Q
 let savedAccountNumber = '<?php echo htmlspecialchars($savedBankAccount, ENT_QUOTES); ?>';
 let hasSavedBank = <?php echo $hasBankDetails ? 'true' : 'false'; ?>;
 
-// Load banks into selects
+// Load banks into selects (lazy — only when withdraw tab opens)
 function loadBanks(selectId, loadingId) {
-    fetch('/api/list_banks.php')
+    return fetch('/api/list_banks.php')
         .then(r => r.json())
         .then(data => {
             const select = document.getElementById(selectId);
@@ -374,17 +378,27 @@ function loadBanks(selectId, loadingId) {
                     select.appendChild(opt);
                 });
             }
-            // Attach change handler
-            select.addEventListener('change', checkVerifyReady);
+            new TomSelect('#' + selectId, {
+                placeholder: 'Search for your bank...',
+                allowEmptyOption: true,
+                maxOptions: 100,
+                searchField: ['text'],
+                onChange: function () { checkVerifyReady(); }
+            });
         })
         .catch(() => {
             document.getElementById(loadingId).textContent = 'Failed to load banks';
         });
 }
 
-loadBanks('withdrawBank', 'withdrawBankLoading');
-if (!hasSavedBank) {
-    loadBanks('verifyBank', 'verifyBankLoading');
+let banksLoaded = false;
+function loadWithdrawBanks() {
+    if (banksLoaded) return;
+    banksLoaded = true;
+    loadBanks('withdrawBank', 'withdrawBankLoading');
+    if (!hasSavedBank) {
+        loadBanks('verifyBank', 'verifyBankLoading');
+    }
 }
 
 // Amount
@@ -467,7 +481,7 @@ document.getElementById('changeBankBtn')?.addEventListener('click', function () 
     document.getElementById('savedBankDetails').classList.add('hidden');
     document.getElementById('verifyBankSection').classList.remove('hidden');
     document.getElementById('withdrawBtn').classList.add('hidden');
-    loadBanks('verifyBank', 'verifyBankLoading');
+    loadWithdrawBanks();
 });
 
 document.getElementById('cancelChangeBtn')?.addEventListener('click', function () {
