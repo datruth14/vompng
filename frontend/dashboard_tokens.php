@@ -26,8 +26,13 @@ ob_start();
         </article>
 
         <div class="md:col-span-2 space-y-8">
-            <h2 class="text-2xl font-black text-white">Top Up Vomp Coins</h2>
-            <div class="glass-morphism rounded-3xl p-8 border border-white/10">
+            <div class="flex gap-2 mb-4 bg-white/5 rounded-xl p-1.5 w-fit">
+                <button id="tabBuy" class="px-6 py-3 rounded-xl font-black text-sm transition-all bg-[#ff610a] text-white">Buy Vomp Coins</button>
+                <button id="tabTransfer" class="px-6 py-3 rounded-xl font-black text-sm transition-all bg-white/5 text-gray-400 hover:text-white">Transfer Vomp Coins</button>
+            </div>
+
+            <!-- Buy Section -->
+            <div id="buySection" class="glass-morphism rounded-3xl p-8 border border-white/10">
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Price</p>
                 <p class="text-3xl font-black text-white mb-6">₦20 <span class="text-sm text-gray-500 font-medium">per Vomp Coin</span></p>
 
@@ -47,6 +52,29 @@ ob_start();
                     Buy Vomp Coins
                 </button>
                 <div id="purchaseMsg" class="mt-4"></div>
+            </div>
+
+            <!-- Transfer Section -->
+            <div id="transferSection" class="glass-morphism rounded-3xl p-8 border border-white/10 hidden">
+                <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Send Vomp Coins</p>
+                <p class="text-3xl font-black text-white mb-6">Transfer <span class="text-sm text-gray-500 font-medium">to another user</span></p>
+
+                <div class="space-y-6">
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Recipient Email</label>
+                        <input type="email" id="transferEmail" placeholder="user@example.com" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                    </div>
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Amount of Vomp Coins</label>
+                        <input type="number" id="transferAmount" min="1" step="1" value="1" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        <p class="text-xs text-gray-500 mt-2 ml-1">Your balance: <span id="transferBalance" class="text-white font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></span> Vomp Coins</p>
+                    </div>
+                </div>
+
+                <button id="transferBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8">
+                    Transfer Vomp Coins
+                </button>
+                <div id="transferMsg" class="mt-4"></div>
             </div>
         </div>
     </div>
@@ -109,6 +137,21 @@ const TOKEN_MIN = 50;
 const tokenInput = document.getElementById('tokenInput');
 const totalPrice = document.getElementById('totalPrice');
 const purchaseBtn = document.getElementById('purchaseBtn');
+const tabBuy = document.getElementById('tabBuy');
+const tabTransfer = document.getElementById('tabTransfer');
+const buySection = document.getElementById('buySection');
+const transferSection = document.getElementById('transferSection');
+const transferBtn = document.getElementById('transferBtn');
+
+function switchTab(tab) {
+    tabBuy.className = 'px-6 py-3 rounded-xl font-black text-sm transition-all ' + (tab === 'buy' ? 'bg-[#ff610a] text-white' : 'bg-white/5 text-gray-400 hover:text-white');
+    tabTransfer.className = 'px-6 py-3 rounded-xl font-black text-sm transition-all ' + (tab === 'transfer' ? 'bg-[#ff610a] text-white' : 'bg-white/5 text-gray-400 hover:text-white');
+    buySection.classList.toggle('hidden', tab !== 'buy');
+    transferSection.classList.toggle('hidden', tab !== 'transfer');
+}
+
+tabBuy.addEventListener('click', () => switchTab('buy'));
+tabTransfer.addEventListener('click', () => switchTab('transfer'));
 
 function updatePrice() {
     let val = parseInt(tokenInput.value) || 0;
@@ -161,6 +204,48 @@ if (purchaseBtn) {
             btn.disabled = false;
             btn.textContent = 'Buy Vomp Coins';
         }
+    });
+}
+
+if (transferBtn) {
+    transferBtn.addEventListener('click', async function () {
+        const email = document.getElementById('transferEmail').value.trim();
+        const amount = parseInt(document.getElementById('transferAmount').value) || 0;
+
+        if (!email) {
+            document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please enter the recipient\'s email address</div>';
+            return;
+        }
+
+        if (amount < 1) {
+            document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Amount must be at least 1 Vomp Coin</div>';
+            return;
+        }
+
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
+
+        try {
+            const res = await fetch('/api/tokens_transfer.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, amount })
+            });
+            const result = await res.json();
+            if (result.success) {
+                document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Successfully transferred ' + amount + ' Vomp Coins to ' + email + '</div>';
+                document.getElementById('transferBalance').textContent = result.token_balance.toLocaleString();
+                document.getElementById('transferAmount').value = 1;
+            } else {
+                document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Transfer failed') + '</div>';
+            }
+        } catch (err) {
+            document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
+        }
+
+        btn.disabled = false;
+        btn.textContent = 'Transfer Vomp Coins';
     });
 }
 </script>

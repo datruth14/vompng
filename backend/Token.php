@@ -249,6 +249,94 @@ function token_history_by_date($storeId, $from, $to, $limit = 200)
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
+/* Transfer tokens from one user to another by email. */
+
+function token_transfer($fromUserId, $toEmail, $amount)
+{
+    $amount = (int) $amount;
+    if ($amount <= 0) {
+        return ['success' => false, 'error' => 'Invalid amount'];
+    }
+
+    $db = db_get_connection();
+
+    // Find recipient
+    $recipientStmt = $db->prepare('SELECT id, name, token_balance FROM users WHERE email = ?');
+    $recipientStmt->execute([$toEmail]);
+    $recipient = $recipientStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$recipient) {
+        return ['success' => false, 'error' => 'User with that email not found'];
+    }
+
+    if ($recipient['id'] === $fromUserId) {
+        return ['success' => false, 'error' => 'Cannot transfer Vomp Coins to yourself'];
+    }
+
+    // Check sender balance
+    $senderStmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
+    $senderStmt->execute([$fromUserId]);
+    $sender = $senderStmt->fetch(PDO::FETCH_ASSOC);
+    if (!$sender) {
+        return ['success' => false, 'error' => 'Sender not found'];
+    }
+
+    $senderBalance = (int) $sender['token_balance'];
+    if ($senderBalance < $amount) {
+        return ['success' => false, 'error' => 'Insufficient Vomp Coins. Your balance: ' . number_format($senderBalance)];
+    }
+
+    $db->beginTransaction();
+    try {
+        // Deduct from sender
+        $deduct = $db->prepare('UPDATE users SET token_balance = token_balance - ? WHERE id = ? AND token_balance >= ?');
+        $deduct->execute([$amount, $fromUserId, $amount]);
+        if ($deduct->rowCount() === 0) {
+            $db->rollBack();
+            return ['success' => false, 'error' => 'Insufficient Vomp Coins'];
+        }
+
+        // Credit recipient
+        $credit = $db->prepare('UPDATE users SET token_balance = token_balance + ? WHERE id = ?');
+        $credit->execute([$amount, $recipient['id']]);
+
+        // Log debit for sender
+        $logDebit = $db->prepare('INSERT INTO token_transactions (id, store_id, user_id, type, amount, description, created_at) VALUES (?, NULL, ?, \'debit\', ?, ?, NOW())');
+        $logDebit->execute([
+            bin2hex(random_bytes(12)),
+            $fromUserId,
+            $amount,
+            "Transferred {$amount} Vomp Coins to {$recipient['name']} ({$toEmail})",
+        ]);
+
+        // Log credit for recipient
+        $logCredit = $db->prepare('INSERT INTO token_transactions (id, store_id, user_id, type, amount, description, created_at) VALUES (?, NULL, ?, \'credit\', ?, ?, NOW())');
+        $logCredit->execute([
+            bin2hex(random_bytes(12)),
+            $recipient['id'],
+            $amount,
+            "Received {$amount} Vomp Coins from transfer",
+        ]);
+
+        $db->commit();
+        return ['success' => true, 'token_balance' => $senderBalance - $amount, 'transferred' => $amount];
+    } catch (Exception $e) {
+        $db->rollBack();
+        return ['success' => false, 'error' => 'Transfer failed. Please try again.'];
+    }
+}
+
+/* Return user-level token transactions (transfers, no store). */
+
+function token_user_history($userId, $limit = 50)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT * FROM token_transactions WHERE user_id = ? AND store_id IS NULL ORDER BY created_at DESC LIMIT ?');
+    $stmt->bindValue(1, $userId);
+    $stmt->bindValue(2, (int) $limit, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
 /* Upgrade a user to premium by deducting 500 Vomp Coins from their balance. */
 
 function token_upgrade_to_premium($userId, $logStoreId = null)

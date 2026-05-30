@@ -61,6 +61,8 @@ if (
         str_starts_with($requestPath, 'api/settings') ||
         str_starts_with($requestPath, 'api/tokens/purchase') ||
         str_starts_with($requestPath, 'api/tokens_purchase.php') ||
+        str_starts_with($requestPath, 'api/tokens/transfer') ||
+        str_starts_with($requestPath, 'api/tokens_transfer.php') ||
         str_starts_with($requestPath, 'api/store/') ||
         str_starts_with($requestPath, 'api/upgrade')
     )
@@ -185,6 +187,7 @@ if ($method === 'GET') {
                 header('Location: /dashboard/' . rawurlencode($userStores[0]['slug']) . '/tokens');
                 exit;
             }
+            $transactions = token_user_history($currentUser['id']);
             include 'frontend/dashboard_tokens.php';
             break;
 
@@ -268,7 +271,10 @@ if ($method === 'GET') {
                 $content = '<div class="text-center py-12"><h2 class="text-2xl font-bold">Store not found</h2></div>';
                 break;
             }
-            $transactions = token_history($store['id']);
+            $storeTransactions = token_history($store['id']);
+            $userTransactions = token_user_history($currentUser['id']);
+            $transactions = array_merge($storeTransactions, $userTransactions);
+            usort($transactions, fn($a, $b) => strtotime($b['created_at']) - strtotime($a['created_at']));
             include 'frontend/dashboard_tokens.php';
             break;
 
@@ -440,6 +446,10 @@ if ($method === 'GET') {
         case 'api/upgrade':
         case 'api/upgrade.php':
             include 'api/upgrade.php';
+            exit;
+        case 'api/tokens/transfer':
+        case 'api/tokens_transfer.php':
+            include 'api/tokens_transfer.php';
             exit;
         case 'api/admin/toggle-store':
             include 'api/admin_toggle_store.php';

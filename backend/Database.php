@@ -193,10 +193,28 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'products', 'product_condition', "VARCHAR(50) DEFAULT 'Brand-New'");
     db_ensure_column($db, 'products', 'location', 'VARCHAR(255)');
 
+    // Migration: make token_transactions.store_id nullable and add user_id column
+    try {
+        $db->exec("ALTER TABLE token_transactions MODIFY store_id VARCHAR(24) NULL");
+    } catch (PDOException $e) {
+        // May fail if foreign key exists; try dropping FK first
+        try {
+            $fk = $db->query("SELECT CONSTRAINT_NAME FROM information_schema.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'token_transactions' AND COLUMN_NAME = 'store_id' AND REFERENCED_TABLE_NAME IS NOT NULL")->fetchColumn();
+            if ($fk) {
+                $db->exec("ALTER TABLE token_transactions DROP FOREIGN KEY `$fk`");
+            }
+        } catch (PDOException $e2) {}
+        try {
+            $db->exec("ALTER TABLE token_transactions MODIFY store_id VARCHAR(24) NULL");
+        } catch (PDOException $e2) {}
+    }
+    db_ensure_column($db, 'token_transactions', 'user_id', 'VARCHAR(24) NULL');
+
     $indexes = [
         'idx_products_store_id' => 'CREATE INDEX idx_products_store_id ON products(store_id)',
         'idx_stores_owner_id' => 'CREATE INDEX idx_stores_owner_id ON stores(owner_id)',
         'idx_tokens_store_id' => 'CREATE INDEX idx_tokens_store_id ON token_transactions(store_id)',
+        'idx_tokens_user_id' => 'CREATE INDEX idx_tokens_user_id ON token_transactions(user_id)',
     ];
     foreach ($indexes as $name => $sql) {
         try {
