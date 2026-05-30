@@ -19,14 +19,6 @@ if (!$currentUser) {
     exit;
 }
 
-$storeSlug = $_GET['storeSlug'] ?? '';
-$store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
-if (!$store) {
-    http_response_code(404);
-    echo json_encode(['success' => false, 'error' => 'Store not found']);
-    exit;
-}
-
 $data = json_decode(file_get_contents('php://input'), true);
 $tokens = isset($data['tokens']) ? (int) $data['tokens'] : 0;
 
@@ -36,21 +28,34 @@ if ($tokens < TOKEN_MINIMUM) {
     exit;
 }
 
-$totalAmountKobo = $tokens * TOKEN_PRICE_PER_UNIT * 100; // Paystack uses kobo (NGN * 100)
+$storeSlug = $_GET['storeSlug'] ?? '';
+$store = null;
+if ($storeSlug) {
+    $store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
+}
+
+$totalAmountKobo = $tokens * TOKEN_PRICE_PER_UNIT * 100;
 
 $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
 $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-$callbackUrl = "{$scheme}://{$host}/api/tokens_verify.php?storeSlug={$storeSlug}";
+$callbackUrl = "{$scheme}://{$host}/api/tokens_verify.php";
+if ($store) {
+    $callbackUrl .= "?storeSlug={$storeSlug}";
+}
+
+$metadata = [
+    'user_id' => $currentUser['id'],
+    'tokens' => $tokens,
+];
+if ($store) {
+    $metadata['store_slug'] = $storeSlug;
+    $metadata['store_id'] = $store['id'];
+}
 
 $result = paystack_initialize(
     $currentUser['email'],
     $totalAmountKobo,
-    [
-        'store_slug' => $storeSlug,
-        'store_id' => $store['id'],
-        'user_id' => $currentUser['id'],
-        'tokens' => $tokens,
-    ],
+    $metadata,
     $callbackUrl
 );
 

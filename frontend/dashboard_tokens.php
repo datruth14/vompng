@@ -43,21 +43,15 @@ ob_start();
                     </div>
                 </div>
 
-                <?php if (isset($store) && $store): ?>
-                    <button id="purchaseBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8">
-                        Buy Vomp Coins
-                    </button>
-                    <div id="purchaseMsg" class="mt-4"></div>
-                <?php else: ?>
-                    <a href="/dashboard/create-store" class="btn-press w-full py-5 rounded-2xl bg-white/10 text-white font-black text-lg hover:bg-white/20 transition-all mt-8 block text-center">
-                        Create a Store to Purchase Vomp Coins
-                    </a>
-                <?php endif; ?>
+                <button id="purchaseBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8">
+                    Buy Vomp Coins
+                </button>
+                <div id="purchaseMsg" class="mt-4"></div>
             </div>
         </div>
     </div>
 
-    <?php if (isset($store) && $store): ?>
+    <?php if (isset($transactions)): ?>
     <section class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-black text-white">Transaction History</h2>
@@ -109,12 +103,12 @@ ob_start();
     <?php endif; ?>
 </section>
 
-<?php if (isset($store) && $store): ?>
 <script>
 const TOKEN_PRICE = 20;
 const TOKEN_MIN = 50;
 const tokenInput = document.getElementById('tokenInput');
 const totalPrice = document.getElementById('totalPrice');
+const purchaseBtn = document.getElementById('purchaseBtn');
 
 function updatePrice() {
     let val = parseInt(tokenInput.value) || 0;
@@ -129,40 +123,47 @@ tokenInput.addEventListener('blur', () => {
     updatePrice();
 });
 
-document.getElementById('purchaseBtn').addEventListener('click', async function () {
-    const tokens = parseInt(tokenInput.value) || 0;
-    if (tokens < TOKEN_MIN) {
-        document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum purchase is ' + TOKEN_MIN + ' Vomp Coins (₦' + (TOKEN_MIN * TOKEN_PRICE).toLocaleString() + ')</div>';
-        return;
-    }
+if (purchaseBtn) {
+    purchaseBtn.addEventListener('click', async function () {
+        const tokens = parseInt(tokenInput.value) || 0;
+        if (tokens < TOKEN_MIN) {
+            document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum purchase is ' + TOKEN_MIN + ' Vomp Coins (₦' + (TOKEN_MIN * TOKEN_PRICE).toLocaleString() + ')</div>';
+            return;
+        }
 
-    const btn = this;
-    btn.disabled = true;
-    btn.textContent = 'Processing...';
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Processing...';
 
-    const slug = '<?php echo $store['slug']; ?>';
-    try {
-        const res = await fetch(`/api/tokens_purchase.php?storeSlug=${slug}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ tokens })
-        });
-        const result = await res.json();
-        if (result.success && result.authorization_url) {
-            window.location.href = result.authorization_url;
-        } else {
-            document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Failed to initiate payment') + '</div>';
+        <?php if (isset($store) && $store): ?>
+        const slug = '<?php echo $store['slug']; ?>';
+        var url = '/api/tokens_purchase.php?storeSlug=' + slug;
+        <?php else: ?>
+        var url = '/api/tokens_purchase.php';
+        <?php endif; ?>
+
+        try {
+            const res = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tokens })
+            });
+            const result = await res.json();
+            if (result.success && result.authorization_url) {
+                window.location.href = result.authorization_url;
+            } else {
+                document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Failed to initiate payment') + '</div>';
+                btn.disabled = false;
+                btn.textContent = 'Buy Vomp Coins';
+            }
+        } catch (err) {
+            document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
             btn.disabled = false;
             btn.textContent = 'Buy Vomp Coins';
         }
-    } catch (err) {
-        document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
-        btn.disabled = false;
-        btn.textContent = 'Buy Vomp Coins';
-    }
-});
+    });
+}
 </script>
-<?php endif; ?>
 
 <?php
 $content = ob_get_clean();

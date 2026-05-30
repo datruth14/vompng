@@ -13,43 +13,50 @@ require_once __DIR__ . '/../backend/Paystack.php';
 require_once __DIR__ . '/../backend/Logger.php';
 
 $reference = $_GET['reference'] ?? '';
-$storeSlug = $_GET['storeSlug'] ?? '';
 
-if (!$reference || !$storeSlug) {
+if (!$reference) {
     header('Location: /dashboard?error=' . urlencode('Invalid payment verification link'));
     exit;
 }
 
-$store = store_get_by_slug($storeSlug);
-if (!$store) {
-    header('Location: /dashboard?error=' . urlencode('Store not found'));
-    exit;
+$storeSlug = $_GET['storeSlug'] ?? '';
+$store = null;
+if ($storeSlug) {
+    $store = store_get_by_slug($storeSlug);
 }
 
 $verification = paystack_verify($reference);
 if (!$verification['success']) {
-    header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?error=' . urlencode($verification['error']));
+    $redirect = $store ? '/dashboard/' . urlencode($storeSlug) . '/tokens' : '/tokens';
+    header('Location: ' . $redirect . '?error=' . urlencode($verification['error']));
     exit;
 }
 
 $amountPaidKobo = $verification['amount'];
 $metadata = $verification['metadata'] ?? [];
 
-// Calculate tokens from metadata or amount
 $tokens = (int) ($metadata['tokens'] ?? 0);
 if ($tokens <= 0) {
     $tokens = (int) ($amountPaidKobo / 100 / TOKEN_PRICE_PER_UNIT);
 }
 
 if ($tokens <= 0) {
-    header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?error=' . urlencode('Could not determine Vomp Coin count'));
+    $redirect = $store ? '/dashboard/' . urlencode($storeSlug) . '/tokens' : '/tokens';
+    header('Location: ' . $redirect . '?error=' . urlencode('Could not determine Vomp Coin count'));
     exit;
 }
 
-$result = token_purchase($store['owner_id'], $tokens, $store['id']);
+$userId = (int) ($metadata['user_id'] ?? 0);
+if (!$userId && $store) {
+    $userId = $store['owner_id'];
+}
+
+$result = token_purchase($userId, $tokens, $store ? $store['id'] : null);
 if ($result['success']) {
-    logger_info("Paystack payment verified: {$reference}, {$tokens} Vomp Coins credited to user {$store['owner_id']}");
-    header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?success=Payment+verified!+' . $tokens . '+Vomp+Coins+added');
+    logger_info("Paystack payment verified: {$reference}, {$tokens} Vomp Coins credited to user {$userId}");
+    $redirect = $store ? '/dashboard/' . urlencode($storeSlug) . '/tokens' : '/tokens';
+    header('Location: ' . $redirect . '?success=Payment+verified!+' . $tokens . '+Vomp+Coins+added');
 } else {
-    header('Location: /dashboard/' . urlencode($storeSlug) . '/tokens?error=' . urlencode($result['error']));
+    $redirect = $store ? '/dashboard/' . urlencode($storeSlug) . '/tokens' : '/tokens';
+    header('Location: ' . $redirect . '?error=' . urlencode($result['error']));
 }
