@@ -363,7 +363,7 @@ let hasSavedBank = <?php echo $hasBankDetails ? 'true' : 'false'; ?>;
 
 // Load banks into both selects
 function loadBanks(selectId, loadingId, tomSelectVar) {
-    fetch('/api/list_banks.php')
+    return fetch('/api/list_banks.php')
         .then(r => r.json())
         .then(data => {
             const select = document.getElementById(selectId);
@@ -485,7 +485,11 @@ document.getElementById('changeBankBtn')?.addEventListener('click', function () 
     document.getElementById('savedBankDetails').classList.add('hidden');
     document.getElementById('verifyBankSection').classList.remove('hidden');
     document.getElementById('withdrawBtn').classList.add('hidden');
-    loadBanks('verifyBank', 'verifyBankLoading', 'verifyTomSelect');
+    // Destroy old verifyTomSelect if exists, re-init
+    if (verifyTomSelect) { try { verifyTomSelect.destroy(); } catch(e) {} verifyTomSelect = null; }
+    loadBanks('verifyBank', 'verifyBankLoading', 'verifyTomSelect').then(() => {
+        document.getElementById('verifyBank').addEventListener('change', checkVerifyReady);
+    });
 });
 
 document.getElementById('cancelChangeBtn')?.addEventListener('click', function () {
