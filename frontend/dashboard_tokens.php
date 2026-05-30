@@ -83,9 +83,6 @@ ob_start();
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Cash Out</p>
                 <p class="text-3xl font-black text-white mb-6">Withdraw <span class="text-sm text-gray-500 font-medium">to your bank account</span></p>
 
-                <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
-                <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
-
                 <?php
                 $savedBankName = $currentUser['bank_name'] ?? '';
                 $savedBankAccount = $currentUser['bank_account_number'] ?? '';
@@ -113,7 +110,7 @@ ob_start();
                     <!-- Bank Name (Tom Select) -->
                     <div class="w-full">
                         <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
-                        <select id="withdrawBank" placeholder="Search for your bank..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        <select id="withdrawBank" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black appearance-none">
                             <option value="">Select your bank...</option>
                         </select>
                         <div id="withdrawBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
@@ -141,7 +138,7 @@ ob_start();
                     </div>
                     <div class="w-full">
                         <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
-                        <select id="verifyBank" placeholder="Search for your bank..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        <select id="verifyBank" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black appearance-none">
                             <option value="">Select your bank...</option>
                         </select>
                         <div id="verifyBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
@@ -361,9 +358,9 @@ let savedAccountName = '<?php echo htmlspecialchars($savedBankAccountName, ENT_Q
 let savedAccountNumber = '<?php echo htmlspecialchars($savedBankAccount, ENT_QUOTES); ?>';
 let hasSavedBank = <?php echo $hasBankDetails ? 'true' : 'false'; ?>;
 
-// Load banks into both selects
-function loadBanks(selectId, loadingId, tomSelectVar) {
-    return fetch('/api/list_banks.php')
+// Load banks into selects
+function loadBanks(selectId, loadingId) {
+    fetch('/api/list_banks.php')
         .then(r => r.json())
         .then(data => {
             const select = document.getElementById(selectId);
@@ -377,28 +374,17 @@ function loadBanks(selectId, loadingId, tomSelectVar) {
                     select.appendChild(opt);
                 });
             }
-            const ts = new TomSelect('#' + selectId, {
-                placeholder: 'Search for your bank...',
-                allowEmptyOption: true,
-                maxOptions: 100,
-                searchField: ['text'],
-            });
-            if (tomSelectVar) window[tomSelectVar] = ts;
-            return ts;
+            // Attach change handler
+            select.addEventListener('change', checkVerifyReady);
         })
         .catch(() => {
             document.getElementById(loadingId).textContent = 'Failed to load banks';
         });
 }
 
-let withdrawTomSelect = null;
-let verifyTomSelect = null;
-
-loadBanks('withdrawBank', 'withdrawBankLoading', 'withdrawTomSelect');
+loadBanks('withdrawBank', 'withdrawBankLoading');
 if (!hasSavedBank) {
-    loadBanks('verifyBank', 'verifyBankLoading', 'verifyTomSelect').then(() => {
-        document.getElementById('verifyBank').addEventListener('change', checkVerifyReady);
-    });
+    loadBanks('verifyBank', 'verifyBankLoading');
 }
 
 // Amount
@@ -481,11 +467,7 @@ document.getElementById('changeBankBtn')?.addEventListener('click', function () 
     document.getElementById('savedBankDetails').classList.add('hidden');
     document.getElementById('verifyBankSection').classList.remove('hidden');
     document.getElementById('withdrawBtn').classList.add('hidden');
-    // Destroy old verifyTomSelect if exists, re-init
-    if (verifyTomSelect) { try { verifyTomSelect.destroy(); } catch(e) {} verifyTomSelect = null; }
-    loadBanks('verifyBank', 'verifyBankLoading', 'verifyTomSelect').then(() => {
-        document.getElementById('verifyBank').addEventListener('change', checkVerifyReady);
-    });
+    loadBanks('verifyBank', 'verifyBankLoading');
 });
 
 document.getElementById('cancelChangeBtn')?.addEventListener('click', function () {
