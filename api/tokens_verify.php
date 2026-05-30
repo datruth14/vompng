@@ -33,7 +33,20 @@ if (!$verification['success']) {
 }
 
 $amountPaidKobo = $verification['amount'];
-$metadata = $verification['metadata'] ?? [];
+$rawMetadata = $verification['metadata'] ?? [];
+
+// Normalize metadata: Paystack may return it as array or JSON-encoded string
+$metadata = is_array($rawMetadata) ? $rawMetadata : (json_decode($rawMetadata, true) ?: []);
+// Also check nested custom_fields
+if (empty($metadata['user_id']) && !empty($metadata['custom_fields'])) {
+    foreach ($metadata['custom_fields'] as $cf) {
+        if (isset($cf['variable_name']) && $cf['variable_name'] === 'user_id') {
+            $metadata['user_id'] = $cf['value'] ?? 0;
+        }
+    }
+}
+
+logger_info("Paystack verify metadata: " . json_encode($metadata));
 
 $tokens = (int) ($metadata['tokens'] ?? 0);
 if ($tokens <= 0) {
@@ -49,6 +62,20 @@ if ($tokens <= 0) {
 $userId = (int) ($metadata['user_id'] ?? 0);
 if (!$userId && $store) {
     $userId = $store['owner_id'];
+}
+
+// Fallback: get user from active session
+if (!$userId) {
+    $currentUser = auth_get_current_user();
+    if ($currentUser) {
+        $userId = $currentUser['id'];
+    }
+}
+
+if (!$userId) {
+    $redirect = $store ? '/dashboard/' . urlencode($storeSlug) . '/tokens' : '/tokens';
+    header('Location: ' . $redirect . '?error=' . urlencode('Could not identify your account. Please contact support.'));
+    exit;
 }
 
 $result = token_purchase($userId, $tokens, $store ? $store['id'] : null);
