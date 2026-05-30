@@ -201,7 +201,7 @@ function paystack_resolve_account($accountNumber, $bankCode)
 
 /* Create a transfer recipient on Paystack. */
 
-function paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName)
+function paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName, &$errorMsg = '')
 {
     $sk = paystack_secret_key();
     $fields = [
@@ -212,22 +212,11 @@ function paystack_create_transfer_recipient($bankCode, $accountNumber, $accountN
         'currency' => 'NGN',
     ];
 
-    $ch = curl_init('https://api.paystack.co/transferrecipient');
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $sk,
-        'Content-Type: application/json',
-    ]);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
+    [$response, $httpCode] = paystack_http_post('https://api.paystack.co/transferrecipient', $fields);
     $body = json_decode($response, true);
 
     if ($httpCode !== 201 || !$body || !($body['status'] ?? false)) {
+        $errorMsg = $body['message'] ?? 'Unknown error';
         return null;
     }
 
@@ -252,19 +241,7 @@ function paystack_initiate_transfer($recipientCode, $amountKobo, $reason = '')
         'reference' => $reference,
     ];
 
-    $ch = curl_init('https://api.paystack.co/transfer');
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Authorization: Bearer ' . $sk,
-        'Content-Type: application/json',
-    ]);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
+    [$response, $httpCode] = paystack_http_post('https://api.paystack.co/transfer', $fields);
     $body = json_decode($response, true);
 
     if ($httpCode !== 200 || !$body || !($body['status'] ?? false)) {

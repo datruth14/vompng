@@ -430,9 +430,10 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
     }
 
     // Create Paystack transfer recipient
-    $recipient = paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName);
+    $paystackError = '';
+    $recipient = paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName, $paystackError);
     if (!$recipient) {
-        return ['success' => false, 'error' => 'Failed to create transfer recipient. Check bank details and try again.'];
+        return ['success' => false, 'error' => 'Failed to create transfer recipient: ' . $paystackError];
     }
 
     // Initiate Paystack transfer
