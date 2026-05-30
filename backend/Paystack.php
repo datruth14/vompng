@@ -203,7 +203,8 @@ function paystack_resolve_account($accountNumber, $bankCode)
 
 function paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName)
 {
-    $params = [
+    $sk = paystack_secret_key();
+    $fields = [
         'type' => 'nuban',
         'name' => $accountName,
         'account_number' => $accountNumber,
@@ -211,7 +212,19 @@ function paystack_create_transfer_recipient($bankCode, $accountNumber, $accountN
         'currency' => 'NGN',
     ];
 
-    [$response, $httpCode] = paystack_http_post('https://api.paystack.co/transferrecipient', $params);
+    $ch = curl_init('https://api.paystack.co/transferrecipient');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $sk,
+        'Content-Type: application/json',
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
     $body = json_decode($response, true);
 
     if ($httpCode !== 201 || !$body || !($body['status'] ?? false)) {
@@ -228,14 +241,30 @@ function paystack_create_transfer_recipient($bankCode, $accountNumber, $accountN
 
 function paystack_initiate_transfer($recipientCode, $amountKobo, $reason = '')
 {
-    $params = [
+    $sk = paystack_secret_key();
+    $reference = 'wd_' . uniqid();
+
+    $fields = [
         'source' => 'balance',
         'amount' => (int) $amountKobo,
         'recipient' => $recipientCode,
         'reason' => $reason ?: 'Vomp Coin withdrawal',
+        'reference' => $reference,
     ];
 
-    [$response, $httpCode] = paystack_http_post('https://api.paystack.co/transfer', $params);
+    $ch = curl_init('https://api.paystack.co/transfer');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($fields));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $sk,
+        'Content-Type: application/json',
+    ]);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+
     $body = json_decode($response, true);
 
     if ($httpCode !== 200 || !$body || !($body['status'] ?? false)) {
@@ -247,5 +276,6 @@ function paystack_initiate_transfer($recipientCode, $amountKobo, $reason = '')
         'transfer_code' => $body['data']['transfer_code'] ?? '',
         'status' => $body['data']['status'] ?? '',
         'amount' => $body['data']['amount'] ?? $amountKobo,
+        'reference' => $reference,
     ];
 }

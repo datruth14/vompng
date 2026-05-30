@@ -417,7 +417,17 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
     }
 
     $nairaAmount = $amount * TOKEN_PRICE_PER_UNIT;
-    $amountKobo = $nairaAmount * 100;
+
+    // Fee calculation (matching old app: 2% Paystack + 2% platform)
+    $paystackFee = (int) ($nairaAmount * 0.02);
+    $platformFee = (int) ($nairaAmount * 0.02);
+    $totalDeductions = $paystackFee + $platformFee;
+    $netNaira = $nairaAmount - $totalDeductions;
+    $amountKobo = $netNaira * 100;
+
+    if ($amountKobo < 100) {
+        return ['success' => false, 'error' => 'Net amount after fees is too low (minimum ₦1)'];
+    }
 
     // Create Paystack transfer recipient
     $recipient = paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName);
