@@ -96,8 +96,10 @@ ob_start();
                     <div class="border-t border-white/10 pt-6 space-y-6">
                         <div class="w-full">
                             <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
-                            <select id="withdrawBank" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black appearance-none">
-                                <option value="" class="bg-gray-900 text-gray-500">Select your bank...</option>
+                            <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+                            <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+                            <select id="withdrawBank" placeholder="Search for your bank..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                                <option value="">Select your bank...</option>
                             </select>
                             <div id="withdrawBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
                         </div>
@@ -318,6 +320,7 @@ if (transferBtn) {
 let withdrawBankCode = '';
 let withdrawBankName = '';
 let withdrawAccountName = '';
+let withdrawTomSelect = null;
 
 // Load banks into dropdown
 fetch('/api/list_banks.php')
@@ -334,6 +337,21 @@ fetch('/api/list_banks.php')
                 select.appendChild(opt);
             });
         }
+        // Init Tom Select after options loaded
+        withdrawTomSelect = new TomSelect('#withdrawBank', {
+            placeholder: 'Search for your bank...',
+            allowEmptyOption: true,
+            maxOptions: 100,
+            searchField: ['text'],
+            onChange: function (value) {
+                withdrawBankCode = value;
+                const opt = this.options[value];
+                withdrawBankName = opt ? opt.text : '';
+                document.getElementById('withdrawAccountName').classList.add('hidden');
+                document.getElementById('withdrawBtn').classList.add('hidden');
+                checkVerifyReady();
+            }
+        });
     })
     .catch(() => {
         document.getElementById('withdrawBankLoading').textContent = 'Failed to load banks';
@@ -345,14 +363,6 @@ function checkVerifyReady() {
     const acct = document.getElementById('withdrawAccount').value.replace(/\D/g, '');
     document.getElementById('withdrawVerifyBtn').disabled = !(bank && acct.length === 10);
 }
-
-document.getElementById('withdrawBank').addEventListener('change', function () {
-    withdrawBankCode = this.value;
-    withdrawBankName = this.options[this.selectedIndex]?.text || '';
-    document.getElementById('withdrawAccountName').classList.add('hidden');
-    document.getElementById('withdrawBtn').classList.add('hidden');
-    checkVerifyReady();
-});
 
 document.getElementById('withdrawAccount').addEventListener('input', function () {
     const num = this.value.replace(/\D/g, '').slice(0, 10);
@@ -411,8 +421,8 @@ if (withdrawBtn) {
             document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum withdrawal is 50 Vomp Coins (₦1,000)</div>';
             return;
         }
-        if (!withdrawSelectedBankCode) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please select a bank from the results</div>';
+        if (!withdrawBankCode) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please select a bank and verify your account</div>';
             return;
         }
 
@@ -426,20 +436,20 @@ if (withdrawBtn) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     amount,
-                    bank_name: withdrawSelectedBankName,
-                    bank_code: withdrawSelectedBankCode,
+                    bank_name: withdrawBankName,
+                    bank_code: withdrawBankCode,
                     account_number: accountNumber,
-                    account_name: withdrawSelectedAccountName
+                    account_name: withdrawAccountName
                 })
             });
             const result = await res.json();
             if (result.success) {
-                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + withdrawSelectedBankName + ' ' + accountNumber + ' (' + withdrawSelectedAccountName + ')</div>';
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + withdrawBankName + ' ' + accountNumber + ' (' + withdrawAccountName + ')</div>';
                 document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
                 document.getElementById('withdrawAmount').value = 50;
                 updateWithdrawNaira();
                 document.getElementById('withdrawAccount').value = '';
-                document.getElementById('withdrawResults').classList.add('hidden');
+                document.getElementById('withdrawAccountName').classList.add('hidden');
                 document.getElementById('withdrawBtn').classList.add('hidden');
                 document.getElementById('withdrawAccount').dispatchEvent(new Event('input'));
             } else {
