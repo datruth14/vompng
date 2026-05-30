@@ -437,13 +437,13 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
     $paystackError = '';
     $recipient = paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName, $paystackError);
     if (!$recipient) {
-        return ['success' => false, 'error' => 'Failed to create transfer recipient: ' . $paystackError];
+        return ['success' => false, 'error' => 'The network is currently unstable. Please try again later. Thank you.'];
     }
 
     // Initiate Paystack transfer
     $transfer = paystack_initiate_transfer($recipient['recipient_code'], $amountKobo, "Vomp Coin withdrawal — {$amount} coins");
     if (!$transfer['success']) {
-        return ['success' => false, 'error' => $transfer['error']];
+        return ['success' => false, 'error' => 'The network is currently unstable. Please try again later. Thank you.'];
     }
 
     $db->beginTransaction();
@@ -487,6 +487,6 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
         return ['success' => true, 'token_balance' => $balance - $amount, 'withdrawn' => $amount, 'transfer_status' => $transfer['status']];
     } catch (Exception $e) {
         $db->rollBack();
-        return ['success' => false, 'error' => 'Withdrawal failed. Please try again.'];
+        return ['success' => false, 'error' => 'The network is currently unstable. Please try again later. Thank you.'];
     }
 }
