@@ -126,13 +126,6 @@ ob_start();
                 <!-- Verify new bank details (hidden unless no saved details or "change" clicked) -->
                 <div id="verifyBankSection" class="space-y-6 <?php echo $hasBankDetails ? 'hidden' : ''; ?>">
                     <div class="w-full">
-                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
-                        <select id="verifyBank" placeholder="Search for your bank..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
-                            <option value="">Select your bank...</option>
-                        </select>
-                        <div id="verifyBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
-                    </div>
-                    <div class="w-full">
                         <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Number</label>
                         <div class="flex gap-3 items-end">
                             <div class="flex-1">
@@ -145,6 +138,13 @@ ob_start();
                             <p class="text-gray-400 text-xs mt-2 font-medium">Verifying account...</p>
                         </div>
                         <div id="verifyResult" class="hidden mt-3"></div>
+                    </div>
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank</label>
+                        <select id="verifyBank" placeholder="Search for your bank..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                            <option value="">Select your bank...</option>
+                        </select>
+                        <div id="verifyBankLoading" class="text-xs text-gray-500 mt-2 ml-1">Loading banks...</div>
                     </div>
                     <input type="hidden" id="verifyBankCode" value="">
                     <?php if ($hasBankDetails): ?>
@@ -396,7 +396,9 @@ let verifyTomSelect = null;
 
 loadBanks('withdrawBank', 'withdrawBankLoading', 'withdrawTomSelect');
 if (!hasSavedBank) {
-    loadBanks('verifyBank', 'verifyBankLoading', 'verifyTomSelect');
+    loadBanks('verifyBank', 'verifyBankLoading', 'verifyTomSelect').then(() => {
+        document.getElementById('verifyBank').addEventListener('change', checkVerifyReady);
+    });
 }
 
 // Amount formatting (like old script)
