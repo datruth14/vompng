@@ -150,3 +150,102 @@ function paystack_verify($reference)
         'metadata' => $data['metadata'] ?? [],
     ];
 }
+
+/* Fetch all Nigerian banks from Paystack. */
+
+function paystack_list_banks()
+{
+    $cacheFile = __DIR__ . '/../cache/banks.json';
+    if (is_file($cacheFile) && time() - filemtime($cacheFile) < 86400) {
+        $cached = json_decode(file_get_contents($cacheFile), true);
+        if ($cached) return $cached;
+    }
+
+    $all = [];
+    $page = 1;
+    $perPage = 100;
+    while (true) {
+        [$response, $httpCode] = paystack_http_get("https://api.paystack.co/bank?country=nigeria&perPage={$perPage}&page={$page}");
+        $body = json_decode($response, true);
+        if ($httpCode !== 200 || !$body || !($body['status'] ?? false)) break;
+        $data = $body['data'] ?? [];
+        if (empty($data)) break;
+        $all = array_merge($all, $data);
+        if (count($data) < $perPage) break;
+        $page++;
+    }
+
+    if (!empty($all)) {
+        $dir = dirname($cacheFile);
+        if (!is_dir($dir)) mkdir($dir, 0755, true);
+        file_put_contents($cacheFile, json_encode($all));
+    }
+
+    return $all;
+}
+
+/* Resolve account name for a given account number and bank code. */
+
+function paystack_resolve_account($accountNumber, $bankCode)
+{
+    [$response, $httpCode] = paystack_http_get("https://api.paystack.co/bank/resolve?account_number={$accountNumber}&bank_code={$bankCode}");
+    $body = json_decode($response, true);
+    if ($httpCode !== 200 || !$body || !($body['status'] ?? false)) {
+        return null;
+    }
+    return [
+        'account_number' => $body['data']['account_number'] ?? $accountNumber,
+        'account_name' => $body['data']['account_name'] ?? '',
+    ];
+}
+
+/* Create a transfer recipient on Paystack. */
+
+function paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName)
+{
+    $params = [
+        'type' => 'nuban',
+        'name' => $accountName,
+        'account_number' => $accountNumber,
+        'bank_code' => $bankCode,
+        'currency' => 'NGN',
+    ];
+
+    [$response, $httpCode] = paystack_http_post('https://api.paystack.co/transferrecipient', $params);
+    $body = json_decode($response, true);
+
+    if ($httpCode !== 201 || !$body || !($body['status'] ?? false)) {
+        return null;
+    }
+
+    return [
+        'recipient_code' => $body['data']['recipient_code'] ?? '',
+        'recipient_id' => $body['data']['id'] ?? '',
+    ];
+}
+
+/* Initiate a transfer to a recipient. */
+
+function paystack_initiate_transfer($recipientCode, $amountKobo, $reason = '')
+{
+    $params = [
+        'source' => 'balance',
+        'amount' => (int) $amountKobo,
+        'recipient' => $recipientCode,
+        'reason' => $reason ?: 'Vomp Coin withdrawal',
+    ];
+
+    [$response, $httpCode] = paystack_http_post('https://api.paystack.co/transfer', $params);
+    $body = json_decode($response, true);
+
+    if ($httpCode !== 200 || !$body || !($body['status'] ?? false)) {
+        return ['success' => false, 'error' => $body['message'] ?? 'Transfer initiation failed'];
+    }
+
+    return [
+        'success' => true,
+        'transfer_code' => $body['data']['transfer_code'] ?? '',
+        'status' => $body['data']['status'] ?? '',
+        'amount' => $body['data']['amount'] ?? $amountKobo,
+    ];
+}

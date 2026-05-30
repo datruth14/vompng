@@ -95,25 +95,20 @@ ob_start();
                     </div>
                     <div class="border-t border-white/10 pt-6 space-y-6">
                         <div class="w-full">
-                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Bank Name</label>
-                            <input type="text" id="withdrawBank" list="bankList" placeholder="e.g. GTBank" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
-                            <datalist id="bankList">
-                                <option value="Access Bank"><option value="Fidelity Bank"><option value="First Bank"><option value="GTBank"><option value="Opay"><option value="PalmPay"><option value="Moniepoint"><option value="Kuda Bank"><option value="UBA"><option value="Union Bank"><option value="Zenith Bank"><option value="Polaris Bank"><option value="Stanbic IBTC"><option value="FCMB"><option value="Wema Bank"><option value="Sterling Bank"><option value="Providus Bank"><option value="Ecobank"><option value="Heritage Bank"><option value="Keystone Bank">
-                            </datalist>
-                        </div>
-                        <div class="w-full">
                             <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Number</label>
-                            <input type="text" id="withdrawAccount" maxlength="10" placeholder="0123456789" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                            <input type="text" id="withdrawAccount" maxlength="10" placeholder="Enter 10-digit account number" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black" autocomplete="off">
                         </div>
-                        <div class="w-full">
-                            <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Name</label>
-                            <input type="text" id="withdrawName" placeholder="Full name on bank account" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        <div id="withdrawResolving" class="hidden text-center py-4">
+                            <div class="inline-block w-6 h-6 border-2 border-[#ff610a] border-t-transparent rounded-full animate-spin"></div>
+                            <p class="text-gray-400 text-sm mt-2 font-medium">Checking all banks...</p>
                         </div>
+                        <div id="withdrawResults" class="hidden space-y-2"></div>
+                        <input type="hidden" id="withdrawBankCode" value="">
                         <p class="text-xs text-gray-500 ml-1">Your balance: <span id="withdrawBalance" class="text-white font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></span> Vomp Coins</p>
                     </div>
                 </div>
 
-                <button id="withdrawBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8">
+                <button id="withdrawBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8 hidden">
                     Submit Withdrawal Request
                 </button>
                 <div id="withdrawMsg" class="mt-4"></div>
@@ -308,27 +303,74 @@ if (transferBtn) {
     });
 }
 
+let withdrawSelectedBankCode = '';
+let withdrawSelectedBankName = '';
+let withdrawSelectedAccountName = '';
+
+document.getElementById('withdrawAccount').addEventListener('input', function () {
+    const num = this.value.replace(/\D/g, '').slice(0, 10);
+    this.value = num;
+    document.getElementById('withdrawResults').classList.add('hidden');
+    document.getElementById('withdrawBtn').classList.add('hidden');
+    withdrawSelectedBankCode = '';
+    withdrawSelectedBankName = '';
+    withdrawSelectedAccountName = '';
+
+    if (num.length === 10) {
+        const resolving = document.getElementById('withdrawResolving');
+        const results = document.getElementById('withdrawResults');
+        resolving.classList.remove('hidden');
+        results.classList.add('hidden');
+
+        fetch('/api/resolve_account.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ account_number: num })
+        })
+        .then(r => r.json())
+        .then(data => {
+            resolving.classList.add('hidden');
+            if (data.success && data.results.length > 0) {
+                results.innerHTML = '<p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-3 ml-1">Select your bank</p>';
+                data.results.forEach(r => {
+                    const div = document.createElement('div');
+                    div.className = 'p-4 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-[#ff610a]/30 cursor-pointer transition-all';
+                    div.innerHTML = '<p class="text-white font-black">' + r.bank_name + '</p><p class="text-gray-400 text-sm mt-1">' + r.account_name + '</p>';
+                    div.addEventListener('click', function () {
+                        document.querySelectorAll('#withdrawResults > div:not(:first-child)').forEach(el => el.className = 'p-4 rounded-xl bg-white/5 border border-white/10 cursor-pointer transition-all');
+                        this.className = 'p-4 rounded-xl bg-[#ff610a]/10 border border-[#ff610a]/40 cursor-pointer transition-all';
+                        withdrawSelectedBankCode = r.bank_code;
+                        withdrawSelectedBankName = r.bank_name;
+                        withdrawSelectedAccountName = r.account_name;
+                        document.getElementById('withdrawBtn').classList.remove('hidden');
+                    });
+                    results.appendChild(div);
+                });
+                results.classList.remove('hidden');
+            } else {
+                results.innerHTML = '<div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-medium">No bank account found with this number across any Nigerian bank</div>';
+                results.classList.remove('hidden');
+            }
+        })
+        .catch(() => {
+            resolving.classList.add('hidden');
+            document.getElementById('withdrawResults').innerHTML = '<div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-medium">Network error. Please try again.</div>';
+            document.getElementById('withdrawResults').classList.remove('hidden');
+        });
+    }
+});
+
 if (withdrawBtn) {
     withdrawBtn.addEventListener('click', async function () {
         const amount = parseInt(withdrawAmount.value) || 0;
-        const bankName = document.getElementById('withdrawBank').value.trim();
         const accountNumber = document.getElementById('withdrawAccount').value.trim();
-        const accountName = document.getElementById('withdrawName').value.trim();
 
         if (amount < 50) {
             document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum withdrawal is 50 Vomp Coins (₦1,000)</div>';
             return;
         }
-        if (!bankName) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please enter your bank name</div>';
-            return;
-        }
-        if (!/^\d{10}$/.test(accountNumber)) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please enter a valid 10-digit account number</div>';
-            return;
-        }
-        if (!accountName) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please enter the account holder name</div>';
+        if (!withdrawSelectedBankCode) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please select a bank from the results</div>';
             return;
         }
 
@@ -340,14 +382,24 @@ if (withdrawBtn) {
             const res = await fetch('/api/tokens_withdraw.php', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, bank_name: bankName, account_number: accountNumber, account_name: accountName })
+                body: JSON.stringify({
+                    amount,
+                    bank_name: withdrawSelectedBankName,
+                    bank_code: withdrawSelectedBankCode,
+                    account_number: accountNumber,
+                    account_name: withdrawSelectedAccountName
+                })
             });
             const result = await res.json();
             if (result.success) {
-                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal request submitted! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') will be sent to ' + bankName + ' ' + accountNumber + ' after review.</div>';
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + withdrawSelectedBankName + ' ' + accountNumber + ' (' + withdrawSelectedAccountName + ')</div>';
                 document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
                 document.getElementById('withdrawAmount').value = 50;
                 updateWithdrawNaira();
+                document.getElementById('withdrawAccount').value = '';
+                document.getElementById('withdrawResults').classList.add('hidden');
+                document.getElementById('withdrawBtn').classList.add('hidden');
+                document.getElementById('withdrawAccount').dispatchEvent(new Event('input'));
             } else {
                 document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
             }

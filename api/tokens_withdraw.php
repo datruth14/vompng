@@ -16,6 +16,7 @@ if (!$currentUser) {
 $data = json_decode(file_get_contents('php://input'), true);
 $amount = (int) ($data['amount'] ?? 0);
 $bankName = trim($data['bank_name'] ?? '');
+$bankCode = trim($data['bank_code'] ?? '');
 $accountNumber = trim($data['account_number'] ?? '');
 $accountName = trim($data['account_name'] ?? '');
 
@@ -25,7 +26,7 @@ if ($amount < 1) {
     exit;
 }
 
-if (!$bankName || !$accountNumber || !$accountName) {
+if (!$bankName || !$bankCode || !$accountNumber || !$accountName) {
     http_response_code(400);
     echo json_encode(['success' => false, 'error' => 'All bank details are required']);
     exit;
@@ -37,5 +38,5 @@ if (!preg_match('/^\d{10}$/', $accountNumber)) {
     exit;
 }
 
-$result = token_withdraw($currentUser['id'], $amount, $bankName, $accountNumber, $accountName);
+$result = token_withdraw($currentUser['id'], $amount, $bankName, $bankCode, $accountNumber, $accountName);
 echo json_encode($result);

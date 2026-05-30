@@ -8,6 +8,7 @@
 
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/Product.php';
+require_once __DIR__ . '/Paystack.php';
 
 const TOKEN_PRICE_PER_UNIT = 20;
 const TOKEN_MINIMUM = 50;
@@ -392,9 +393,9 @@ function token_upgrade_to_premium($userId, $logStoreId = null)
 
 const TOKEN_WITHDRAW_MIN = 50;
 
-/* Submit a withdrawal request for Vomp Coins to a bank account. */
+/* Submit a withdrawal request for Vomp Coins to a bank account via Paystack transfer. */
 
-function token_withdraw($userId, $amount, $bankName, $accountNumber, $accountName)
+function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, $accountName)
 {
     $amount = (int) $amount;
     if ($amount < TOKEN_WITHDRAW_MIN) {
@@ -416,6 +417,19 @@ function token_withdraw($userId, $amount, $bankName, $accountNumber, $accountNam
     }
 
     $nairaAmount = $amount * TOKEN_PRICE_PER_UNIT;
+    $amountKobo = $nairaAmount * 100;
+
+    // Create Paystack transfer recipient
+    $recipient = paystack_create_transfer_recipient($bankCode, $accountNumber, $accountName);
+    if (!$recipient) {
+        return ['success' => false, 'error' => 'Failed to create transfer recipient. Check bank details and try again.'];
+    }
+
+    // Initiate Paystack transfer
+    $transfer = paystack_initiate_transfer($recipient['recipient_code'], $amountKobo, "Vomp Coin withdrawal — {$amount} coins");
+    if (!$transfer['success']) {
+        return ['success' => false, 'error' => $transfer['error']];
+    }
 
     $db->beginTransaction();
     try {
@@ -431,24 +445,29 @@ function token_withdraw($userId, $amount, $bankName, $accountNumber, $accountNam
             bin2hex(random_bytes(12)),
             $userId,
             $amount,
-            "Withdrawal request — {$amount} Vomp Coins (₦" . number_format($nairaAmount) . ") to {$bankName} {$accountNumber}",
+            "Withdrawal — {$amount} Vomp Coins (₦" . number_format($nairaAmount) . ") sent to {$bankName} {$accountNumber}",
         ]);
 
-        $withdraw = $db->prepare('INSERT INTO withdrawals (id, user_id, amount, naira_amount, bank_name, account_number, account_name, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, \'pending\', NOW())');
+        $withdrawId = bin2hex(random_bytes(12));
+        $withdraw = $db->prepare('INSERT INTO withdrawals (id, user_id, amount, naira_amount, bank_name, bank_code, account_number, account_name, recipient_code, transfer_code, status, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())');
         $withdraw->execute([
-            bin2hex(random_bytes(12)),
+            $withdrawId,
             $userId,
             $amount,
             $nairaAmount,
             $bankName,
+            $bankCode,
             $accountNumber,
             $accountName,
+            $recipient['recipient_code'],
+            $transfer['transfer_code'],
+            $transfer['status'],
         ]);
 
         $db->commit();
-        return ['success' => true, 'token_balance' => $balance - $amount, 'withdrawn' => $amount];
+        return ['success' => true, 'token_balance' => $balance - $amount, 'withdrawn' => $amount, 'transfer_status' => $transfer['status']];
     } catch (Exception $e) {
         $db->rollBack();
-        return ['success' => false, 'error' => 'Withdrawal request failed. Please try again.'];
+        return ['success' => false, 'error' => 'Withdrawal failed. Please try again.'];
     }
 }

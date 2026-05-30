@@ -223,6 +223,9 @@ function db_init_schema(PDO $db)
         } catch (PDOException $e2) {}
     }
     db_ensure_column($db, 'token_transactions', 'user_id', 'VARCHAR(24) NULL');
+    db_ensure_column($db, 'withdrawals', 'bank_code', 'VARCHAR(20)');
+    db_ensure_column($db, 'withdrawals', 'recipient_code', 'VARCHAR(100)');
+    db_ensure_column($db, 'withdrawals', 'transfer_code', 'VARCHAR(100)');
 
     $indexes = [
         'idx_products_store_id' => 'CREATE INDEX idx_products_store_id ON products(store_id)',
