@@ -330,6 +330,7 @@ if ($method === 'GET') {
                     $totalStores = admin_count_stores();
                     $totalProducts = admin_count_products();
                     $totalTransactions = admin_count_transactions();
+                    $commissionSummary = admin_commission_summary();
                     include 'frontend/admin/dashboard.php';
                     break;
 

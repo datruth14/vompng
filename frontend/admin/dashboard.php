@@ -25,6 +25,10 @@ ob_start();
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Token Transactions</p>
             <p class="text-4xl md:text-5xl font-black text-[#ff610a] break-all"><?php echo number_format($totalTransactions); ?></p>
         </div>
+        <div class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-emerald-500/20" style="background: rgba(5,150,105,0.08);">
+            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Commission Earned</p>
+            <p class="text-4xl md:text-5xl font-black text-emerald-400 break-all">₦<?php echo number_format($commissionSummary['total_commission']); ?></p>
+        </div>
     </div>
 
     <div class="grid md:grid-cols-3 gap-6">
