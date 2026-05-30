@@ -76,5 +76,5 @@ function mailer_notify_withdrawal($userName, $userEmail, $amount, $nairaAmount, 
             <p style="font-size: 12px; color: #ff610a; text-align: center; font-weight: bold;">Please fund the Paystack wallet to enable this withdrawal</p>
         </div>';
 
-    return mailer_send('14eter@gmail.com', 'Withdrawal Request — ' . $userName . ' — ' . number_format($amount) . ' Vomp Coins', $html);
+    return mailer_send('virtualopenmarket@gmail.com', 'Withdrawal Request — ' . $userName . ' — ' . number_format($amount) . ' Vomp Coins', $html);
 }
