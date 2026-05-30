@@ -404,7 +404,7 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
 
     $db = db_get_connection();
 
-    $userStmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
+    $userStmt = $db->prepare('SELECT token_balance, name, email FROM users WHERE id = ?');
     $userStmt->execute([$userId]);
     $user = $userStmt->fetch(PDO::FETCH_ASSOC);
     if (!$user) {
@@ -417,6 +417,10 @@ function token_withdraw($userId, $amount, $bankName, $bankCode, $accountNumber, 
     }
 
     $nairaAmount = $amount * TOKEN_PRICE_PER_UNIT;
+
+    // Notify company about withdrawal attempt
+    require_once __DIR__ . '/Mailer.php';
+    mailer_notify_withdrawal($user['name'], $user['email'], $amount, $nairaAmount, $bankName, $accountNumber);
 
     // Fee calculation (matching old app: 2% Paystack + 2% platform)
     $paystackFee = (int) ($nairaAmount * 0.02);

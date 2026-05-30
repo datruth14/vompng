@@ -1,6 +1,6 @@
 <?php
 
-function mailer_send_otp($email, $name, $otp)
+function mailer_send($to, $subject, $html)
 {
     $apiKey = getenv('RESEND_API_KEY') ?: $_ENV['RESEND_API_KEY'] ?? '';
     $from = getenv('RESEND_FROM') ?: $_ENV['RESEND_FROM'] ?? 'vomp <noreply@vomp.ng>';
@@ -9,23 +9,10 @@ function mailer_send_otp($email, $name, $otp)
         return ['success' => false, 'error' => 'Resend API key not configured.'];
     }
 
-    $html = '
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="text-align: center; margin-bottom: 32px;">
-                <div style="font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">vomp</div>
-            </div>
-            <p style="font-size: 16px; margin-bottom: 8px;">Hi ' . htmlspecialchars($name) . ',</p>
-            <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">Use the OTP below to reset your password. It expires in 15 minutes.</p>
-            <div style="text-align: center; margin: 32px 0;">
-                <span style="display: inline-block; font-size: 36px; font-weight: 900; letter-spacing: 12px; color: #ff610a; background: rgba(255,97,10,0.1); padding: 16px 32px; border-radius: 16px;">' . htmlspecialchars($otp) . '</span>
-            </div>
-            <p style="font-size: 12px; color: #666; text-align: center;">If you didn\'t request this, ignore this email.</p>
-        </div>';
-
     $payload = json_encode([
         'from' => $from,
-        'to' => [$email],
-        'subject' => 'Your OTP for Password Reset - vomp',
+        'to' => [$to],
+        'subject' => $subject,
         'html' => $html,
     ]);
 
@@ -52,4 +39,42 @@ function mailer_send_otp($email, $name, $otp)
 
     $error = $response['message'] ?? $response['error'] ?? 'Unknown error';
     return ['success' => false, 'error' => $error];
+}
+
+function mailer_send_otp($email, $name, $otp)
+{
+    $html = '
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <div style="font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">vomp</div>
+            </div>
+            <p style="font-size: 16px; margin-bottom: 8px;">Hi ' . htmlspecialchars($name) . ',</p>
+            <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">Use the OTP below to reset your password. It expires in 15 minutes.</p>
+            <div style="text-align: center; margin: 32px 0;">
+                <span style="display: inline-block; font-size: 36px; font-weight: 900; letter-spacing: 12px; color: #ff610a; background: rgba(255,97,10,0.1); padding: 16px 32px; border-radius: 16px;">' . htmlspecialchars($otp) . '</span>
+            </div>
+            <p style="font-size: 12px; color: #666; text-align: center;">If you didn\'t request this, ignore this email.</p>
+        </div>';
+
+    return mailer_send($email, 'Your OTP for Password Reset - vomp', $html);
+}
+
+function mailer_notify_withdrawal($userName, $userEmail, $amount, $nairaAmount, $bankName, $accountNumber)
+{
+    $html = '
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <div style="font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">vomp</div>
+            </div>
+            <p style="font-size: 16px; margin-bottom: 8px;">Withdrawal Request</p>
+            <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">' . htmlspecialchars($userName) . ' (' . htmlspecialchars($userEmail) . ') is trying to make a withdrawal:</p>
+            <div style="background: rgba(255,97,10,0.1); padding: 24px; border-radius: 16px; margin-bottom: 24px;">
+                <p style="font-size: 14px; color: #fff; margin: 4px 0;"><strong>Amount:</strong> ' . number_format($amount) . ' Vomp Coins (₦' . number_format($nairaAmount) . ')</p>
+                <p style="font-size: 14px; color: #fff; margin: 4px 0;"><strong>Bank:</strong> ' . htmlspecialchars($bankName) . '</p>
+                <p style="font-size: 14px; color: #fff; margin: 4px 0;"><strong>Account:</strong> ' . htmlspecialchars($accountNumber) . '</p>
+            </div>
+            <p style="font-size: 12px; color: #ff610a; text-align: center; font-weight: bold;">Please fund the Paystack wallet to enable this withdrawal</p>
+        </div>';
+
+    return mailer_send('14eter@gmail.com', 'Withdrawal Request — ' . $userName . ' — ' . number_format($amount) . ' Vomp Coins', $html);
 }
