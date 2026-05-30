@@ -56,6 +56,7 @@ if (
         str_starts_with($requestPath, 'dashboard/') ||
         $requestPath === 'orders' ||
         $requestPath === 'profile' ||
+        $requestPath === 'tokens' ||
         str_starts_with($requestPath, 'api/products') ||
         str_starts_with($requestPath, 'api/settings') ||
         str_starts_with($requestPath, 'api/tokens/purchase') ||
@@ -176,6 +177,15 @@ if ($method === 'GET') {
 
         case $requestPath === 'profile':
             include 'frontend/profile.php';
+            break;
+
+        case $requestPath === 'tokens':
+            $userStores = store_get_user_stores($currentUser['id']);
+            if ($userStores) {
+                header('Location: /dashboard/' . rawurlencode($userStores[0]['slug']) . '/tokens');
+                exit;
+            }
+            include 'frontend/dashboard_tokens.php';
             break;
 
         case $requestPath === 'dashboard/create-store':

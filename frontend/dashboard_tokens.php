@@ -43,14 +43,21 @@ ob_start();
                     </div>
                 </div>
 
-                <button id="purchaseBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8">
-                    Buy Vomp Coins
-                </button>
-                <div id="purchaseMsg" class="mt-4"></div>
+                <?php if (isset($store) && $store): ?>
+                    <button id="purchaseBtn" class="btn-press w-full py-5 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all mt-8">
+                        Buy Vomp Coins
+                    </button>
+                    <div id="purchaseMsg" class="mt-4"></div>
+                <?php else: ?>
+                    <a href="/dashboard/create-store" class="btn-press w-full py-5 rounded-2xl bg-white/10 text-white font-black text-lg hover:bg-white/20 transition-all mt-8 block text-center">
+                        Create a Store to Purchase Vomp Coins
+                    </a>
+                <?php endif; ?>
             </div>
         </div>
     </div>
 
+    <?php if (isset($store) && $store): ?>
     <section class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-black text-white">Transaction History</h2>
@@ -99,8 +106,10 @@ ob_start();
             </div>
         <?php endif; ?>
     </section>
+    <?php endif; ?>
 </section>
 
+<?php if (isset($store) && $store): ?>
 <script>
 const TOKEN_PRICE = 20;
 const TOKEN_MIN = 50;
@@ -153,6 +162,7 @@ document.getElementById('purchaseBtn').addEventListener('click', async function 
     }
 });
 </script>
+<?php endif; ?>
 
 <?php
 $content = ob_get_clean();
