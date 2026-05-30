@@ -94,20 +94,20 @@ ob_start();
                 ?>
 
                 <div id="savedBankDetails" class="space-y-5 <?php echo $hasBankDetails ? '' : 'hidden'; ?>">
-                    <!-- Account Holder Name -->
-                    <div class="w-full">
-                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Holder Name</label>
-                        <input type="text" value="<?php echo htmlspecialchars($savedBankAccountName); ?>" disabled
-                               class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white/60 focus:outline-none text-lg font-black">
-                        <input type="hidden" id="savedAccountName" value="<?php echo htmlspecialchars($savedBankAccountName); ?>">
-                    </div>
-
                     <!-- Account Number -->
                     <div class="w-full">
                         <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Number</label>
                         <input type="text" value="<?php echo htmlspecialchars($savedBankAccount); ?>" disabled
                                class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white/60 focus:outline-none text-lg font-black">
                         <input type="hidden" id="savedAccountNumber" value="<?php echo htmlspecialchars($savedBankAccount); ?>">
+                    </div>
+
+                    <!-- Account Holder Name -->
+                    <div class="w-full">
+                        <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Account Holder Name</label>
+                        <input type="text" value="<?php echo htmlspecialchars($savedBankAccountName); ?>" disabled
+                               class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white/60 focus:outline-none text-lg font-black">
+                        <input type="hidden" id="savedAccountName" value="<?php echo htmlspecialchars($savedBankAccountName); ?>">
                     </div>
 
                     <!-- Bank Name (Tom Select) -->
