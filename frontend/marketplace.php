@@ -137,13 +137,13 @@ ob_start();
         </section>
     <?php endif; ?>
 
-    <!-- Explore Storefronts -->
+    <!-- Explore Stores -->
     <?php if (!empty($stores)): ?>
         <section class="mt-16 md:mt-20">
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-1">Vendors</p>
-                    <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">Explore Storefronts</h2>
+                    <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">Explore Stores</h2>
                 </div>
                 <a href="/stores" class="inline-flex items-center gap-2 text-xs text-[#ff610a] hover:text-[#ff8c3a] font-black uppercase tracking-wider transition-colors">
                     All Stores
