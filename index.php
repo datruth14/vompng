@@ -484,6 +484,10 @@ if ($method === 'GET') {
         case 'api/reset_password.php':
             include 'api/reset_password.php';
             exit;
+        case 'api/tokens/deduct':
+        case 'api/tokens_deduct.php':
+            include 'api/tokens_deduct.php';
+            exit;
         default:
             http_response_code(404);
             echo json_encode(['error' => 'API endpoint not found']);
