@@ -425,7 +425,7 @@ document.getElementById('withdrawAmount').addEventListener('blur', function () {
 });
 
 function updateWithdrawNaira() {
-    const val = parseInt(document.getElementById('withdrawAmount').value) || 0;
+    const val = rawNum(document.getElementById('withdrawAmount').value);
     document.getElementById('withdrawNaira').textContent = '₦' + (val * TOKEN_PRICE).toLocaleString();
 }
 
