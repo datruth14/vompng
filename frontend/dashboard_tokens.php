@@ -40,7 +40,7 @@ ob_start();
                 <div class="flex flex-col sm:flex-row gap-6 items-end">
                     <div class="flex-1 w-full">
                         <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Number of Vomp Coins</label>
-                        <input type="number" id="tokenInput" min="50" step="1" value="50" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        <input type="text" id="tokenInput" inputmode="numeric" value="50" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
                         <p class="text-xs text-gray-500 mt-2 ml-1">Minimum: <span class="text-white font-bold">50 Vomp Coins</span> (₦1,000)</p>
                     </div>
                     <div class="w-full sm:w-48 text-center sm:text-right">
@@ -67,7 +67,7 @@ ob_start();
                     </div>
                     <div class="w-full">
                         <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Amount of Vomp Coins</label>
-                        <input type="number" id="transferAmount" min="1" step="1" value="1" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
+                        <input type="text" id="transferAmount" inputmode="numeric" value="1" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all text-lg font-black">
                         <p class="text-xs text-gray-500 mt-2 ml-1">Your balance: <span id="transferBalance" class="text-white font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></span> Vomp Coins</p>
                     </div>
                 </div>
@@ -258,16 +258,21 @@ tabTransfer.addEventListener('click', () => switchTab('transfer'));
 tabWithdraw.addEventListener('click', () => switchTab('withdraw'));
 
 
+function rawNum(v) { return parseInt(String(v).replace(/,/g, '')) || 0; }
+function fmtInt(v) { return rawNum(v).toLocaleString(); }
+
 function updatePrice() {
-    let val = parseInt(tokenInput.value) || 0;
+    let val = rawNum(tokenInput.value);
     if (val < TOKEN_MIN) val = TOKEN_MIN;
     totalPrice.textContent = '₦' + (val * TOKEN_PRICE).toLocaleString();
 }
 
 tokenInput.addEventListener('input', updatePrice);
-tokenInput.addEventListener('blur', () => {
-    let val = parseInt(tokenInput.value) || 0;
-    if (val < TOKEN_MIN) tokenInput.value = TOKEN_MIN;
+tokenInput.addEventListener('focus', function () { this.value = rawNum(this.value); });
+tokenInput.addEventListener('blur', function () {
+    let val = rawNum(this.value);
+    if (val < TOKEN_MIN) { val = TOKEN_MIN; }
+    this.value = fmtInt(val);
     updatePrice();
 });
 
@@ -312,10 +317,14 @@ if (purchaseBtn) {
     });
 }
 
+// Transfer amount formatting
+document.getElementById('transferAmount').addEventListener('focus', function () { this.value = rawNum(this.value); });
+document.getElementById('transferAmount').addEventListener('blur', function () { this.value = fmtInt(rawNum(this.value)) || '1'; });
+
 if (transferBtn) {
     transferBtn.addEventListener('click', async function () {
         const email = document.getElementById('transferEmail').value.trim();
-        const amount = parseInt(document.getElementById('transferAmount').value) || 0;
+        const amount = rawNum(document.getElementById('transferAmount').value);
 
         if (!email) {
             document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Please enter the recipient\'s email address</div>';
@@ -339,7 +348,7 @@ if (transferBtn) {
             });
             const result = await res.json();
             if (result.success) {
-                document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Successfully transferred ' + amount + ' Vomp Coins to ' + email + '</div>';
+                document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Successfully transferred ' + amount.toLocaleString() + ' Vomp Coins to ' + email + '</div>';
                 document.getElementById('transferBalance').textContent = result.token_balance.toLocaleString();
                 document.getElementById('transferAmount').value = 1;
             } else {
@@ -402,9 +411,16 @@ function loadWithdrawBanks() {
 }
 
 // Amount
-document.getElementById('withdrawAmount').addEventListener('input', function (e) {
-    let raw = e.target.value.replace(/[^0-9]/g, '');
-    e.target.value = raw;
+document.getElementById('withdrawAmount').addEventListener('input', function () {
+    updateWithdrawNaira();
+});
+document.getElementById('withdrawAmount').addEventListener('focus', function () {
+    this.value = rawNum(this.value);
+});
+document.getElementById('withdrawAmount').addEventListener('blur', function () {
+    let val = rawNum(this.value);
+    if (val < 5) val = 5;
+    this.value = fmtInt(val);
     updateWithdrawNaira();
 });
 
@@ -416,7 +432,7 @@ function updateWithdrawNaira() {
 // Withdraw button
 if (withdrawBtn) {
     withdrawBtn.addEventListener('click', async function () {
-        const amount = parseInt(document.getElementById('withdrawAmount').value) || 0;
+        const amount = rawNum(document.getElementById('withdrawAmount').value);
         let accountNumber, accountName, bankCode, bankName;
 
         if (hasSavedBank) {
@@ -460,7 +476,7 @@ if (withdrawBtn) {
             });
             const result = await res.json();
             if (result.success) {
-                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + bankName + ' ' + accountNumber + ' (' + accountName + ')</div>';
+                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount.toLocaleString() + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + bankName + ' ' + accountNumber + ' (' + accountName + ')</div>';
                 document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
                 document.getElementById('withdrawAmount').value = '5';
                 updateWithdrawNaira();
@@ -555,6 +571,10 @@ document.getElementById('verifyBtn')?.addEventListener('click', async function (
         document.getElementById('verifyResult').classList.remove('hidden');
     }
 });
+// Format initial input values
+tokenInput.value = fmtInt(rawNum(tokenInput.value));
+document.getElementById('transferAmount').value = fmtInt(rawNum(document.getElementById('transferAmount').value));
+document.getElementById('withdrawAmount').value = fmtInt(rawNum(document.getElementById('withdrawAmount').value));
 </script>
 
 <?php
