@@ -5,6 +5,7 @@
  */
 
 require_once __DIR__ . '/../backend/Database.php';
+require_once __DIR__ . '/../backend/Store.php';
 require_once __DIR__ . '/../backend/Token.php';
 
 header('Content-Type: application/json');
