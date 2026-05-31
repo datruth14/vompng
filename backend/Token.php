@@ -72,7 +72,7 @@ function token_purchase($userId, $tokenCount, $logStoreId = null)
     }
 }
 
-/* Build the WhatsApp redirect URL for an order. Deducts 1 token from the store owner's central balance. */
+/* Build the WhatsApp redirect URL for an order. No Vomp Coin deduction. */
 
 function token_deduct_for_order($slug, $productId = null, $customer = [])
 {
@@ -83,15 +83,6 @@ function token_deduct_for_order($slug, $productId = null, $customer = [])
 
     if (!$store) {
         return ['success' => false, 'error' => 'Store not found'];
-    }
-
-    // Check owner's central token balance
-    $userStmt = $db->prepare('SELECT token_balance FROM users WHERE id = ?');
-    $userStmt->execute([$store['owner_id']]);
-    $user = $userStmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$user || (int) $user['token_balance'] < 1) {
-        return ['success' => false, 'error' => 'Seller has insufficient Vomp Coins to receive orders. Please contact the seller.', 'code' => 'NO_TOKENS'];
     }
 
     $productName = '';
@@ -120,31 +111,6 @@ function token_deduct_for_order($slug, $productId = null, $customer = [])
         $number = '234' . $number;
     }
 
-    // Deduct 1 token from user's central balance
-    $newBalance = (int) $user['token_balance'] - 1;
-    $db->beginTransaction();
-    try {
-        $update = $db->prepare('UPDATE users SET token_balance = ? WHERE id = ? AND token_balance >= 1');
-        $update->execute([$newBalance, $store['owner_id']]);
-
-        if ($update->rowCount() === 0) {
-            $db->rollBack();
-            return ['success' => false, 'error' => 'Seller has insufficient Vomp Coins to receive orders.', 'code' => 'NO_TOKENS'];
-        }
-
-        $log = $db->prepare('INSERT INTO token_transactions (id, store_id, type, amount, description, created_at) VALUES (?, ?, \'debit\', 1, ?, NOW())');
-        $log->execute([
-            bin2hex(random_bytes(12)),
-            $store['id'],
-            'Order via WhatsApp',
-        ]);
-
-        $db->commit();
-    } catch (Exception $e) {
-        $db->rollBack();
-        return ['success' => false, 'error' => 'Failed to process order'];
-    }
-
     $customerName = $customer['name'] ?? 'A buyer';
 
     $lines = [];
@@ -171,7 +137,7 @@ function token_deduct_for_order($slug, $productId = null, $customer = [])
     $message = rawurlencode(implode("\n", $lines));
     $waUrl = "https://wa.me/{$number}?text={$message}";
 
-    return ['success' => true, 'whatsappUrl' => $waUrl, 'token_balance' => $newBalance];
+    return ['success' => true, 'whatsappUrl' => $waUrl];
 }
 
 /* Deduct 10 tokens from the user's central balance when uploading a product. */
