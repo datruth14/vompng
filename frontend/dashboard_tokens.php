@@ -278,7 +278,7 @@ tokenInput.addEventListener('blur', function () {
 
 if (purchaseBtn) {
     purchaseBtn.addEventListener('click', async function () {
-        const tokens = parseInt(tokenInput.value) || 0;
+        const tokens = rawNum(tokenInput.value);
         if (tokens < TOKEN_MIN) {
             document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum purchase is ' + TOKEN_MIN + ' Vomp Coins (₦' + (TOKEN_MIN * TOKEN_PRICE).toLocaleString() + ')</div>';
             return;
