@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?php echo $pageTitle ?? 'vomp App'; ?></title>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
     <meta name="theme-color" content="#030712">
@@ -14,7 +14,7 @@
         window.APP_CURRENT_USER = <?php echo json_encode($currentUser ?? null); ?>;
         window.APP_IS_LOGGED_IN = <?php echo json_encode(!empty($currentUser)); ?>;
     </script>
-    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+    <div class="fixed inset-0 pointer-events-none">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] animate-blob"></div>
         <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px] animate-blob" style="animation-delay:2s"></div>
     </div>

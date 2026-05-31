@@ -97,12 +97,12 @@ ob_start();
 <script>
 function openOrderModal() {
     document.getElementById('orderModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
 }
 
 function closeOrderModal() {
     document.getElementById('orderModal').classList.add('hidden');
-    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
 }
 
 document.getElementById('order-now').addEventListener('click', openOrderModal);
