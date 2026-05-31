@@ -32,7 +32,7 @@ ob_start();
         </a>
         <a href="/tokens" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
-            <p class="text-4xl md:text-5xl font-black text-[#ff610a] whitespace-nowrap"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
+            <p class="text-4xl md:text-5xl font-black text-[#ff610a] text-fit"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
         </a>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>

@@ -316,6 +316,25 @@
         navDrawer.querySelectorAll('a').forEach(link => {
             link.addEventListener('click', closeNav);
         });
+
+        /* Auto-fit: shrink text font-size to fit its container without overflow */
+        function autoFitText() {
+            document.querySelectorAll('.text-fit').forEach(el => {
+                const parent = el.parentElement;
+                if (!parent) return;
+                const maxWidth = parent.clientWidth - 4;
+                let fontSize = parseFloat(getComputedStyle(el).fontSize);
+                el.style.whiteSpace = 'nowrap';
+                el.style.fontSize = fontSize + 'px';
+                while (el.scrollWidth > maxWidth && fontSize > 8) {
+                    fontSize -= 0.5;
+                    el.style.fontSize = fontSize + 'px';
+                }
+            });
+        }
+        window.addEventListener('load', autoFitText);
+        window.addEventListener('resize', autoFitText);
+        if (document.readyState === 'complete') autoFitText();
     </script>
 </body>
 </html>

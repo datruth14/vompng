@@ -20,7 +20,7 @@ ob_start();
             <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-4">Current Balance</p>
             <div class="relative mb-6">
                 <div class="absolute inset-0 bg-[#ff610a]/20 blur-3xl rounded-full"></div>
-                <p class="text-7xl font-black text-white relative"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
+                <p class="text-7xl font-black text-white relative text-fit"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
             </div>
             <p class="text-gray-400 text-sm font-medium">Vomp Coins available for <br>customer orders</p>
         </article>
