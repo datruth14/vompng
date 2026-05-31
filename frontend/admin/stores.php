@@ -47,7 +47,7 @@ ob_start();
                             <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" target="_blank" class="text-white font-bold hover:text-[#ff610a] transition-colors"><?php echo htmlspecialchars($s['name']); ?></a>
                         </td>
                         <td class="p-3 text-gray-400"><?php echo htmlspecialchars($s['owner_name'] ?? $s['owner_email'] ?? '-'); ?></td>
-                        <td class="p-3 text-white"><?php echo (int) ($s['product_count'] ?? 0); ?></td>
+                        <td class="p-3 text-white"><?php echo number_format((int) ($s['product_count'] ?? 0)); ?></td>
                         <td class="p-3 text-white"><?php echo number_format((int) ($s['token_balance'] ?? 0)); ?></td>
                         <td class="p-3">
                             <?php if (($s['plan'] ?? 'free') === 'premium'): ?>

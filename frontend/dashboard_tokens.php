@@ -210,7 +210,7 @@ ob_start();
                                 </td>
                                 <td class="py-5">
                                     <p class="font-black <?php echo ($tx['type'] ?? 'debit') === 'credit' ? 'text-emerald-400' : 'text-rose-400'; ?>">
-                                        <?php echo ($tx['type'] ?? 'debit') === 'credit' ? '+' : '-'; ?><?php echo (int) $tx['amount']; ?>
+                                        <?php echo ($tx['type'] ?? 'debit') === 'credit' ? '+' : '-'; ?><?php echo number_format((int) $tx['amount']); ?>
                                     </p>
                                 </td>
                                 <td class="py-5 text-right pr-2 text-sm text-gray-500 font-medium">

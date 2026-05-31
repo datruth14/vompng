@@ -26,9 +26,9 @@ ob_start();
     <?php if ($searchQuery): ?>
         <p class="text-sm text-gray-400 mb-6">
             Search results for "<strong class="text-white"><?php echo htmlspecialchars($searchQuery); ?></strong>"
-            — <?php echo count($allProducts); ?> product<?php echo count($allProducts) !== 1 ? 's' : ''; ?>
+            — <?php echo number_format(count($allProducts)); ?> product<?php echo count($allProducts) !== 1 ? 's' : ''; ?>
             <?php if ($searchStores): ?>
-                , <?php echo count($searchStores); ?> store<?php echo count($searchStores) !== 1 ? 's' : ''; ?>
+                , <?php echo number_format(count($searchStores)); ?> store<?php echo count($searchStores) !== 1 ? 's' : ''; ?>
             <?php endif; ?>
         </p>
     <?php endif; ?>
@@ -125,7 +125,7 @@ ob_start();
                             </div>
                             <div class="min-w-0">
                                 <h3 class="font-black text-white group-hover:text-[#ff610a] transition-colors truncate"><?php echo htmlspecialchars($s['name']); ?></h3>
-                                <p class="text-xs text-gray-500 font-bold uppercase tracking-wider"><?php echo $availableCount; ?> product<?php echo $availableCount !== 1 ? 's' : ''; ?></p>
+                                <p class="text-xs text-gray-500 font-bold uppercase tracking-wider"><?php echo number_format((int) $availableCount); ?> product<?php echo $availableCount !== 1 ? 's' : ''; ?></p>
                             </div>
                         </div>
                         <?php if (!empty($s['description'])): ?>

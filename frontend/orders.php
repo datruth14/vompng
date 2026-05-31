@@ -34,7 +34,7 @@ ob_start();
                             <div>
                                 <h2 class="text-xl font-black text-white"><?php echo htmlspecialchars($s['name']); ?></h2>
                                 <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                                    <?php echo $availableCount; ?> active products · <?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coins
+                                    <?php echo number_format((int) $availableCount); ?> active products · <?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coins
                                 </p>
                             </div>
                         </div>
@@ -65,7 +65,7 @@ ob_start();
                                         </div>
                                     </div>
                                     <span class="text-sm font-black flex-shrink-0 ml-3 <?php echo $tx['type'] === 'credit' ? 'text-emerald-400' : 'text-rose-400'; ?>">
-                                        <?php echo $tx['type'] === 'credit' ? '+' : '-'; ?><?php echo (int)$tx['amount']; ?>
+                                        <?php echo $tx['type'] === 'credit' ? '+' : '-'; ?><?php echo number_format((int)$tx['amount']); ?>
                                     </span>
                                 </div>
                             <?php endforeach; ?>

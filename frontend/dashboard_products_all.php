@@ -7,7 +7,7 @@ ob_start();
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Dashboard</p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">My Products</h1>
-            <p class="text-gray-500 font-medium text-lg"><?php echo $totalProductsAll; ?> product<?php echo $totalProductsAll !== 1 ? 's' : ''; ?> across all stores</p>
+            <p class="text-gray-500 font-medium text-lg"><?php echo number_format((int) $totalProductsAll); ?> product<?php echo $totalProductsAll !== 1 ? 's' : ''; ?> across all stores</p>
         </div>
     </header>
 

@@ -52,7 +52,7 @@ ob_start();
                                 <span class="text-gray-500">-</span>
                             <?php endif; ?>
                         </td>
-                        <td class="p-3 text-white"><?php echo (int) ($u['store_count'] ?? 0); ?></td>
+                        <td class="p-3 text-white"><?php echo number_format((int) ($u['store_count'] ?? 0)); ?></td>
                         <td class="p-3 text-white"><?php echo number_format((int) ($u['token_balance'] ?? 0)); ?></td>
                         <td class="p-3">
                             <?php if (($u['plan'] ?? 'free') === 'premium'): ?>

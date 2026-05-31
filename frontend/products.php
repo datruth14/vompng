@@ -17,9 +17,9 @@ ob_start();
     </form>
 
     <?php if ($searchQuery): ?>
-        <p class="text-sm text-gray-400"><?php echo $totalProducts; ?> result<?php echo $totalProducts !== 1 ? 's' : ''; ?> for "<span class="text-white font-bold"><?php echo htmlspecialchars($searchQuery); ?></span>"</p>
+        <p class="text-sm text-gray-400"><?php echo number_format((int) $totalProducts); ?> result<?php echo $totalProducts !== 1 ? 's' : ''; ?> for "<span class="text-white font-bold"><?php echo htmlspecialchars($searchQuery); ?></span>"</p>
     <?php elseif ($totalProducts > $perPage): ?>
-        <p class="text-sm text-gray-400">Page <?php echo $page; ?> of <?php echo $totalPages; ?> (<?php echo $totalProducts; ?> products)</p>
+        <p class="text-sm text-gray-400">Page <?php echo $page; ?> of <?php echo $totalPages; ?> (<?php echo number_format($totalProducts); ?> products)</p>
     <?php endif; ?>
 
     <!-- Category Pills -->

@@ -7,7 +7,7 @@ ob_start();
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Dashboard</p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">My Stores</h1>
-            <p class="text-gray-500 font-medium text-lg"><?php echo count($stores); ?> store<?php echo count($stores) !== 1 ? 's' : ''; ?> total</p>
+            <p class="text-gray-500 font-medium text-lg"><?php echo number_format(count($stores)); ?> store<?php echo count($stores) !== 1 ? 's' : ''; ?> total</p>
         </div>
         <a href="/dashboard/create-store" class="px-8 py-4 rounded-2xl bg-gray-950 text-white font-black text-sm border border-white/10 hover:bg-white/5 transition-all">Create Another Store</a>
     </header>
@@ -33,7 +33,7 @@ ob_start();
                                 </button>
                             </div>
                             <div class="flex gap-4 mt-2 text-xs text-gray-500 font-bold">
-                                <span><?php echo $productCount; ?> product<?php echo $productCount !== 1 ? 's' : ''; ?></span>
+                                <span><?php echo number_format($productCount); ?> product<?php echo $productCount !== 1 ? 's' : ''; ?></span>
                                 <span><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coins</span>
                             </div>
                         </div>

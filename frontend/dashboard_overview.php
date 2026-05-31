@@ -63,7 +63,7 @@ ob_start();
                             <p class="text-xs text-gray-500"><?php echo htmlspecialchars($tx['created_at']); ?></p>
                         </div>
                         <span class="font-black <?php echo ($tx['type'] ?? 'debit') === 'credit' ? 'text-emerald-300' : 'text-rose-300'; ?>">
-                            <?php echo ($tx['type'] ?? 'debit') === 'credit' ? '+' : '-'; ?><?php echo (int) $tx['amount']; ?>
+                            <?php echo ($tx['type'] ?? 'debit') === 'credit' ? '+' : '-'; ?><?php echo number_format((int) $tx['amount']); ?>
                         </span>
                     </article>
                 <?php endforeach; ?>

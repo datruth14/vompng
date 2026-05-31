@@ -16,9 +16,9 @@ ob_start();
     </form>
 
     <?php if ($searchQuery): ?>
-        <p class="text-sm text-gray-400"><?php echo $totalStores; ?> result<?php echo $totalStores !== 1 ? 's' : ''; ?> for "<span class="text-white font-bold"><?php echo htmlspecialchars($searchQuery); ?></span>"</p>
+        <p class="text-sm text-gray-400"><?php echo number_format((int) $totalStores); ?> result<?php echo $totalStores !== 1 ? 's' : ''; ?> for "<span class="text-white font-bold"><?php echo htmlspecialchars($searchQuery); ?></span>"</p>
     <?php elseif ($totalStores > $perPage): ?>
-        <p class="text-sm text-gray-400">Page <?php echo $page; ?> of <?php echo $totalPages; ?> (<?php echo $totalStores; ?> stores)</p>
+        <p class="text-sm text-gray-400">Page <?php echo $page; ?> of <?php echo $totalPages; ?> (<?php echo number_format($totalStores); ?> stores)</p>
     <?php endif; ?>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
