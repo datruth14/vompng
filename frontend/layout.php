@@ -322,19 +322,31 @@
             document.querySelectorAll('.text-fit').forEach(el => {
                 const parent = el.parentElement;
                 if (!parent) return;
-                const maxWidth = parent.clientWidth - 4;
-                let fontSize = parseFloat(getComputedStyle(el).fontSize);
+                const ps = getComputedStyle(parent);
+                const padX = parseFloat(ps.paddingLeft) + parseFloat(ps.paddingRight);
+                const maxWidth = parent.clientWidth - (isNaN(padX) ? 0 : padX);
+                if (maxWidth < 10) return;
                 el.style.whiteSpace = 'nowrap';
+                el.style.maxWidth = '100%';
+                let fontSize = parseFloat(getComputedStyle(el).fontSize);
+                if (!fontSize || fontSize < 1) fontSize = 36;
                 el.style.fontSize = fontSize + 'px';
-                while (el.scrollWidth > maxWidth && fontSize > 8) {
+                let limit = 0;
+                while (el.scrollWidth > maxWidth && fontSize > 8 && limit < 100) {
                     fontSize -= 0.5;
                     el.style.fontSize = fontSize + 'px';
+                    limit++;
                 }
             });
         }
+        autoFitText();
         window.addEventListener('load', autoFitText);
         window.addEventListener('resize', autoFitText);
-        if (document.readyState === 'complete') autoFitText();
+        if (window.ResizeObserver) {
+            new ResizeObserver(autoFitText).observe(document.body);
+        }
+        setTimeout(autoFitText, 100);
+        setTimeout(autoFitText, 500);
     </script>
 </body>
 </html>
