@@ -185,7 +185,7 @@ if ($method === 'GET') {
                         </div>
                         <h3 class="text-xl font-black text-white mb-2">Android</h3>
                         <p class="text-gray-400 text-sm mb-6">Install from Chrome. Open VomP in Chrome, tap the menu (⋮) and select <strong class="text-white">Add to Home Screen</strong>.</p>
-                        <button onclick="window.open('/','_blank')" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Download</button>
+                        <button id="install-android" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Download</button>
                     </div>
 
                     <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
@@ -203,10 +203,15 @@ if ($method === 'GET') {
                         </div>
                         <h3 class="text-xl font-black text-white mb-2">Desktop</h3>
                         <p class="text-gray-400 text-sm mb-6">In Chrome or Edge, click the install icon <span class="text-white inline-block">+</span> in the address bar or menu <strong class="text-white">Install VomP</strong>.</p>
-                        <button onclick="window.open('/','_blank')" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Download</button>
+                        <button id="install-desktop" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Download</button>
                     </div>
                 </div>
             </section>
+
+            <script>
+            document.getElementById('install-android')?.addEventListener('click', window.triggerInstall || (() => window.open('/','_blank')));
+            document.getElementById('install-desktop')?.addEventListener('click', window.triggerInstall || (() => window.open('/','_blank')));
+            </script>
             <?php
             $content = ob_get_clean();
             break;

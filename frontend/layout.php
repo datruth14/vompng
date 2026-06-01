@@ -360,5 +360,21 @@
       });
     }
     </script>
+
+    <script>
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+    window.triggerInstall = function() {
+      if (!deferredPrompt) {
+        alert('To install VomP, use the install icon in your browser address bar, or open the browser menu and select "Install VomP".');
+        return;
+      }
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
+    };
+    </script>
 </body>
 </html>
