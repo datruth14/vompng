@@ -17,6 +17,16 @@
     <script>
         window.APP_CURRENT_USER = <?php echo json_encode($currentUser ?? null); ?>;
         window.APP_IS_LOGGED_IN = <?php echo json_encode(!empty($currentUser)); ?>;
+        window.deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); window.deferredPrompt = e; });
+        window.triggerInstall = function() {
+          if (!window.deferredPrompt) {
+            alert('To install VomP, use the install icon in your browser address bar, or open the browser menu and select "Install VomP".');
+            return;
+          }
+          window.deferredPrompt.prompt();
+          window.deferredPrompt.userChoice.then(() => { window.deferredPrompt = null; });
+        };
     </script>
     <div class="fixed inset-0 pointer-events-none">
         <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-600/10 rounded-full blur-[120px] animate-blob"></div>
@@ -361,20 +371,5 @@
     }
     </script>
 
-    <script>
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-    });
-    window.triggerInstall = function() {
-      if (!deferredPrompt) {
-        alert('To install VomP, use the install icon in your browser address bar, or open the browser menu and select "Install VomP".');
-        return;
-      }
-      deferredPrompt.prompt();
-      deferredPrompt.userChoice.then(() => { deferredPrompt = null; });
-    };
-    </script>
 </body>
 </html>
