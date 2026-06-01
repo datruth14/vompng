@@ -169,13 +169,42 @@ if ($method === 'GET') {
             $pageTitle = 'Download App - vomp';
             ob_start();
             ?>
-            <section class="min-h-[60vh] flex items-center justify-center">
-                <div class="text-center space-y-6">
+            <section class="py-10">
+                <div class="text-center mb-12">
                     <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-[#ff610a]/10 border border-[#ff610a]/20 mb-4">
                         <svg class="w-10 h-10 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
                     </div>
-                    <h1 class="text-5xl md:text-6xl font-black text-white tracking-tight">Coming Soon</h1>
-                    <p class="text-gray-400 text-lg max-w-md mx-auto">The vomp mobile app is on its way. You'll be able to manage your store on the go.</p>
+                    <h1 class="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">Download VomP</h1>
+                    <p class="text-gray-400 text-lg max-w-lg mx-auto">Install VomP on your device for the best experience. Works offline and loads instantly.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+                    <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
+                        <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 16.435c-.533.777-1.02 1.492-1.754 1.508-.734.016-.97-.437-1.807-.437-.836 0-1.098.423-1.79.453-.692.03-1.22-.477-1.754-1.255-.953-1.357-1.682-3.835-.703-5.508.48-.82 1.336-1.345 2.26-1.359.706-.014 1.373.477 1.805.477.432 0 1.243-.59 2.097-.503.358.015 1.361.145 2.005 1.09-.052.033-1.198.7-1.185 2.087.013 1.66 1.458 2.21 1.474 2.22-.013.04-.23.786-.757 1.558M14.1 8.194c.431-.527.724-1.258.645-1.987-.625.026-1.38.417-1.83.943-.403.468-.756 1.217-.66 1.935.698.054 1.408-.356 1.845-.89"/><path d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2"/></svg>
+                        </div>
+                        <h3 class="text-xl font-black text-white mb-2">Android</h3>
+                        <p class="text-gray-400 text-sm mb-6">Install from Chrome. Open VomP in Chrome, tap the menu (⋮) and select <strong class="text-white">Add to Home Screen</strong>.</p>
+                        <button onclick="window.open('/','_blank')" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Open VomP</button>
+                    </div>
+
+                    <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
+                        <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.62-.71 1.64-1.23 2.59-1.2.13 1.04-.33 2.1-.93 2.84-.61.75-1.61 1.3-2.6 1.22-.14-.98.33-2.03.94-2.86"/></svg>
+                        </div>
+                        <h3 class="text-xl font-black text-white mb-2">iOS</h3>
+                        <p class="text-gray-400 text-sm mb-6">Open in Safari, tap the Share button <span class="text-white inline-block">⬆</span> and select <strong class="text-white">Add to Home Screen</strong>.</p>
+                        <button onclick="window.open('/','_blank')" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Open VomP</button>
+                    </div>
+
+                    <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
+                        <div class="w-16 h-16 mx-auto mb-5 rounded-2xl bg-white/5 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg>
+                        </div>
+                        <h3 class="text-xl font-black text-white mb-2">Desktop</h3>
+                        <p class="text-gray-400 text-sm mb-6">In Chrome or Edge, click the install icon <span class="text-white inline-block">+</span> in the address bar or menu <strong class="text-white">Install VomP</strong>.</p>
+                        <button onclick="window.open('/','_blank')" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Open VomP</button>
+                    </div>
                 </div>
             </section>
             <?php
