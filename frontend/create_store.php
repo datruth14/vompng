@@ -100,16 +100,12 @@ ob_start();
       }
     } catch (e) {
       console.error('Store creation error:', e);
-      // Try to get raw response text if res is available
-      if (typeof res !== 'undefined') {
-        try {
-          const text = await res.text();
-          console.error('Raw server response:', text);
-          setError(text.substring(0, 300));
-          return;
-        } catch (_) {}
+      if (e instanceof SyntaxError && e.message.includes('JSON')) {
+        // res.json() failed - response is not JSON
+        setError('Server returned non-JSON response. Check console for details.');
+      } else {
+        setError('Network error. Please try again.');
       }
-      setError('Something went wrong. Network or server error.');
     } finally {
       btn.disabled = false;
       btn.textContent = 'Create Store';
