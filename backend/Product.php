@@ -273,11 +273,23 @@ function product_update($productId, $data)
     return $result ? ['success' => true, 'message' => 'Product updated'] : ['success' => false, 'error' => 'Failed to update product'];
 }
 
-/* Delete a specific product by ID. */
+/* Delete a specific product by ID and its associated image. */
 
 function product_delete($productId)
 {
     $db = db_get_connection();
+
+    $fetch = $db->prepare('SELECT media_url FROM products WHERE id = ?');
+    $fetch->execute([$productId]);
+    $product = $fetch->fetch(PDO::FETCH_ASSOC);
+
+    if ($product && !empty($product['media_url'])) {
+        $path = __DIR__ . '/../' . ltrim($product['media_url'], '/');
+        if (is_file($path)) {
+            unlink($path);
+        }
+    }
+
     $stmt = $db->prepare('DELETE FROM products WHERE id = ?');
     $result = $stmt->execute([$productId]);
 
