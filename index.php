@@ -194,7 +194,7 @@ if ($method === 'GET') {
                         </div>
                         <h3 class="text-xl font-black text-white mb-2">iOS</h3>
                         <p class="text-gray-400 text-sm mb-6">Open in Safari, tap the Share button <span class="text-white inline-block">⬆</span> and select <strong class="text-white">Add to Home Screen</strong>.</p>
-                        <button onclick="window.open('/','_blank')" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Download</button>
+                        <button id="install-ios" class="w-full px-6 py-4 rounded-2xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all">Download</button>
                     </div>
 
                     <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
@@ -211,6 +211,42 @@ if ($method === 'GET') {
             <script>
             document.getElementById('install-android')?.addEventListener('click', window.triggerInstall || (() => window.open('/','_blank')));
             document.getElementById('install-desktop')?.addEventListener('click', window.triggerInstall || (() => window.open('/','_blank')));
+            document.getElementById('install-ios')?.addEventListener('click', function() {
+              const existing = document.getElementById('iosModal');
+              if (existing) existing.remove();
+              const overlay = document.createElement('div');
+              overlay.className = 'fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm';
+              overlay.id = 'iosModal';
+              overlay.addEventListener('click', () => overlay.remove());
+              const box = document.createElement('div');
+              box.className = 'bg-gray-900 rounded-2xl p-6 border border-white/10 max-w-sm w-full mx-4 shadow-2xl';
+              box.addEventListener('click', (e) => e.stopPropagation());
+              box.innerHTML =
+                '<div class="text-center mb-4">' +
+                  '<div class="w-12 h-12 mx-auto mb-3 rounded-full bg-white/5 flex items-center justify-center">' +
+                    '<svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.62-.71 1.64-1.23 2.59-1.2.13 1.04-.33 2.1-.93 2.84-.61.75-1.61 1.3-2.6 1.22-.14-.98.33-2.03.94-2.86"/></svg>' +
+                  '</div>' +
+                  '<p class="text-white font-black text-lg mb-1">Install on iPhone</p>' +
+                  '<p class="text-gray-400 text-sm mb-4">Follow these steps to add VomP to your home screen:</p>' +
+                '</div>' +
+                '<div class="space-y-4">' +
+                  '<div class="flex items-start gap-3 bg-white/5 rounded-xl p-3 border border-white/10">' +
+                    '<span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#ff610a] text-white text-xs font-black flex items-center justify-center">1</span>' +
+                    '<div><p class="text-white text-sm font-bold">Open in Safari</p><p class="text-gray-400 text-xs">Make sure you are viewing this page in Safari, not another browser.</p></div>' +
+                  '</div>' +
+                  '<div class="flex items-start gap-3 bg-white/5 rounded-xl p-3 border border-white/10">' +
+                    '<span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#ff610a] text-white text-xs font-black flex items-center justify-center">2</span>' +
+                    '<div><p class="text-white text-sm font-bold">Tap the Share button</p><p class="text-gray-400 text-xs">It is the square icon with an arrow pointing up at the bottom of the screen.</p></div>' +
+                  '</div>' +
+                  '<div class="flex items-start gap-3 bg-white/5 rounded-xl p-3 border border-white/10">' +
+                    '<span class="flex-shrink-0 w-6 h-6 rounded-full bg-[#ff610a] text-white text-xs font-black flex items-center justify-center">3</span>' +
+                    '<div><p class="text-white text-sm font-bold">Scroll down & tap Add to Home Screen</p><p class="text-gray-400 text-xs">Then tap "Add" in the top right corner to install VomP.</p></div>' +
+                  '</div>' +
+                '</div>' +
+                '<button class="mt-5 w-full px-6 py-3 rounded-xl bg-[#ff610a] text-white font-black hover:bg-[#e05500] transition-all" onclick="this.closest(\'#iosModal\').remove()">Got it</button>';
+              overlay.appendChild(box);
+              document.body.appendChild(overlay);
+            });
             </script>
             <?php
             $content = ob_get_clean();
