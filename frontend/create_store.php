@@ -7,13 +7,13 @@ ob_start();
         <div class="absolute top-0 right-0 w-48 h-48 bg-[#ff610a]/10 blur-[80px] rounded-full"></div>
         <div class="relative z-10">
             <h2 class="text-4xl font-black text-white mb-2 tracking-tight">New Store</h2>
-            <p class="text-gray-400 font-medium mb-8">Create another store under your account.</p>
+            <p class="text-gray-400 font-medium mb-8"><?php echo count($userStores ?? []) > 0 ? 'Create another store under your account.' : 'Create your store and start selling.'; ?></p>
 
             <div id="error-box" class="hidden px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold mb-6"></div>
 
             <form id="create-store-form" class="space-y-6">
                 <label class="field-label">Store Name</label>
-                <input id="storeName" name="storeName" class="field-input" placeholder="e.g. My Second Store" required>
+                <input id="storeName" name="storeName" class="field-input" placeholder="<?php echo count($userStores ?? []) > 0 ? 'e.g. My Second Store' : 'e.g. Amara\'s Gems'; ?>" required>
 
                 <div class="p-3 rounded-xl bg-[#ff610a]/5 border border-[#ff610a]/10">
                     <p class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mb-1">Preview URL</p>

@@ -8,9 +8,9 @@
 require_once __DIR__ . '/Database.php';
 require_once __DIR__ . '/Logger.php';
 
-/* Register a new user. Store creation is optional — pass storeName to create a store. */
+/* Register a new user. Never creates a store — use store_create_for_user() separately. */
 
-function auth_register($name, $email, $password, $storeName = '', $storeDescription = '', $contactPhone = '', $phone = '')
+function auth_register($name, $email, $password, $phone = '')
 {
     try {
         if (empty($name) || empty($email) || empty($password)) {
@@ -31,46 +31,19 @@ function auth_register($name, $email, $password, $storeName = '', $storeDescript
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
         $userId = auth_generate_id();
-        $userPhone = $phone ?: $contactPhone;
 
-        $db->beginTransaction();
-        try {
-            $userStmt = $db->prepare('INSERT INTO users (id, email, password, name, phone, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())');
-            $userStmt->execute([$userId, $email, $hashedPassword, $name, $userPhone]);
+        $userStmt = $db->prepare('INSERT INTO users (id, email, password, name, phone, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())');
+        $userStmt->execute([$userId, $email, $hashedPassword, $name, $phone]);
 
-            // Seed the user with 50 free tokens
-            $db->exec("UPDATE users SET token_balance = COALESCE(token_balance, 0) + 50 WHERE id = '{$userId}'");
+        // Seed the user with 50 free tokens
+        $db = db_get_connection();
+        $db->exec("UPDATE users SET token_balance = COALESCE(token_balance, 0) + 50 WHERE id = '{$userId}'");
 
-            $storeSlug = null;
-            if (!empty($storeName)) {
-                $slug = auth_create_slug($storeName);
-
-                $slugExists = $db->prepare('SELECT id FROM stores WHERE slug = ?');
-                $slugExists->execute([$slug]);
-                if ($slugExists->fetch()) {
-                    $db->rollBack();
-                    return ['success' => false, 'error' => 'Store name already taken'];
-                }
-
-                $contact = $phone ?: $contactPhone;
-                $storeId = auth_generate_id();
-                $storeStmt = $db->prepare('INSERT INTO stores (id, name, slug, description, owner_id, contact_phone, contact_email, is_active, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())');
-                $storeStmt->execute([$storeId, $storeName, $slug, $storeDescription, $userId, $contact, $email]);
-                $storeSlug = $slug;
-            }
-
-            $db->commit();
-
-            return [
-                'success' => true,
-                'userId' => $userId,
-                'storeSlug' => $storeSlug,
-                'message' => 'Registration successful'
-            ];
-        } catch (Exception $e) {
-            $db->rollBack();
-            throw $e;
-        }
+        return [
+            'success' => true,
+            'userId' => $userId,
+            'message' => 'Registration successful'
+        ];
     } catch (Exception $e) {
         return ['success' => false, 'error' => $e->getMessage()];
     }

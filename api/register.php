@@ -24,9 +24,6 @@ try {
         $input['name'] ?? '',
         $input['email'] ?? '',
         $input['password'] ?? '',
-        $input['storeName'] ?? '',
-        $input['storeDescription'] ?? '',
-        $input['contactPhone'] ?? '',
         $input['phone'] ?? ''
     );
 

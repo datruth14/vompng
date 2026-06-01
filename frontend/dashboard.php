@@ -13,7 +13,7 @@ ob_start();
             <p class="text-gray-500 font-medium text-lg">Manage your stores and track performance.</p>
         </div>
         <?php if (($currentUser['plan'] ?? 'free') === 'premium' || count($stores) === 0): ?>
-            <a href="/dashboard/create-store" class="px-8 py-4 rounded-2xl bg-gray-950 text-white font-black text-sm border border-white/10 hover:bg-white/5 transition-all">Create Another Store</a>
+            <a href="/dashboard/create-store" class="px-8 py-4 rounded-2xl bg-gray-950 text-white font-black text-sm border border-white/10 hover:bg-white/5 transition-all"><?php echo count($stores) === 0 ? 'Create Your First Store' : 'Create Another Store'; ?></a>
         <?php else: ?>
             <div class="text-right">
                 <p class="text-xs text-gray-500 font-bold">Upgrade to premium to create more stores</p>
