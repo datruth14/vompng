@@ -185,7 +185,12 @@ ob_start();
         setStep(3);
       }
     } catch (e) {
-      setError('Something went wrong. Please try again.');
+      console.error('Registration error:', e);
+      if (e instanceof SyntaxError && e.message.includes('JSON')) {
+        setError('Server returned non-JSON response. Check console for details.');
+      } else {
+        setError('Network error. Please try again.');
+      }
     } finally {
       btn.disabled = false;
       btn.textContent = 'Create Store';

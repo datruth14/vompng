@@ -4,42 +4,41 @@
  * Accepts registration payloads and creates a new user + store.
  */
 
+header('Content-Type: application/json');
 
-require_once __DIR__ . '/../backend/Database.php';
-require_once __DIR__ . '/../backend/Auth.php';
+try {
+    require_once __DIR__ . '/../backend/Database.php';
+    require_once __DIR__ . '/../backend/Auth.php';
 
-$input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
+    $input = json_decode(file_get_contents('php://input'), true) ?? $_POST;
 
-$result = auth_register(
-    $input['name'] ?? '',
-    $input['email'] ?? '',
-    $input['password'] ?? '',
-    $input['storeName'] ?? '',
-    $input['storeDescription'] ?? '',
-    $input['contactPhone'] ?? '',
-    $input['phone'] ?? ''
-);
-
-$accept = $_SERVER['HTTP_ACCEPT'] ?? '';
-$wantsJson = stripos($accept, 'application/json') !== false;
-
-if ($result['success']) {
-    if ($wantsJson) {
-        header('Content-Type: application/json');
-        echo json_encode($result);
-    } else {
-        header('Location: /login?registered=1');
+    if (!$input) {
+        http_response_code(400);
+        echo json_encode(['success' => false, 'error' => 'Invalid request data']);
+        exit;
     }
-    exit;
-}
 
-if ($wantsJson) {
-    header('Content-Type: application/json');
+    $result = auth_register(
+        $input['name'] ?? '',
+        $input['email'] ?? '',
+        $input['password'] ?? '',
+        $input['storeName'] ?? '',
+        $input['storeDescription'] ?? '',
+        $input['contactPhone'] ?? '',
+        $input['phone'] ?? ''
+    );
+
+    if ($result['success']) {
+        http_response_code(201);
+        echo json_encode($result);
+        exit;
+    }
+
     http_response_code(400);
     echo json_encode($result);
     exit;
+} catch (Exception $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => 'Server error: ' . $e->getMessage()]);
+    exit;
 }
-
-$error = urlencode($result['error'] ?? 'Registration failed');
-header("Location: /register?error={$error}");
-exit;
