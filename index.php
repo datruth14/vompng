@@ -309,8 +309,10 @@ if ($method === 'GET') {
                 $content = '<div class="text-center py-12"><h2 class="text-2xl font-bold">Store not found</h2></div>';
                 break;
             }
+            require_once __DIR__ . '/backend/Order.php';
             $products = product_get_products_by_store($store['id']);
             $transactions = token_history($store['id'], 5);
+            $orderCount = order_count_by_store($store['id']);
             include 'frontend/dashboard_overview.php';
             break;
 
@@ -336,6 +338,23 @@ if ($method === 'GET') {
                 break;
             }
             include 'frontend/dashboard_settings.php';
+            break;
+
+        case count($segments) === 3 && $segments[0] === 'dashboard' && $segments[2] === 'orders':
+            $storeSlug = $segments[1];
+            $store = store_get_by_slug_for_owner($storeSlug, $currentUser['id']);
+            if (!$store) {
+                http_response_code(404);
+                $content = '<div class="text-center py-12"><h2 class="text-2xl font-bold">Store not found</h2></div>';
+                break;
+            }
+            require_once __DIR__ . '/backend/Order.php';
+            $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
+            $perPage = 20;
+            $result = order_get_by_store_paginated($store['id'], $page, $perPage);
+            $orders = $result['orders'];
+            $totalPages = $result['totalPages'];
+            include 'frontend/dashboard_orders.php';
             break;
 
         case count($segments) === 3 && $segments[0] === 'dashboard' && $segments[2] === 'tokens':

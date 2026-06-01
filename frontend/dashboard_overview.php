@@ -16,10 +16,14 @@ ob_start();
         <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>" target="_blank" class="btn-secondary px-8 py-4 rounded-2xl">Open Storefront</a>
     </header>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
             <p class="text-4xl md:text-5xl font-black text-white text-fit"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
+        </article>
+        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Orders</p>
+            <p class="text-4xl md:text-5xl font-black text-white"><?php echo number_format($orderCount); ?></p>
         </article>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Live Products</p>
@@ -35,10 +39,14 @@ ob_start();
         </article>
     </div>
 
-    <div class="grid md:grid-cols-3 gap-6">
+    <div class="grid md:grid-cols-4 gap-6">
         <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/products" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
             <h3 class="text-white font-black text-xl mb-2">Manage Products</h3>
             <p class="text-gray-400 text-sm">Add, edit, publish, or hide items in your catalog.</p>
+        </a>
+        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/orders" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
+            <h3 class="text-white font-black text-xl mb-2">Orders</h3>
+            <p class="text-gray-400 text-sm">View customer orders placed via your storefront.</p>
         </a>
         <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/settings" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
             <h3 class="text-white font-black text-xl mb-2">Store Settings</h3>

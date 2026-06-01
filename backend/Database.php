@@ -158,6 +158,21 @@ function db_init_schema(PDO $db)
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 INDEX idx_password_resets_email (email)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ",
+        'orders' => "
+            CREATE TABLE IF NOT EXISTS orders (
+                id VARCHAR(24) PRIMARY KEY,
+                store_id VARCHAR(24) NOT NULL,
+                product_id VARCHAR(24) NULL,
+                product_name VARCHAR(255) NOT NULL,
+                customer_name VARCHAR(255) NOT NULL,
+                customer_email VARCHAR(255) NOT NULL,
+                state VARCHAR(100) NOT NULL,
+                delivery_location TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_orders_store_id (store_id),
+                FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         "
     ];
 
