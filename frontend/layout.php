@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title><?php echo $pageTitle ?? 'vomp App'; ?></title>
     <link rel="icon" type="image/png" href="/assets/img/logo.png">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="apple-touch-icon" href="/assets/img/icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030712">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="/assets/theme.css">
@@ -347,6 +351,14 @@
         }
         setTimeout(autoFitText, 100);
         setTimeout(autoFitText, 500);
+    </script>
+
+    <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function(err) {
+        console.warn('SW registration failed:', err);
+      });
+    }
     </script>
 </body>
 </html>
