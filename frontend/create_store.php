@@ -100,7 +100,16 @@ ob_start();
       }
     } catch (e) {
       console.error('Store creation error:', e);
-      setError('Something went wrong. Error: ' + (e.message || 'unknown'));
+      // Try to get raw response text if res is available
+      if (typeof res !== 'undefined') {
+        try {
+          const text = await res.text();
+          console.error('Raw server response:', text);
+          setError(text.substring(0, 300));
+          return;
+        } catch (_) {}
+      }
+      setError('Something went wrong. Network or server error.');
     } finally {
       btn.disabled = false;
       btn.textContent = 'Create Store';
