@@ -12,13 +12,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveData'])) {
     $score = (int)($_POST['scoreValueData'] ?? 0);
     if ($user && $score > 0) {
         $db = db_get_connection();
-        $db->exec("CREATE TABLE IF NOT EXISTS game_scores (
-            id INT AUTO_INCREMENT PRIMARY KEY,
-            user_id VARCHAR(255) NOT NULL,
-            game VARCHAR(100) NOT NULL DEFAULT 'colorswipe',
-            score INT NOT NULL DEFAULT 0,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )");
         $stmt = $db->prepare("INSERT INTO game_scores (user_id, game, score) VALUES (?, 'colorswipe', ?)");
         $stmt->execute([$user['id'], $score]);
     }
@@ -30,13 +23,6 @@ $saved = isset($_GET['saved']);
 $userScore = 0;
 if ($user) {
     $db = db_get_connection();
-    $db->exec("CREATE TABLE IF NOT EXISTS game_scores (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_id VARCHAR(255) NOT NULL,
-        game VARCHAR(100) NOT NULL DEFAULT 'colorswipe',
-        score INT NOT NULL DEFAULT 0,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )");
     $stmt = $db->prepare("SELECT MAX(score) as best FROM game_scores WHERE user_id = ? AND game = 'colorswipe'");
     $stmt->execute([$user['id']]);
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -315,7 +301,7 @@ if ($user) {
     </div>
 
     <div id="score">
-        <b style="color:gold;font-size:1rem;">GPC</b>
+        <b style="color:gold;font-size:1rem;">Vomp Coin</b>
         <span id="scoreValue">0</span>
     </div>
 

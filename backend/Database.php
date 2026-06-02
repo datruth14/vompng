@@ -173,6 +173,16 @@ function db_init_schema(PDO $db)
                 INDEX idx_orders_store_id (store_id),
                 FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ",
+        'game_scores' => "
+            CREATE TABLE IF NOT EXISTS game_scores (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_id VARCHAR(24) NOT NULL,
+                game VARCHAR(100) NOT NULL DEFAULT 'colorswipe',
+                score INT NOT NULL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_game_scores_user (user_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         "
     ];
 
@@ -188,6 +198,7 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'users', 'token_balance', 'INT DEFAULT 0');
     db_ensure_column($db, 'users', 'plan', "VARCHAR(20) DEFAULT 'free'");
     db_ensure_column($db, 'users', 'role', "VARCHAR(20) DEFAULT 'user'");
+    db_ensure_column($db, 'users', 'gpc_balance', 'INT DEFAULT 0');
 
     // Seed admin role for 14eter@gmail.com
     $adminEmail = '14eter@gmail.com';
