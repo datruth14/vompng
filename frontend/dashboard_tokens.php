@@ -375,44 +375,37 @@ let savedAccountName = '<?php echo htmlspecialchars($savedBankAccountName, ENT_Q
 let savedAccountNumber = '<?php echo htmlspecialchars($savedBankAccount, ENT_QUOTES); ?>';
 let hasSavedBank = <?php echo $hasBankDetails ? 'true' : 'false'; ?>;
 let banksData = null;
+let banksPromise = null;
 
-// Fetch banks on page load, populate selects, init TomSelect when tab opens
+// Fetch banks once on page load, populate selects and init TomSelect when visible
 function loadBanks(selectId, loadingId, cb) {
-    if (banksData) {
-        populateSelect(selectId, loadingId);
+    const done = function () {
+        const select = document.getElementById(selectId);
+        document.getElementById(loadingId).classList.add('hidden');
+        if (banksData.success && banksData.banks.length > 0) {
+            banksData.banks.sort((a, b) => a.name.localeCompare(b.name));
+            banksData.banks.forEach(b => {
+                const opt = document.createElement('option');
+                opt.value = b.code;
+                opt.textContent = b.name;
+                select.appendChild(opt);
+            });
+        }
         if (cb) cb();
-        return;
+    };
+    if (banksData) { done(); return; }
+    if (!banksPromise) {
+        banksPromise = fetch('/api/list_banks.php').then(r => r.json()).then(data => { banksData = data; }).catch(() => { banksData = { success: false, banks: [] }; });
     }
-    fetch('/api/list_banks.php')
-        .then(r => r.json())
-        .then(data => {
-            banksData = data;
-            populateSelect(selectId, loadingId);
-            if (cb) cb();
-        })
-        .catch(() => {
-            document.getElementById(loadingId).textContent = 'Failed to load banks';
-        });
-}
-
-function populateSelect(selectId, loadingId) {
-    const data = banksData;
-    const select = document.getElementById(selectId);
-    document.getElementById(loadingId).classList.add('hidden');
-    if (data.success && data.banks.length > 0) {
-        data.banks.sort((a, b) => a.name.localeCompare(b.name));
-        data.banks.forEach(b => {
-            const opt = document.createElement('option');
-            opt.value = b.code;
-            opt.textContent = b.name;
-            select.appendChild(opt);
-        });
-    }
+    banksPromise.then(done, function () {
+        document.getElementById(loadingId).textContent = 'Failed to load banks';
+    });
 }
 
 function initTomSelect(selectId) {
     const el = document.getElementById(selectId);
-    if (!el || el.classList.contains('ts-wrapper')) return;
+    if (!el || el.dataset.tsInitialized) return;
+    el.dataset.tsInitialized = '1';
     new TomSelect('#' + selectId, {
         placeholder: 'Search for your bank...',
         allowEmptyOption: true,
