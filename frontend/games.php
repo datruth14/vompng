@@ -232,7 +232,7 @@ body.menu-open{overflow:hidden}
                     </div>
                     <h3>Candy Swipe</h3>
                     <p>Match sweets, chain combos, and rack up massive scores.</p>
-                    <a href="/games?game=colorswipe" class="btn btn-primary sm">Play Now</a>
+                    <a href="/games?game=colorSwipe" class="btn btn-primary sm">Play Now</a>
                   </article>
                 </div>
                 <div class="slide" data-key="space-shooter">
@@ -240,7 +240,7 @@ body.menu-open{overflow:hidden}
                     <img class="card-bg" loading="lazy" alt="Space shooter arcade" src="/assets/media/images/gpad/space-shooter/space-shooter.png" onerror="this.style.display='none'" />
                     <h3>Space Shooter</h3>
                     <p>Blast waves of enemies and dodge meteors among the stars.</p>
-                    <a href="/games?game=spaceshooter" class="btn btn-primary sm">Play Now</a>
+                    <a href="/games?game=spaceShooter" class="btn btn-primary sm">Play Now</a>
                   </article>
                 </div>
               </div>
