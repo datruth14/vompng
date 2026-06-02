@@ -6,6 +6,8 @@
 $pageTitle = 'Vomp Coin Management - vomp';
 ob_start();
 ?>
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <section class="py-6 md:py-10 space-y-12">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
@@ -82,9 +84,6 @@ ob_start();
             <div id="withdrawSection" class="glass-morphism rounded-3xl p-8 border border-white/10 hidden">
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Cash Out</p>
                 <p class="text-3xl font-black text-white mb-6">Withdraw <span class="text-sm text-gray-500 font-medium">to your bank account</span></p>
-
-                <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
-                <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 
                 <?php
                 $savedBankName = $currentUser['bank_name'] ?? '';
