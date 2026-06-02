@@ -1,7 +1,7 @@
 # VomP — Agent Guide
 
 ## Overview
-VomP is a PHP-based marketplace platform where sellers create stores, list products, and receive orders via WhatsApp. Token system (purchase/transfer/withdraw), super admin dashboard, PWA support, game pad integration.
+VomP is a PHP-based marketplace platform where sellers create stores, list products, and receive orders via WhatsApp. Token system (purchase/transfer/withdraw), super admin dashboard, PWA support.
 
 ## Tech Stack
 - **Backend:** Vanilla PHP (no framework), MySQL via PDO
@@ -20,7 +20,6 @@ VomP is a PHP-based marketplace platform where sellers create stores, list produ
 - Number inputs use `type="text"` with `inputmode="numeric"` for comma formatting.
 - `img_url()` helper normalizes legacy image URLs (adds leading `/` if missing).
 - Product queries handle legacy data: `store_id` may equal `owner_id` for migrated products.
-- Game Pad is standalone page (no VomP layout wrapper). Auth required.
 
 ## Progress Summary
 
@@ -43,42 +42,21 @@ VomP is a PHP-based marketplace platform where sellers create stores, list produ
 - **Download page:** Three glassmorphism cards (Android/iOS/Desktop). Desktop/Android trigger native install prompt. iOS shows Safari instructions modal.
 - **Social icons:** YouTube, Facebook, Instagram in marketplace/stores/products footer. Share FAB on store pages.
 - **UI fixes:** iOS safe area (`env(safe-area-inset-bottom)`), text-fit auto-shrink, formatted number inputs.
-- **Game Pad:** Standalone `/games` route (auth required). Game selection page with neon/cyber design, Vanta cloud background. Game scripts in `comp_files/gpad/{game}.php`.
-  - **colorSwipe.php:** Match-3 candy-swipe game, 4×4 grid, drag/touch, particle explosions, AudioContext sounds, BGM toggle, score persistence to `game_scores` DB table.
-  - **Candy images:** High-quality JPGs at `assets/media/images/gpad/candy/{red,blue,green,yellow,purple}.jpg`.
-  - **Candy Swipe thumbnail:** `assets/media/images/gpad/candy/candy-swipe.png`.
-  - **Space Shooter thumbnail:** `assets/media/images/gpad/space-shooter/space-shooter.png` (placeholder, replace with real art).
-  - **Audio files:** `assets/media/music/gpad/matching_tune.mp3` (combo), `matching_tune2.mp3` (alt), `mochamusic-candy-clouds-405666.mp3` (BGM).
-  - **Adapter files:** `header.php`, `saveUserData.php`, `footer.php` in `comp_files/gpad/` — provide VomP auth, score persistence, and nav for legacy game scripts.
-  - **spaceShooter.php:** Space shooter arcade game at `comp_files/gpad/spaceShooter.php` with VomP adapter support (auth, score save, GPC balance).
 
 ### In Progress
-- (none — all game pad assets placed)
+- (none)
 
 ### Blocked
 - (none)
 
 ## Next Steps
 1. Pull latest code on cPanel (`git pull origin main`).
-2. Test full game pad flow: `/games` → click Candy Swipe → play, earn score, save score.
-3. Verify score persistence in `game_scores` DB table.
-4. Test space shooter at `/games?game=spaceShooter`.
-5. Test on mobile (touch input for both games).
-6. Replace `assets/media/images/gpad/space-shooter/space-shooter.png` with real game art.
-7. Adjust `spaceShooter.php` minimum score threshold (currently 1000 GPC to save earnings from header.php).
-
-## Key Files
-- `comp_files/gpad/colorSwipe.php` — Match-3 game with VomP auth integration, score persistence.
-- `frontend/games.php` — Game pad selection page.
-- `assets/media/images/gpad/candy/*.jpg` — Candy sprite images.
-- `assets/media/music/gpad/` — Audio assets directory.
 
 ## Database Tables
 - Users, Stores, Products, Sessions, Token Transactions, Orders, Password Resets
-- `game_scores` (user_id, game, score, created_at) — game score persistence
 
 ## Routing
-All through `index.php`. Game pad: `GET /games` (standalone), `GET /games?game=X` includes `comp_files/gpad/{X}.php`. Static files bypass via `router.php` / `.htaccess`. API `.php` files served directly.
+All through `index.php`. Static files bypass via `router.php` / `.htaccess`. API `.php` files served directly.
 
 ## Token System
 - Price: ₦20 per Vomp Coin (minimum purchase: 50 coins)

@@ -166,13 +166,7 @@ if ($method === 'GET') {
             break;
 
         case $requestPath === 'games':
-            require_once __DIR__ . '/backend/Auth.php';
-            $currentUser = auth_get_current_user();
-            if (!$currentUser) {
-                header('Location: /login');
-                exit;
-            }
-            include 'frontend/games.php';
+            header('Location: /dashboard');
             exit;
 
         case $requestPath === 'download':
