@@ -351,7 +351,9 @@ if ($method === 'GET') {
             require_once __DIR__ . '/backend/Order.php';
             $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
             $perPage = 20;
-            $result = order_get_by_store_paginated($store['id'], $page, $perPage);
+            $from = $_GET['from'] ?? null;
+            $to = $_GET['to'] ?? null;
+            $result = order_get_by_store_paginated($store['id'], $page, $perPage, $from, $to);
             $orders = $result['orders'];
             $totalPages = $result['totalPages'];
             include 'frontend/dashboard_orders.php';

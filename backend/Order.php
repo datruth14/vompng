@@ -23,19 +23,33 @@ function order_get_by_store($storeId)
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
-function order_get_by_store_paginated($storeId, $page = 1, $perPage = 20)
+function order_get_by_store_paginated($storeId, $page = 1, $perPage = 20, $from = null, $to = null)
 {
     $db = db_get_connection();
     $offset = ($page - 1) * $perPage;
 
-    $countStmt = $db->prepare('SELECT COUNT(*) FROM orders WHERE store_id = ?');
-    $countStmt->execute([$storeId]);
+    $where = 'store_id = ?';
+    $params = [$storeId];
+    if ($from) {
+        $where .= ' AND DATE(created_at) >= ?';
+        $params[] = $from;
+    }
+    if ($to) {
+        $where .= ' AND DATE(created_at) <= ?';
+        $params[] = $to;
+    }
+
+    $countStmt = $db->prepare("SELECT COUNT(*) FROM orders WHERE {$where}");
+    $countStmt->execute($params);
     $total = (int) $countStmt->fetchColumn();
 
-    $stmt = $db->prepare('SELECT * FROM orders WHERE store_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?');
-    $stmt->bindValue(1, $storeId, PDO::PARAM_STR);
-    $stmt->bindValue(2, $perPage, PDO::PARAM_INT);
-    $stmt->bindValue(3, $offset, PDO::PARAM_INT);
+    $stmt = $db->prepare("SELECT * FROM orders WHERE {$where} ORDER BY created_at DESC LIMIT ? OFFSET ?");
+    $i = 1;
+    foreach ($params as $p) {
+        $stmt->bindValue($i++, $p);
+    }
+    $stmt->bindValue($i++, $perPage, PDO::PARAM_INT);
+    $stmt->bindValue($i++, $offset, PDO::PARAM_INT);
     $stmt->execute();
     $orders = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -46,6 +60,24 @@ function order_get_by_store_paginated($storeId, $page = 1, $perPage = 20)
         'perPage' => $perPage,
         'totalPages' => max(1, (int) ceil($total / $perPage))
     ];
+}
+
+function order_get_by_store_all($storeId, $from = null, $to = null)
+{
+    $db = db_get_connection();
+    $where = 'store_id = ?';
+    $params = [$storeId];
+    if ($from) {
+        $where .= ' AND DATE(created_at) >= ?';
+        $params[] = $from;
+    }
+    if ($to) {
+        $where .= ' AND DATE(created_at) <= ?';
+        $params[] = $to;
+    }
+    $stmt = $db->prepare("SELECT * FROM orders WHERE {$where} ORDER BY created_at DESC");
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
 
 function order_count_by_store($storeId)

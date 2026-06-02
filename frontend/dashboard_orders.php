@@ -11,6 +11,24 @@ ob_start();
         <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>" class="btn-secondary px-6 py-3 rounded-2xl text-sm">Back</a>
     </header>
 
+    <form method="GET" class="glass-morphism rounded-[2rem] p-6 border border-white/10 flex flex-col md:flex-row items-end gap-4">
+        <div class="flex-1 w-full">
+            <label class="text-xs uppercase tracking-wider font-black text-gray-500 mb-2 block">From</label>
+            <input type="date" name="from" value="<?php echo htmlspecialchars($_GET['from'] ?? ''); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#ff610a]/50 transition-all">
+        </div>
+        <div class="flex-1 w-full">
+            <label class="text-xs uppercase tracking-wider font-black text-gray-500 mb-2 block">To</label>
+            <input type="date" name="to" value="<?php echo htmlspecialchars($_GET['to'] ?? ''); ?>" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-white focus:outline-none focus:border-[#ff610a]/50 transition-all">
+        </div>
+        <div class="flex gap-2 w-full md:w-auto">
+            <button type="submit" class="px-6 py-2.5 rounded-xl bg-[#ff610a] text-white font-bold text-sm hover:bg-[#e05500] transition-all">Filter</button>
+            <?php if (!empty($_GET['from']) || !empty($_GET['to'])): ?>
+                <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/orders" class="px-6 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">Clear</a>
+            <?php endif; ?>
+            <a href="/api/orders_export.php?storeSlug=<?php echo htmlspecialchars($store['slug']); ?>&from=<?php echo htmlspecialchars($_GET['from'] ?? ''); ?>&to=<?php echo htmlspecialchars($_GET['to'] ?? ''); ?>" class="px-6 py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-500 transition-all whitespace-nowrap">Export CSV</a>
+        </div>
+    </form>
+
     <?php if (!$orders): ?>
         <div class="glass-morphism rounded-[2.5rem] p-12 border border-white/10 text-center">
             <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-white/5 flex items-center justify-center">
