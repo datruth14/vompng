@@ -63,7 +63,7 @@ function paystack_http_post($url, $data)
     return [$response, $httpCode];
 }
 
-function paystack_http_get($url)
+function paystack_http_get($url, $timeout = 30)
 {
     $sk = paystack_secret_key();
     $opts = [
@@ -73,7 +73,7 @@ function paystack_http_get($url)
                 'Authorization: Bearer ' . $sk,
                 'Content-Type: application/json',
             ],
-            'timeout' => 30,
+            'timeout' => $timeout,
             'ignore_errors' => true,
         ],
         'ssl' => [
@@ -159,14 +159,16 @@ function paystack_list_banks()
     $page = 1;
     $perPage = 100;
     while (true) {
-        [$response, $httpCode] = paystack_http_get("https://api.paystack.co/bank?country=nigeria&perPage={$perPage}&page={$page}");
+        [$response, $httpCode] = paystack_http_get("https://api.paystack.co/bank?country=nigeria&perPage={$perPage}&page={$page}", 8);
+        if ($response === false || $httpCode !== 200) break;
         $body = json_decode($response, true);
-        if ($httpCode !== 200 || !$body || !($body['status'] ?? false)) break;
+        if (!$body || !($body['status'] ?? false)) break;
         $data = $body['data'] ?? [];
         if (empty($data)) break;
         $all = array_merge($all, $data);
         if (count($data) < $perPage) break;
         $page++;
+        if ($page > 3) break;
     }
 
     return $all;
