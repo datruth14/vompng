@@ -173,7 +173,7 @@ function db_init_schema(PDO $db)
                 INDEX idx_orders_store_id (store_id),
                 FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ",
+        "
     ];
 
     foreach ($tables as $table => $sql) {
@@ -188,6 +188,7 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'users', 'token_balance', 'INT DEFAULT 0');
     db_ensure_column($db, 'users', 'plan', "VARCHAR(20) DEFAULT 'free'");
     db_ensure_column($db, 'users', 'role', "VARCHAR(20) DEFAULT 'user'");
+
     // Seed admin role for 14eter@gmail.com
     $adminEmail = '14eter@gmail.com';
     $adminCheck = $db->prepare("SELECT id, role FROM users WHERE email = ?");
