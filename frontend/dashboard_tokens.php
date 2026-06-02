@@ -249,6 +249,12 @@ function switchTab(tab) {
     buySection.classList.toggle('hidden', tab !== 'buy');
     transferSection.classList.toggle('hidden', tab !== 'transfer');
     withdrawSection.classList.toggle('hidden', tab !== 'withdraw');
+    if (tab === 'withdraw') {
+        initTomSelect('withdrawBank');
+        if (document.getElementById('verifyBankSection') && !document.getElementById('verifyBankSection').classList.contains('hidden')) {
+            initTomSelect('verifyBank');
+        }
+    }
 }
 
 tabBuy.addEventListener('click', () => switchTab('buy'));
@@ -368,40 +374,69 @@ let withdrawAccountName = '';
 let savedAccountName = '<?php echo htmlspecialchars($savedBankAccountName, ENT_QUOTES); ?>';
 let savedAccountNumber = '<?php echo htmlspecialchars($savedBankAccount, ENT_QUOTES); ?>';
 let hasSavedBank = <?php echo $hasBankDetails ? 'true' : 'false'; ?>;
+let banksData = null;
 
-// Load banks on page load
-function loadBanks(selectId, loadingId) {
-    return fetch('/api/list_banks.php')
+// Fetch banks on page load, populate selects, init TomSelect when tab opens
+function loadBanks(selectId, loadingId, cb) {
+    if (banksData) {
+        populateSelect(selectId, loadingId);
+        if (cb) cb();
+        return;
+    }
+    fetch('/api/list_banks.php')
         .then(r => r.json())
         .then(data => {
-            const select = document.getElementById(selectId);
-            document.getElementById(loadingId).classList.add('hidden');
-            if (data.success && data.banks.length > 0) {
-                data.banks.sort((a, b) => a.name.localeCompare(b.name));
-                data.banks.forEach(b => {
-                    const opt = document.createElement('option');
-                    opt.value = b.code;
-                    opt.textContent = b.name;
-                    select.appendChild(opt);
-                });
-            }
-            new TomSelect('#' + selectId, {
-                placeholder: 'Search for your bank...',
-                allowEmptyOption: true,
-                maxOptions: 100,
-                searchField: ['text'],
-                onChange: function () { checkVerifyReady(); }
-            });
+            banksData = data;
+            populateSelect(selectId, loadingId);
+            if (cb) cb();
         })
         .catch(() => {
             document.getElementById(loadingId).textContent = 'Failed to load banks';
         });
 }
 
-loadBanks('withdrawBank', 'withdrawBankLoading');
-if (!hasSavedBank) {
-    loadBanks('verifyBank', 'verifyBankLoading');
+function populateSelect(selectId, loadingId) {
+    const data = banksData;
+    const select = document.getElementById(selectId);
+    document.getElementById(loadingId).classList.add('hidden');
+    if (data.success && data.banks.length > 0) {
+        data.banks.sort((a, b) => a.name.localeCompare(b.name));
+        data.banks.forEach(b => {
+            const opt = document.createElement('option');
+            opt.value = b.code;
+            opt.textContent = b.name;
+            select.appendChild(opt);
+        });
+    }
 }
+
+function initTomSelect(selectId) {
+    const el = document.getElementById(selectId);
+    if (!el || el.classList.contains('ts-wrapper')) return;
+    new TomSelect('#' + selectId, {
+        placeholder: 'Search for your bank...',
+        allowEmptyOption: true,
+        maxOptions: 100,
+        searchField: ['text'],
+        onChange: function () { checkVerifyReady(); }
+    });
+}
+
+let withdrawBanksLoaded = false;
+function ensureWithdrawBanks() {
+    if (withdrawBanksLoaded) return;
+    withdrawBanksLoaded = true;
+    loadBanks('withdrawBank', 'withdrawBankLoading', function () {
+        initTomSelect('withdrawBank');
+    });
+    if (!hasSavedBank) {
+        loadBanks('verifyBank', 'verifyBankLoading', function () {
+            initTomSelect('verifyBank');
+        });
+    }
+}
+
+ensureWithdrawBanks();
 
 // Amount
 document.getElementById('withdrawAmount').addEventListener('input', function () {
@@ -488,8 +523,11 @@ if (withdrawBtn) {
 // Change bank details flow
 document.getElementById('changeBankBtn')?.addEventListener('click', function () {
     document.getElementById('savedBankDetails').classList.add('hidden');
-    document.getElementById('changeBankSection').classList.remove('hidden');
+    document.getElementById('verifyBankSection').classList.remove('hidden');
     document.getElementById('withdrawBtn').classList.add('hidden');
+    loadBanks('verifyBank', 'verifyBankLoading', function () {
+        initTomSelect('verifyBank');
+    });
 });
 
 document.getElementById('cancelChangeBtn')?.addEventListener('click', function () {
