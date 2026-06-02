@@ -155,12 +155,6 @@ function paystack_verify($reference)
 
 function paystack_list_banks()
 {
-    $cacheFile = __DIR__ . '/../cache/banks.json';
-    if (is_file($cacheFile) && time() - filemtime($cacheFile) < 86400) {
-        $cached = json_decode(file_get_contents($cacheFile), true);
-        if ($cached) return $cached;
-    }
-
     $all = [];
     $page = 1;
     $perPage = 100;
@@ -173,12 +167,6 @@ function paystack_list_banks()
         $all = array_merge($all, $data);
         if (count($data) < $perPage) break;
         $page++;
-    }
-
-    if (!empty($all)) {
-        $dir = dirname($cacheFile);
-        if (!is_dir($dir)) mkdir($dir, 0755, true);
-        file_put_contents($cacheFile, json_encode($all));
     }
 
     return $all;

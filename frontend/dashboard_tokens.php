@@ -250,7 +250,6 @@ function switchTab(tab) {
     buySection.classList.toggle('hidden', tab !== 'buy');
     transferSection.classList.toggle('hidden', tab !== 'transfer');
     withdrawSection.classList.toggle('hidden', tab !== 'withdraw');
-    if (tab === 'withdraw') loadWithdrawBanks();
 }
 
 tabBuy.addEventListener('click', () => switchTab('buy'));
@@ -371,7 +370,7 @@ let savedAccountName = '<?php echo htmlspecialchars($savedBankAccountName, ENT_Q
 let savedAccountNumber = '<?php echo htmlspecialchars($savedBankAccount, ENT_QUOTES); ?>';
 let hasSavedBank = <?php echo $hasBankDetails ? 'true' : 'false'; ?>;
 
-// Load banks into selects (lazy — only when withdraw tab opens)
+// Load banks on page load
 function loadBanks(selectId, loadingId) {
     return fetch('/api/list_banks.php')
         .then(r => r.json())
@@ -400,14 +399,9 @@ function loadBanks(selectId, loadingId) {
         });
 }
 
-let banksLoaded = false;
-function loadWithdrawBanks() {
-    if (banksLoaded) return;
-    banksLoaded = true;
-    loadBanks('withdrawBank', 'withdrawBankLoading');
-    if (!hasSavedBank) {
-        loadBanks('verifyBank', 'verifyBankLoading');
-    }
+loadBanks('withdrawBank', 'withdrawBankLoading');
+if (!hasSavedBank) {
+    loadBanks('verifyBank', 'verifyBankLoading');
 }
 
 // Amount
@@ -495,9 +489,8 @@ if (withdrawBtn) {
 // Change bank details flow
 document.getElementById('changeBankBtn')?.addEventListener('click', function () {
     document.getElementById('savedBankDetails').classList.add('hidden');
-    document.getElementById('verifyBankSection').classList.remove('hidden');
+    document.getElementById('changeBankSection').classList.remove('hidden');
     document.getElementById('withdrawBtn').classList.add('hidden');
-    loadWithdrawBanks();
 });
 
 document.getElementById('cancelChangeBtn')?.addEventListener('click', function () {
