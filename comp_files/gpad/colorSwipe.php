@@ -667,9 +667,8 @@ function checkMatches() {
         if (i % columns > columns - 3) continue;
         let rowOfThree = [i, i + 1, i + 2];
         let decidedColor = squares[i].classList[1];
-        const isBlank = squares[i].classList.contains('matched');
 
-        if (rowOfThree.every(index => squares[index].classList.includes(decidedColor) && !isBlank)) {
+        if (rowOfThree.every(index => squares[index].classList.includes(decidedColor) && !squares[index].classList.contains('matched'))) {
             matchFound = true;
             matchGroups++;
             rowOfThree.forEach(index => {
@@ -683,9 +682,8 @@ function checkMatches() {
     for (let i = 0; i < squares.length - columns * 2; i++) {
         let columnOfThree = [i, i + columns, i + columns * 2];
         let decidedColor = squares[i].classList[1];
-        const isBlank = squares[i].classList.contains('matched');
 
-        if (columnOfThree.every(index => squares[index].classList.includes(decidedColor) && !isBlank)) {
+        if (columnOfThree.every(index => squares[index].classList.includes(decidedColor) && !squares[index].classList.contains('matched'))) {
             matchFound = true;
             matchGroups++;
             columnOfThree.forEach(index => {
@@ -761,6 +759,7 @@ setInterval(() => {
     checkMatches();
 }, 100);
 
+document.getElementById('bgmToggle').addEventListener('click', toggleBgm);
 updateBgmToggleLabel();
 
 (function initExternalAudioVolumes(){
