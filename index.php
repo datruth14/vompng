@@ -253,16 +253,33 @@ if ($method === 'GET') {
             break;
 
         case $requestPath === 'game':
-            $pageTitle = 'Game - vomp';
+            $pageTitle = 'Gamepad - vomp';
             ob_start();
             ?>
             <section class="py-20 text-center">
                 <div class="max-w-lg mx-auto">
                     <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#ff610a]/10 border border-[#ff610a]/20 mb-6">
-                        <svg class="w-12 h-12 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.182 15.182a4.5 4.5 0 01-6.364 0M21 12a9 9 0 11-18 0 9 9 0 0118 0zM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75zm-.375 0h.008v.015h-.008V9.75zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75zm-.375 0h.008v.015h-.008V9.75z" /></svg>
+                        <svg class="w-12 h-12 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.744 8.05C16.242 7.008 14.268 6.5 12 6.5s-4.242.508-5.744 1.55C4.92 9.03 4 10.615 4 12.5c0 1.885.92 3.47 2.256 4.45C7.758 18.492 9.732 19 12 19s4.242-.508 5.744-1.55C19.08 16.47 20 14.885 20 13c0-1.885-.92-3.47-2.256-4.45zM8.5 10.5h2v2h-2v-2zm5 0h2v2h-2v-2z" /></svg>
                     </div>
                     <h1 class="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">Coming Soon</h1>
                     <p class="text-gray-400 text-lg">Something fun is on the way. Stay tuned!</p>
+                </div>
+            </section>
+            <?php
+            $content = ob_get_clean();
+            break;
+
+        case $requestPath === 'virtual-topup':
+            $pageTitle = 'Virtual TopUp - vomp';
+            ob_start();
+            ?>
+            <section class="py-20 text-center">
+                <div class="max-w-lg mx-auto">
+                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#ff610a]/10 border border-[#ff610a]/20 mb-6">
+                        <svg class="w-12 h-12 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
+                    </div>
+                    <h1 class="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">Coming Soon</h1>
+                    <p class="text-gray-400 text-lg">Virtual TopUp is coming soon. Stay tuned!</p>
                 </div>
             </section>
             <?php
