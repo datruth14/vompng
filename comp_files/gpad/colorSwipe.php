@@ -11,7 +11,7 @@ $user = auth_get_current_user();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveData'])) {
     $score = (int)($_POST['scoreValueData'] ?? 0);
     if ($user && $score > 0) {
-        $db = db_connect();
+        $db = db_get_connection();
         $db->exec("CREATE TABLE IF NOT EXISTS game_scores (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id VARCHAR(255) NOT NULL,
@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveData'])) {
 $saved = isset($_GET['saved']);
 $userScore = 0;
 if ($user) {
-    $db = db_connect();
+    $db = db_get_connection();
     $db->exec("CREATE TABLE IF NOT EXISTS game_scores (
         id INT AUTO_INCREMENT PRIMARY KEY,
         user_id VARCHAR(255) NOT NULL,

@@ -21,7 +21,7 @@ if (isset($trace[0]['file'])) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveData'])) {
     $scoreValueData = (int)($_POST['scoreValueData'] ?? 0);
     if ($scoreValueData >= 1000) {
-        $db = db_connect();
+        $db = db_get_connection();
         $db->exec("CREATE TABLE IF NOT EXISTS game_scores (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id VARCHAR(255) NOT NULL,
@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['saveData'])) {
 }
 
 // Get user GPC balance
-$db = db_connect();
+$db = db_get_connection();
 $stmt = $db->prepare("SELECT COALESCE(gpc_balance, 0) as gpc_balance FROM users WHERE id = ?");
 $stmt->execute([$gpad_user['id']]);
 $row = $stmt->fetch(PDO::FETCH_ASSOC);
