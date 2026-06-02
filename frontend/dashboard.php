@@ -7,7 +7,7 @@ $pageTitle = 'Dashboard - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">Overview</h1>
             <p class="text-gray-500 font-medium text-lg">Manage your stores and track performance.</p>
@@ -22,19 +22,19 @@ ob_start();
     </header>
 
     <div class="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
-        <a href="/dashboard/stores" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
+        <a href="/dashboard/stores" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all animate__animated animate__fadeInUp" style="animation-delay:0s">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Your Stores</p>
             <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo number_format(count($stores)); ?></p>
         </a>
-        <a href="/dashboard/products" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
+        <a href="/dashboard/products" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all animate__animated animate__fadeInUp" style="animation-delay:0.1s">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Total Products</p>
             <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo number_format((int) $totalProducts); ?></p>
         </a>
-        <a href="/tokens" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all">
+        <a href="/tokens" class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 block hover:bg-white/[0.03] transition-all animate__animated animate__fadeInUp" style="animation-delay:0.2s">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
             <p class="text-4xl md:text-5xl font-black text-[#ff610a] text-fit"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
         </a>
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center">
+        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center animate__animated animate__fadeInUp" style="animation-delay:0.3s">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
             <?php if (($currentUser['plan'] ?? 'free') === 'premium'): ?>
                 <p class="text-xl md:text-3xl font-black text-emerald-400">PREMIUM</p>
@@ -46,7 +46,7 @@ ob_start();
         </article>
     </div>
 
-    <section class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10">
+    <section class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 animate__animated animate__fadeInUp">
         <h2 class="text-2xl font-black text-white mb-6">Your Stores</h2>
         <?php if ($stores): ?>
             <div class="space-y-4">
@@ -78,7 +78,7 @@ ob_start();
                 </div>
             <?php endif; ?>
         <?php else: ?>
-            <div class="text-center py-12">
+            <div class="text-center py-12 animate__animated animate__fadeInUp">
                 <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-[#ff610a]/10 flex items-center justify-center">
                     <svg class="w-8 h-8 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5a.75.75 0 01.75-.75h3a.75.75 0 01.75.75V21m-4.5 0H2.36m11.14 0H18m0 0h3.64m-1.39 0V9.349m-16.5 11.65V9.35m0 0a3.001 3.001 0 003.75-.615A2.993 2.993 0 009.75 9.75c.896 0 1.7-.393 2.25-1.016a2.993 2.993 0 002.25 1.016c.896 0 1.7-.393 2.25-1.016a3.001 3.001 0 003.75.614m-16.5 0a3.004 3.004 0 01-.621-4.72L4.318 3.44A1.5 1.5 0 015.378 3h13.243a1.5 1.5 0 011.06.44l1.19 1.189a3 3 0 01-.621 4.72m-13.5 8.65h3.75a.75.75 0 00.75-.75V13.5a.75.75 0 00-.75-.75H6.75a.75.75 0 00-.75.75v3.75c0 .415.336.75.75.75z" /></svg>
                 </div>

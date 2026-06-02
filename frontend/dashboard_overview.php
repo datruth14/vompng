@@ -7,7 +7,7 @@ $pageTitle = 'Store Overview - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Managing <?php echo htmlspecialchars($store['slug']); ?></p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2"><?php echo htmlspecialchars($store['name']); ?></h1>
@@ -17,19 +17,19 @@ ob_start();
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 animate__animated animate__fadeInUp" style="animation-delay:0s">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Vomp Coin Balance</p>
             <p class="text-4xl md:text-5xl font-black text-white text-fit"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?></p>
         </article>
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 animate__animated animate__fadeInUp" style="animation-delay:0.1s">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Orders</p>
             <p class="text-4xl md:text-5xl font-black text-white"><?php echo number_format($orderCount); ?></p>
         </article>
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 animate__animated animate__fadeInUp" style="animation-delay:0.2s">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Live Products</p>
             <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo count(array_filter($products, fn($p) => (int) ($p['is_available'] ?? 1) === 1)); ?></p>
         </article>
-        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10">
+        <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 animate__animated animate__fadeInUp" style="animation-delay:0.3s">
             <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
             <?php if (($currentUser['plan'] ?? 'free') === 'premium'): ?>
                 <p class="text-3xl font-black text-emerald-400">PREMIUM</p>
@@ -40,25 +40,25 @@ ob_start();
     </div>
 
     <div class="grid md:grid-cols-4 gap-6">
-        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/products" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
+        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/products" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all animate__animated animate__fadeInUp" style="animation-delay:0.1s">
             <h3 class="text-white font-black text-xl mb-2">Manage Products</h3>
             <p class="text-gray-400 text-sm">Add, edit, publish, or hide items in your catalog.</p>
         </a>
-        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/orders" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
+        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/orders" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all animate__animated animate__fadeInUp" style="animation-delay:0.2s">
             <h3 class="text-white font-black text-xl mb-2">Orders</h3>
             <p class="text-gray-400 text-sm">View customer orders placed via your storefront.</p>
         </a>
-        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/settings" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
+        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/settings" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all animate__animated animate__fadeInUp" style="animation-delay:0.3s">
             <h3 class="text-white font-black text-xl mb-2">Store Settings</h3>
             <p class="text-gray-400 text-sm">Update your WhatsApp, theme colors, and profile details.</p>
         </a>
-        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
+        <a href="/dashboard/<?php echo htmlspecialchars($store['slug']); ?>/tokens" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all animate__animated animate__fadeInUp" style="animation-delay:0.4s">
             <h3 class="text-white font-black text-xl mb-2">Vomp Coins</h3>
             <p class="text-gray-400 text-sm">Top up and review Vomp Coin transaction history.</p>
         </a>
     </div>
 
-    <section class="glass-morphism rounded-[2.5rem] p-8 border border-white/10">
+    <section class="glass-morphism rounded-[2.5rem] p-8 border border-white/10 animate__animated animate__fadeInUp">
         <h2 class="text-2xl font-black text-white mb-6">Recent Vomp Coin Activity</h2>
         <?php if (!$transactions): ?>
             <p class="text-gray-400">No Vomp Coin activity yet.</p>

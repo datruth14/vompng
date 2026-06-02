@@ -7,7 +7,7 @@ $pageTitle = 'Manage Products - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-12">
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Inventory Management</p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">Products</h1>
@@ -31,7 +31,7 @@ ob_start();
     </header>
 
     <!-- Add / Edit Product Form -->
-    <div id="addProductForm" class="hidden glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 mb-12">
+    <div id="addProductForm" class="hidden glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 mb-12 animate__animated animate__fadeInUp">
         <h2 id="formTitle" class="text-2xl font-black text-white mb-6">Create New Product</h2>
         <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-8" enctype="multipart/form-data">
             <input type="hidden" id="pId" value="">
@@ -76,7 +76,7 @@ ob_start();
         </form>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate__animated animate__fadeInUp">
         <?php foreach ($products as $p): ?>
             <article class="glass-morphism rounded-[2rem] p-6 border border-white/10 flex flex-col group hover:bg-white/5 transition-all">
                 <?php if ($p['media_url']): ?>
@@ -111,7 +111,7 @@ ob_start();
         <?php endforeach; ?>
 
         <?php if (!$products): ?>
-            <div class="col-span-full py-20 text-center glass-morphism rounded-[2.5rem] border border-dashed border-white/10">
+            <div class="col-span-full py-20 text-center glass-morphism rounded-[2.5rem] border border-dashed border-white/10 animate__animated animate__fadeInUp">
                 <div class="w-20 h-20 rounded-3xl bg-white/5 flex items-center justify-center mx-auto mb-6">
                     <svg class="w-10 h-10 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
                 </div>

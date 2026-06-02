@@ -2,16 +2,16 @@
 $pageTitle = 'All Products - vomp';
 ob_start();
 ?>
-<section class="py-6 md:py-10 space-y-8">
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<section class="py-6 md:py-10 space-y-8 animate__animated animate__fadeInUp">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Browse</p>
-            <h1 class="text-5xl font-black text-white tracking-tight mb-2">All Products</h1>
+            <h1 class="text-5xl font-black text-white tracking-tight mb-2 animate__animated animate__fadeInDown">All Products</h1>
             <p class="text-gray-500 font-medium text-lg">Discover products from stores across Nigeria.</p>
         </div>
     </header>
 
-    <form method="GET" action="/products" class="relative">
+    <form method="GET" action="/products" class="relative animate__animated animate__fadeInUp">
         <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
         <input type="text" name="q" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>" placeholder="Search products..." class="w-full rounded-xl px-5 py-3.5 pl-12 bg-transparent border border-white/10 focus:border-[#ff610a] focus:outline-none text-white placeholder-gray-500 transition-colors"/>
     </form>
@@ -46,7 +46,7 @@ ob_start();
     <?php else: ?>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             <?php foreach ($products as $p): ?>
-                <a href="/store/<?php echo htmlspecialchars($p['store_slug']); ?>/<?php echo htmlspecialchars($p['id']); ?>" class="glass-morphism rounded-2xl border border-white/10 overflow-hidden hover:bg-white/[0.03] transition-all group">
+                <a href="/store/<?php echo htmlspecialchars($p['store_slug']); ?>/<?php echo htmlspecialchars($p['id']); ?>" class="glass-morphism rounded-2xl border border-white/10 overflow-hidden hover:bg-white/[0.03] transition-all group animate__animated animate__fadeInUp">
                     <div class="aspect-square skeleton-box relative overflow-hidden">
                         <?php if (!empty($p['media_url'])): ?>
                             <img src="<?php echo htmlspecialchars(img_url($p['media_url'])); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="img-skeleton w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')"/>

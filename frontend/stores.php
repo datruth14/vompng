@@ -2,15 +2,15 @@
 $pageTitle = 'All Stores - vomp';
 ob_start();
 ?>
-<section class="py-6 md:py-10 space-y-8">
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+<section class="py-6 md:py-10 space-y-8 animate__animated animate__fadeInUp">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
-            <h1 class="text-5xl font-black text-white tracking-tight mb-2">All Stores</h1>
+            <h1 class="text-5xl font-black text-white tracking-tight mb-2 animate__animated animate__fadeInDown">All Stores</h1>
             <p class="text-gray-500 font-medium text-lg">Browse stores on the marketplace.</p>
         </div>
     </header>
 
-    <form method="GET" action="/stores" class="relative">
+    <form method="GET" action="/stores" class="relative animate__animated animate__fadeInUp">
         <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
         <input type="text" name="q" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>" placeholder="Search stores..." class="w-full rounded-xl px-5 py-3.5 pl-12 bg-transparent border border-white/10 focus:border-[#ff610a] focus:outline-none text-white placeholder-gray-500 transition-colors" />
     </form>
@@ -25,7 +25,7 @@ ob_start();
         <?php foreach ($stores as $s):
             $hasHero = !empty($s['hero_image_url']);
         ?>
-            <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="rounded-3xl p-6 border border-white/10 hover:border-[#ff610a]/30 transition-all group block relative overflow-hidden min-h-[200px] <?php echo $hasHero ? '' : 'glass-morphism'; ?>">
+            <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="rounded-3xl p-6 border border-white/10 hover:border-[#ff610a]/30 transition-all group block relative overflow-hidden min-h-[200px] <?php echo $hasHero ? '' : 'glass-morphism'; ?> animate__animated animate__fadeInUp">
                 <?php if ($hasHero): ?>
                 <div class="absolute inset-0 skeleton-box overflow-hidden">
                     <img src="<?php echo htmlspecialchars(img_url($s['hero_image_url'])); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />

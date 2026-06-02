@@ -6,7 +6,7 @@
 $pageTitle = htmlspecialchars($product['name']) . ' - ' . htmlspecialchars($store['name']);
 ob_start();
 ?>
-<section class="py-10 md:py-16">
+<section class="py-10 md:py-16 animate__animated animate__fadeInUp">
     <div class="max-w-5xl mx-auto space-y-10">
         <div class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
@@ -28,16 +28,16 @@ ob_start();
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
                             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Product Details</p>
-                            <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight break-words"><?php echo htmlspecialchars($product['name']); ?></h1>
+                            <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight break-words animate__animated animate__fadeInDown"><?php echo htmlspecialchars($product['name']); ?></h1>
                         </div>
                         <span class="text-3xl font-black text-[#ff8c3a] whitespace-nowrap">₦<?php echo number_format((float) $product['price'], 2); ?></span>
                     </div>
 
-                    <div class="text-gray-400 text-base leading-7">
+                    <div class="text-gray-400 text-base leading-7 animate__animated animate__fadeInUp">
                         <?php echo nl2br(htmlspecialchars($product['description'] ?: 'No description provided.')); ?>
                     </div>
 
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 animate__animated animate__fadeInUp">
                         <div class="glass-morphism rounded-3xl p-6 border border-white/10">
                             <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-400 mb-3">Store</p>
                             <p class="text-white font-bold"><?php echo htmlspecialchars($store['name']); ?></p>
@@ -50,7 +50,7 @@ ob_start();
                         </div>
                     </div>
 
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center animate__animated animate__zoomIn">
                         <button id="order-now" class="px-8 py-4 rounded-3xl bg-[#ff610a] text-white font-black text-base shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Order via WhatsApp</button>
                         <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>" class="px-8 py-4 rounded-3xl bg-white/5 border border-white/10 text-white font-black text-base text-center hover:bg-white/10 transition-all">Back to storefront</a>
                     </div>

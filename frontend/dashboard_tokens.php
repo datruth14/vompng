@@ -9,7 +9,7 @@ ob_start();
 <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <section class="py-6 md:py-10 space-y-12">
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Order Credits</p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">Vomp Coins</h1>
@@ -18,7 +18,7 @@ ob_start();
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <article class="glass-morphism rounded-[2.5rem] p-10 border border-white/10 md:col-span-1 flex flex-col items-center justify-center text-center">
+        <article class="glass-morphism rounded-[2.5rem] p-10 border border-white/10 md:col-span-1 flex flex-col items-center justify-center text-center animate__animated animate__fadeInUp">
             <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-4">Current Balance</p>
             <div class="relative mb-6">
                 <div class="absolute inset-0 bg-[#ff610a]/20 blur-3xl rounded-full"></div>
@@ -35,7 +35,7 @@ ob_start();
             </div>
 
             <!-- Buy Section -->
-            <div id="buySection" class="glass-morphism rounded-3xl p-8 border border-white/10">
+            <div id="buySection" class="glass-morphism rounded-3xl p-8 border border-white/10 animate__animated animate__fadeInUp">
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Price</p>
                 <p class="text-3xl font-black text-white mb-6">₦20 <span class="text-sm text-gray-500 font-medium">per Vomp Coin</span></p>
 
@@ -58,7 +58,7 @@ ob_start();
             </div>
 
             <!-- Transfer Section -->
-            <div id="transferSection" class="glass-morphism rounded-3xl p-8 border border-white/10 hidden">
+            <div id="transferSection" class="glass-morphism rounded-3xl p-8 border border-white/10 hidden animate__animated animate__fadeInUp">
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Send Vomp Coins</p>
                 <p class="text-3xl font-black text-white mb-6">Transfer <span class="text-sm text-gray-500 font-medium">to another user</span></p>
 
@@ -81,7 +81,7 @@ ob_start();
             </div>
 
             <!-- Withdraw Section -->
-            <div id="withdrawSection" class="glass-morphism rounded-3xl p-8 border border-white/10 hidden">
+            <div id="withdrawSection" class="glass-morphism rounded-3xl p-8 border border-white/10 hidden animate__animated animate__fadeInUp">
                 <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-500 mb-1">Cash Out</p>
                 <p class="text-3xl font-black text-white mb-6">Withdraw <span class="text-sm text-gray-500 font-medium">to your bank account</span></p>
 
@@ -174,7 +174,7 @@ ob_start();
     </div>
 
     <?php if (isset($transactions)): ?>
-    <section class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10">
+    <section class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 animate__animated animate__fadeInUp">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-black text-white">Transaction History</h2>
             <div class="px-4 py-2 rounded-xl bg-white/5 text-xs font-black text-gray-400 uppercase tracking-widest">Last 50 Events</div>

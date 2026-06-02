@@ -7,7 +7,7 @@ $pageTitle = 'Store Settings - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10">
-    <header class="flex items-center justify-between mb-6">
+    <header class="flex items-center justify-between mb-6 animate__animated animate__fadeInDown">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Editing <?php echo htmlspecialchars($store['slug']); ?></p>
             <h1 class="text-4xl font-black text-white tracking-tight mb-1">Store Settings</h1>
@@ -17,7 +17,7 @@ ob_start();
     </header>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <form id="settingsForm" class="glass-morphism rounded-2xl p-6 border border-white/10 md:col-span-2 space-y-4">
+        <form id="settingsForm" class="glass-morphism rounded-2xl p-6 border border-white/10 md:col-span-2 space-y-4 animate__animated animate__fadeInUp">
             <div>
                 <label class="text-sm text-gray-300 font-bold">Store Name</label>
                 <input type="text" name="name" id="name" value="<?php echo htmlspecialchars($store['name']); ?>" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a]" />
@@ -90,7 +90,7 @@ ob_start();
             <div id="msg" class="mt-3"></div>
         </form>
 
-        <aside class="glass-morphism rounded-2xl p-6 border border-white/10">
+        <aside class="glass-morphism rounded-2xl p-6 border border-white/10 animate__animated animate__fadeInUp">
             <h3 class="text-white font-black text-xl mb-3">Preview</h3>
             <div class="space-y-3">
                 <div class="flex items-center gap-3">

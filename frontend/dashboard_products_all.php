@@ -3,7 +3,7 @@ $pageTitle = 'My Products - vomp';
 ob_start();
 ?>
 <section class="py-6 md:py-10 space-y-8">
-    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Dashboard</p>
             <h1 class="text-5xl font-black text-white tracking-tight mb-2">My Products</h1>
@@ -12,7 +12,7 @@ ob_start();
     </header>
 
     <?php if (!$products): ?>
-        <div class="text-center py-16">
+        <div class="text-center py-16 animate__animated animate__fadeInUp">
             <div class="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6">
                 <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5m6 4.125l2.25 2.25m0 0l2.25-2.25M12 13.5V7.5" /></svg>
             </div>
@@ -22,8 +22,8 @@ ob_start();
         </div>
     <?php else: ?>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <?php foreach ($products as $p): ?>
-                <article class="glass-morphism rounded-[2rem] overflow-hidden border border-white/10 hover:bg-white/[0.02] transition-all">
+            <?php $cardDelay = 0; foreach ($products as $p): ?>
+                <article class="glass-morphism rounded-[2rem] overflow-hidden border border-white/10 hover:bg-white/[0.02] transition-all animate__animated animate__fadeInUp" style="animation-delay:<?php echo $cardDelay * 0.1; ?>s" <?php $cardDelay++; ?>>
                     <div class="aspect-[4/3] bg-white/5 overflow-hidden">
                         <?php if (!empty($p['media_url'])): ?>
                             <img src="<?php echo htmlspecialchars(img_url($p['media_url'])); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-gray-600\'><svg class=\'w-10 h-10\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z\'/></svg></div>'">

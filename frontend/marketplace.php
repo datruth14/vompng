@@ -2,16 +2,16 @@
 $pageTitle = 'Marketplace - vomp';
 ob_start();
 ?>
-<section class="py-8 md:py-12">
+<section class="py-8 md:py-12 animate__animated animate__fadeInUp">
     <!-- Header -->
-    <div class="mb-8">
+    <div class="mb-8 animate__animated animate__fadeInDown">
         <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Browse Products</p>
         <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">Marketplace</h1>
         <p class="text-gray-400">Discover products from stores across Nigeria.</p>
     </div>
 
     <!-- Search Bar -->
-    <form method="GET" action="/marketplace" class="mb-6">
+    <form method="GET" action="/marketplace" class="mb-6 animate__animated animate__fadeInUp">
         <div class="relative max-w-xl">
             <input type="text" name="q" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>" placeholder="Search products or stores..." class="w-full rounded-xl px-5 py-3.5 pl-12 bg-transparent border border-white/10 focus:border-[#ff610a] focus:outline-none text-white placeholder-gray-500 transition-colors" />
             <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
@@ -48,7 +48,7 @@ ob_start();
     </div>
 
     <!-- Products Heading -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-6 animate__animated animate__fadeInUp">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-1">Products</p>
             <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">
@@ -78,7 +78,7 @@ ob_start();
     <?php else: ?>
         <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             <?php foreach ($allProducts as $p): ?>
-                <a href="/store/<?php echo htmlspecialchars($p['store_slug']); ?>/<?php echo htmlspecialchars($p['id']); ?>" class="glass-morphism rounded-2xl border border-white/10 overflow-hidden hover:bg-white/[0.03] transition-all group">
+                <a href="/store/<?php echo htmlspecialchars($p['store_slug']); ?>/<?php echo htmlspecialchars($p['id']); ?>" class="glass-morphism rounded-2xl border border-white/10 overflow-hidden hover:bg-white/[0.03] transition-all group animate__animated animate__fadeInUp">
                     <div class="aspect-square skeleton-box relative overflow-hidden">
                         <?php if (!empty($p['media_url'])): ?>
                             <img src="<?php echo htmlspecialchars(img_url($p['media_url'])); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="img-skeleton w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
@@ -112,13 +112,13 @@ ob_start();
 
     <!-- Searched Stores (when searching) -->
     <?php if (!empty($searchStores)): ?>
-        <section class="mt-10 mb-10">
+        <section class="mt-10 mb-10 animate__animated animate__fadeInUp">
             <h2 class="text-2xl font-black text-white tracking-tight mb-4">Stores</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <?php foreach ($searchStores as $s):
                     $availableCount = count(array_filter(product_get_products_by_store($s['id']), fn($p) => (int)$p['is_available'] === 1));
                 ?>
-                    <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="glass-morphism rounded-2xl p-5 border border-white/10 hover:bg-white/[0.03] transition-all group">
+                    <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="glass-morphism rounded-2xl p-5 border border-white/10 hover:bg-white/[0.03] transition-all group animate__animated animate__fadeInUp">
                         <div class="flex items-center gap-3 mb-3">
                             <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#ff610a] to-purple-600 flex items-center justify-center text-white font-black shadow-lg shadow-[#ff610a]/20 flex-shrink-0 text-lg">
                                 <?php echo strtoupper(substr(htmlspecialchars($s['name']), 0, 1)); ?>
@@ -139,11 +139,11 @@ ob_start();
 
     <!-- Explore Stores -->
     <?php if (!empty($stores)): ?>
-        <section class="mt-16 md:mt-20">
+        <section class="mt-16 md:mt-20 animate__animated animate__fadeInUp">
             <div class="flex items-center justify-between mb-8">
                 <div>
                     <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-1">Vendors</p>
-                    <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">Explore Stores</h2>
+                    <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight animate__animated animate__fadeInDown">Explore Stores</h2>
                 </div>
                 <a href="/stores" class="inline-flex items-center gap-2 text-xs text-[#ff610a] hover:text-[#ff8c3a] font-black uppercase tracking-wider transition-colors">
                     All Stores
@@ -155,7 +155,7 @@ ob_start();
                 <?php foreach ($stores as $s):
                     $hasHero = !empty($s['hero_image_url']);
                 ?>
-                    <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="rounded-3xl p-6 border border-white/10 hover:border-[#ff610a]/30 transition-all group block relative overflow-hidden min-h-[200px] <?php echo $hasHero ? '' : 'glass-morphism'; ?>">
+                    <a href="/store/<?php echo htmlspecialchars($s['slug']); ?>" class="rounded-3xl p-6 border border-white/10 hover:border-[#ff610a]/30 transition-all group block relative overflow-hidden min-h-[200px] <?php echo $hasHero ? '' : 'glass-morphism'; ?> animate__animated animate__fadeInUp">
                         <?php if ($hasHero): ?>
                         <div class="absolute inset-0 skeleton-box overflow-hidden">
                             <img src="<?php echo htmlspecialchars(img_url($s['hero_image_url'])); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />

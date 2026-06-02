@@ -11,6 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#030712">
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="/assets/theme.css">
 </head>
 <body class="bg-gray-950 text-gray-100 selection:bg-[#ff610a]/30">

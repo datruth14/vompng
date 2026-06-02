@@ -6,14 +6,14 @@
 $pageTitle = htmlspecialchars($store['name']) . ' - Storefront';
 ob_start();
 ?>
-<section class="py-8 space-y-10">
+<section class="py-8 space-y-10 animate__animated animate__fadeInUp">
     <?php
     $heroUrl = $store['hero_image_url'] ?? '';
     if ($heroUrl && $heroUrl[0] !== '/') {
         $heroUrl = '/' . $heroUrl;
     }
     ?>
-    <header class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10 overflow-hidden relative min-h-[260px] flex items-center">
+    <header class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10 overflow-hidden relative min-h-[260px] flex items-center animate__animated animate__fadeInDown">
         <?php if (!empty($store['hero_image_url'])): ?>
             <div class="absolute inset-0 skeleton-box overflow-hidden">
                 <img src="<?php echo htmlspecialchars($heroUrl); ?>" alt="" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" />
@@ -36,7 +36,7 @@ ob_start();
 
     <div class="mb-6">
         <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-1">Latest Products</p>
-        <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">New Arrivals</h2>
+        <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight animate__animated animate__fadeInDown">New Arrivals</h2>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -46,7 +46,7 @@ ob_start();
                 $pImgUrl = '/' . $pImgUrl;
             }
         ?>
-            <article class="glass-morphism rounded-3xl p-5 border border-white/10 flex flex-col gap-4">
+            <article class="glass-morphism rounded-3xl p-5 border border-white/10 flex flex-col gap-4 animate__animated animate__fadeInUp">
                 <div class="h-52 rounded-2xl overflow-hidden skeleton-box border border-white/5">
                     <?php if (!empty($product['media_url'])): ?>
                         <img src="<?php echo htmlspecialchars($pImgUrl); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')">
@@ -100,7 +100,7 @@ ob_start();
 </section>
 
 <!-- Store Footer -->
-<footer class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10">
+<footer class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10 animate__animated animate__fadeInUp">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div>
             <h3 class="text-xl font-black text-white mb-2"><?php echo htmlspecialchars($store['name']); ?></h3>
