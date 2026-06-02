@@ -172,16 +172,6 @@ if ($method === 'GET') {
                 header('Location: /login');
                 exit;
             }
-            if (isset($_GET['game'])) {
-                $gameFile = __DIR__ . '/comp_files/gpad/' . basename($_GET['game']) . '.php';
-                if (is_file($gameFile)) {
-                    require $gameFile;
-                } else {
-                    http_response_code(404);
-                    echo '<section style="padding:80px 20px;text-align:center;background:#0d0f10;color:#e7edf2;font-family:Inter,sans-serif;min-height:100vh"><div style="max-width:400px;margin:0 auto;background:#121518;border:1px solid #2a2f36;border-radius:2.5rem;padding:48px"><h1 style="font-size:1.5rem;font-weight:900;color:#fff;margin:0 0 8px">Game not found</h1><p style="color:#98a2ad;margin:0 0 24px">The requested game does not exist.</p><a href="/games" style="display:inline-block;padding:12px 24px;border-radius:12px;background:#ff6a00;color:#111;font-weight:900;text-decoration:none">Back to Game Pad</a></div></section>';
-                }
-                exit;
-            }
             include 'frontend/games.php';
             exit;
 
