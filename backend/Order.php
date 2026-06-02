@@ -6,7 +6,7 @@ function order_create($storeId, $productId, $productName, $customerName, $custom
 {
     try {
         $db = db_get_connection();
-        $id = auth_generate_id();
+        $id = bin2hex(random_bytes(12));
         $stmt = $db->prepare('INSERT INTO orders (id, store_id, product_id, product_name, customer_name, customer_email, state, delivery_location, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())');
         $stmt->execute([$id, $storeId, $productId, $productName, $customerName, $customerEmail, $state, $deliveryLocation]);
         return ['success' => true, 'orderId' => $id];
