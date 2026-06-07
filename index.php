@@ -253,20 +253,7 @@ if ($method === 'GET') {
             break;
 
         case $requestPath === 'game':
-            $pageTitle = 'Gamepad - vomp';
-            ob_start();
-            ?>
-            <section class="py-20 text-center">
-                <div class="max-w-lg mx-auto">
-                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#ff610a]/10 border border-[#ff610a]/20 mb-6">
-                        <svg class="w-12 h-12 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.744 8.05C16.242 7.008 14.268 6.5 12 6.5s-4.242.508-5.744 1.55C4.92 9.03 4 10.615 4 12.5c0 1.885.92 3.47 2.256 4.45C7.758 18.492 9.732 19 12 19s4.242-.508 5.744-1.55C19.08 16.47 20 14.885 20 13c0-1.885-.92-3.47-2.256-4.45zM8.5 10.5h2v2h-2v-2zm5 0h2v2h-2v-2z" /></svg>
-                    </div>
-                    <h1 class="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">Coming Soon</h1>
-                    <p class="text-gray-400 text-lg">Something fun is on the way. Stay tuned!</p>
-                </div>
-            </section>
-            <?php
-            $content = ob_get_clean();
+            require 'frontend/game.php';
             break;
 
         case $requestPath === 'virtual-topup':

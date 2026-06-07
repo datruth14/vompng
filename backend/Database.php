@@ -188,6 +188,7 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'users', 'token_balance', 'INT DEFAULT 0');
     db_ensure_column($db, 'users', 'plan', "VARCHAR(20) DEFAULT 'free'");
     db_ensure_column($db, 'users', 'role', "VARCHAR(20) DEFAULT 'user'");
+    db_ensure_column($db, 'users', 'gptokens', 'INT DEFAULT 0');
 
     // Seed admin role for 14eter@gmail.com
     $adminEmail = '14eter@gmail.com';
