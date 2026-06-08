@@ -391,7 +391,7 @@ ob_start();
             }
         }
 
-        var pts = all.length * 10 * (chainCount + 1);
+        var pts = all.length * 2 * (chainCount + 1);
         score += pts;
         chainCount++;
         updateScore();
