@@ -145,7 +145,7 @@ ob_start();
         playTone([base, base + 150, base + 300, base + 450], 0.3, 'sine', 0.15);
     }
     function playDropSound() { playTone([200, 120, 80], 0.2, 'triangle', 0.2); }
-    function playMoveSound() { playTone([350], 0.05, 'sine', 0.08); }
+    function playMoveSound() { playTone([220, 180], 0.08, 'triangle', 0.07); }
 
     function playGameOverSound() {
         try {
@@ -171,6 +171,64 @@ ob_start();
             g2.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
             osc2.start(t + 0.15); osc2.stop(t + 0.7);
         } catch(e) {}
+    }
+
+    // --- Background Music ---
+    var bgmActive = false;
+    var bgmTimeout = null;
+
+    function bgmNote(startTime, freq, dur, type, vol) {
+        try {
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(freq, startTime);
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(vol || 0.06, startTime + 0.02);
+            gain.gain.setValueAtTime(vol || 0.06, startTime + dur - 0.04);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + dur);
+            osc.start(startTime);
+            osc.stop(startTime + dur + 0.05);
+        } catch(e) {}
+    }
+
+    function scheduleBGMLoop() {
+        if (!bgmActive) return;
+        if (!audioCtx || audioCtx.state !== 'running') {
+            bgmTimeout = setTimeout(scheduleBGMLoop, 200);
+            return;
+        }
+        var t = audioCtx.currentTime;
+        var bpm = 105;
+        var beat = 60 / bpm;
+
+        // Bass line: C2, A2, G2, E2
+        var bassNotes = [130.81, 110, 98, 82.41];
+        for (var i = 0; i < bassNotes.length; i++) {
+            bgmNote(t + i * 2 * beat, bassNotes[i], 1.7 * beat, 'triangle', 0.08);
+        }
+
+        // Melody arpeggio: C4 E4 G4 E4 — looped
+        var arp = [261.63, 329.63, 392, 329.63];
+        for (var i = 0; i < 8; i++) {
+            bgmNote(t + i * beat, arp[i % 4], 0.7 * beat, 'sine', 0.03);
+        }
+
+        bgmTimeout = setTimeout(scheduleBGMLoop, 8 * beat * 1000);
+    }
+
+    function startBGM() {
+        if (bgmActive) return;
+        bgmActive = true;
+        scheduleBGMLoop();
+    }
+
+    function stopBGM() {
+        bgmActive = false;
+        if (bgmTimeout) { clearTimeout(bgmTimeout); bgmTimeout = null; }
     }
 
     // --- Particles ---
@@ -512,6 +570,7 @@ ob_start();
     }
 
     function endGame() {
+        stopBGM();
         gameActive = false;
         gameOver = true;
         cancelAnimationFrame(animFrameId);
@@ -542,6 +601,7 @@ ob_start();
 
     function startGame() {
         initAudio();
+        startBGM();
         gameActive = true;
         gameOver = false;
         score = 0;
