@@ -69,7 +69,7 @@ $gpTokens = (int) ($currentUser['gptokens'] ?? 0);
                 </div>
                 <h3 class="text-xl font-black text-white mb-2">Color Swipe</h3>
                 <p class="text-gray-400 text-sm mb-6">Match the colors as fast as you can. Quick reflexes earn big GPTokens!</p>
-                <button disabled class="px-8 py-3 rounded-2xl bg-emerald-600 text-white font-black text-sm opacity-50 cursor-not-allowed">Coming Soon</button>
+                <a href="/game/color-swipe" class="inline-block px-8 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-black text-sm hover:scale-105 transition-transform">Play Now</a>
             </div>
         </div>
     </div>

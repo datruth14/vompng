@@ -57,6 +57,8 @@ if (
         $requestPath === 'orders' ||
         $requestPath === 'profile' ||
         $requestPath === 'tokens' ||
+        $requestPath === 'game' ||
+        str_starts_with($requestPath, 'game/') ||
         str_starts_with($requestPath, 'api/products') ||
         str_starts_with($requestPath, 'api/settings') ||
         str_starts_with($requestPath, 'api/tokens/purchase') ||
@@ -69,7 +71,8 @@ if (
         str_starts_with($requestPath, 'api/resolve_account') ||
         str_starts_with($requestPath, 'api/list_banks') ||
         str_starts_with($requestPath, 'api/store/') ||
-        str_starts_with($requestPath, 'api/upgrade')
+        str_starts_with($requestPath, 'api/upgrade') ||
+        str_starts_with($requestPath, 'api/game_')
     )
 ) {
     header('Location: /login');
@@ -254,6 +257,10 @@ if ($method === 'GET') {
 
         case $requestPath === 'game':
             require 'frontend/game.php';
+            break;
+
+        case $requestPath === 'game/color-swipe':
+            require 'frontend/game_color_swipe.php';
             break;
 
         case $requestPath === 'virtual-topup':
