@@ -5,7 +5,7 @@ ob_start();
 <section class="py-6 max-w-lg mx-auto">
     <div class="text-center mb-6">
         <h1 class="text-3xl font-black text-white">Color Swipe</h1>
-        <p class="text-gray-400 text-sm">Click a column to drop. Match 3+ same colors to score!</p>
+        <p class="text-gray-400 text-sm">Tap a column to drop. Match 3+ same colors to score!</p>
     </div>
 
     <!-- Score + GPTokens -->
@@ -33,7 +33,7 @@ ob_start();
                 <h2 class="text-2xl font-black text-white mb-1">Color Swipe</h2>
                 <p class="text-gray-400 text-sm mb-6">Match colors, earn GPTokens!</p>
                 <button onclick="startGame()" class="px-8 py-3 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-black text-sm hover:scale-105 transition-transform">Play Now</button>
-                <p class="text-xs text-gray-500 mt-4">Click column to drop &bull; Arrow keys to move</p>
+                <p class="text-xs text-gray-500 mt-4">Tap column to drop &bull; Arrow keys to move</p>
             </div>
 
             <!-- Game Over Overlay -->
@@ -107,90 +107,79 @@ ob_start();
     const FLASH_DURATION = 350;
     let audioCtx = null;
 
-    // --- Audio ---
-    function getAudio() {
-        if (!audioCtx) {
-            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
-        }
-        return audioCtx;
+    // --- Audio (must init inside user gesture for mobile) ---
+    function initAudio() {
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        } catch(e) {}
     }
 
     function playTone(freqs, dur, type, vol) {
         try {
-            const ctx = getAudio();
-            if (!ctx) return;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
             osc.connect(gain);
-            gain.connect(ctx.destination);
+            gain.connect(audioCtx.destination);
             osc.type = type || 'sine';
-            const t = ctx.currentTime;
-            freqs.forEach((f, i) => {
+            const t = audioCtx.currentTime;
+            freqs.forEach(function(f, i) {
                 if (i === 0) osc.frequency.setValueAtTime(f, t);
                 else osc.frequency.setValueAtTime(f, t + i * 0.04);
             });
-            gain.gain.setValueAtTime(vol || 0.25, t);
+            gain.gain.setValueAtTime(vol || 0.2, t);
             gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
             osc.start(t);
             osc.stop(t + dur);
         } catch(e) {}
     }
 
-    function playMatchSound() {
-        playTone([523, 659, 784], 0.25, 'sine', 0.25);
+    function playMatchSound() { playTone([523, 659, 784], 0.25, 'sine', 0.2); }
+    function playChainSound(c) {
+        var base = 523 + Math.min(c, 8) * 80;
+        playTone([base, base + 150, base + 300, base + 450], 0.3, 'sine', 0.15);
     }
-
-    function playChainSound(chain) {
-        const base = 523 + Math.min(chain, 8) * 80;
-        playTone([base, base + 150, base + 300, base + 450], 0.3, 'sine', 0.2);
-    }
-
-    function playDropSound() {
-        playTone([200, 120, 80], 0.2, 'triangle', 0.25);
-    }
-
-    function playMoveSound() {
-        playTone([350], 0.05, 'sine', 0.1);
-    }
+    function playDropSound() { playTone([200, 120, 80], 0.2, 'triangle', 0.2); }
+    function playMoveSound() { playTone([350], 0.05, 'sine', 0.08); }
 
     function playGameOverSound() {
         try {
-            const ctx = getAudio();
-            if (!ctx) return;
-            const t = ctx.currentTime;
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(400, t);
-            osc.frequency.exponentialRampToValueAtTime(80, t + 0.6);
-            gain.gain.setValueAtTime(0.15, t);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
-            osc.start(t);
-            osc.stop(t + 0.6);
-            // Second tone lower
-            const osc2 = ctx.createOscillator();
-            const gain2 = ctx.createGain();
-            osc2.connect(gain2);
-            gain2.connect(ctx.destination);
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            var t = audioCtx.currentTime;
+            var osc1 = audioCtx.createOscillator();
+            var g1 = audioCtx.createGain();
+            osc1.connect(g1); g1.connect(audioCtx.destination);
+            osc1.type = 'sawtooth';
+            osc1.frequency.setValueAtTime(400, t);
+            osc1.frequency.exponentialRampToValueAtTime(80, t + 0.6);
+            g1.gain.setValueAtTime(0.12, t);
+            g1.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+            osc1.start(t); osc1.stop(t + 0.6);
+
+            var osc2 = audioCtx.createOscillator();
+            var g2 = audioCtx.createGain();
+            osc2.connect(g2); g2.connect(audioCtx.destination);
             osc2.type = 'triangle';
             osc2.frequency.setValueAtTime(300, t + 0.15);
             osc2.frequency.exponentialRampToValueAtTime(60, t + 0.7);
-            gain2.gain.setValueAtTime(0.12, t + 0.15);
-            gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
-            osc2.start(t + 0.15);
-            osc2.stop(t + 0.7);
+            g2.gain.setValueAtTime(0.1, t + 0.15);
+            g2.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+            osc2.start(t + 0.15); osc2.stop(t + 0.7);
         } catch(e) {}
     }
 
     // --- Particles ---
     function spawnParticles(col, row, hex) {
-        const cx = col * BLOCK_SIZE + BLOCK_SIZE / 2;
-        const cy = row * BLOCK_SIZE + BLOCK_SIZE / 2;
-        for (let i = 0; i < 10; i++) {
-            const angle = (Math.PI * 2 / 10) * i + (Math.random() - 0.5) * 0.6;
-            const speed = 1.2 + Math.random() * 2.5;
+        var cx = col * BLOCK_SIZE + BLOCK_SIZE / 2;
+        var cy = row * BLOCK_SIZE + BLOCK_SIZE / 2;
+        for (var i = 0; i < 10; i++) {
+            var angle = (Math.PI * 2 / 10) * i + (Math.random() - 0.5) * 0.6;
+            var speed = 1.2 + Math.random() * 2.5;
             particles.push({
                 x: cx, y: cy,
                 vx: Math.cos(angle) * speed,
@@ -204,17 +193,19 @@ ob_start();
     }
 
     function updateParticles() {
-        for (const p of particles) {
+        for (var i = particles.length - 1; i >= 0; i--) {
+            var p = particles[i];
             p.x += p.vx;
             p.y += p.vy;
             p.vy += 0.06;
             p.life -= p.decay;
+            if (p.life <= 0) particles.splice(i, 1);
         }
-        particles = particles.filter(p => p.life > 0);
     }
 
     function drawParticles() {
-        for (const p of particles) {
+        for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
             ctx.globalAlpha = Math.max(0, p.life);
             ctx.fillStyle = p.color;
             ctx.shadowColor = p.color + '60';
@@ -229,8 +220,8 @@ ob_start();
 
     // --- Canvas ---
     function resizeCanvas() {
-        const container = canvas.parentElement;
-        const maxW = Math.min(380, container.clientWidth - 8);
+        var container = canvas.parentElement;
+        var maxW = Math.min(380, container.clientWidth - 8);
         BLOCK_SIZE = Math.floor(maxW / COLS);
         canvasW = BLOCK_SIZE * COLS;
         canvasH = BLOCK_SIZE * ROWS;
@@ -240,12 +231,14 @@ ob_start();
     }
 
     function initGrid() {
-        grid = Array.from({length: ROWS}, () => Array(COLS).fill(-1));
+        grid = [];
+        for (var r = 0; r < ROWS; r++) {
+            grid[r] = [];
+            for (var c = 0; c < COLS; c++) grid[r][c] = -1;
+        }
     }
 
-    function rng() {
-        return Math.floor(Math.random() * COLORS.length);
-    }
+    function rng() { return Math.floor(Math.random() * COLORS.length); }
 
     function spawnPiece() {
         currentPiece = { col: Math.floor(COLS / 2), row: 0, color: rng() };
@@ -257,7 +250,7 @@ ob_start();
     }
 
     function getNeighbors(r, c) {
-        const out = [];
+        var out = [];
         if (r > 0) out.push([r-1, c]);
         if (r < ROWS-1) out.push([r+1, c]);
         if (c > 0) out.push([r, c-1]);
@@ -266,21 +259,29 @@ ob_start();
     }
 
     function findMatches() {
-        const visited = Array.from({length: ROWS}, () => Array(COLS).fill(false));
-        const matches = [];
-        for (let r = 0; r < ROWS; r++) {
-            for (let c = 0; c < COLS; c++) {
+        var visited = [];
+        for (var r = 0; r < ROWS; r++) {
+            visited[r] = [];
+            for (var c = 0; c < COLS; c++) visited[r][c] = false;
+        }
+        var matches = [];
+        for (var r = 0; r < ROWS; r++) {
+            for (var c = 0; c < COLS; c++) {
                 if (grid[r][c] === -1 || visited[r][c]) continue;
-                const color = grid[r][c];
-                const group = [];
-                const stack = [[r, c]];
+                var color = grid[r][c];
+                var group = [];
+                var stack = [[r, c]];
                 while (stack.length) {
-                    const [cr, cc] = stack.pop();
+                    var cr = stack[stack.length-1][0];
+                    var cc = stack[stack.length-1][1];
+                    stack.pop();
                     if (cr < 0 || cr >= ROWS || cc < 0 || cc >= COLS) continue;
                     if (visited[cr][cc] || grid[cr][cc] !== color) continue;
                     visited[cr][cc] = true;
                     group.push([cr, cc]);
-                    for (const [nr, nc] of getNeighbors(cr, cc)) {
+                    var nb = getNeighbors(cr, cc);
+                    for (var ni = 0; ni < nb.length; ni++) {
+                        var nr = nb[ni][0], nc = nb[ni][1];
                         if (!visited[nr][nc] && grid[nr][nc] === color) stack.push([nr, nc]);
                     }
                 }
@@ -291,22 +292,22 @@ ob_start();
     }
 
     function applyGravity() {
-        for (let c = 0; c < COLS; c++) {
-            let writeRow = ROWS - 1;
-            for (let r = ROWS - 1; r >= 0; r--) {
+        for (var c = 0; c < COLS; c++) {
+            var writeRow = ROWS - 1;
+            for (var r = ROWS - 1; r >= 0; r--) {
                 if (grid[r][c] !== -1) {
                     grid[writeRow][c] = grid[r][c];
                     if (writeRow !== r) grid[r][c] = -1;
                     writeRow--;
                 }
             }
-            for (let r = writeRow; r >= 0; r--) grid[r][c] = -1;
+            for (var r = writeRow; r >= 0; r--) grid[r][c] = -1;
         }
     }
 
     function lockPiece() {
         if (!currentPiece) return;
-        const { row, col, color } = currentPiece;
+        var row = currentPiece.row, col = currentPiece.col, color = currentPiece.color;
         if (row >= 0 && row < ROWS && col >= 0 && col < COLS && grid[row][col] === -1) {
             grid[row][col] = color;
         }
@@ -317,7 +318,7 @@ ob_start();
     }
 
     function processMatch() {
-        const matches = findMatches();
+        var matches = findMatches();
         if (matches.length === 0) {
             isProcessing = false;
             chainCount = 0;
@@ -325,24 +326,29 @@ ob_start();
             return;
         }
 
-        const all = matches.flat();
-        const pts = all.length * 10 * (chainCount + 1);
+        var all = [];
+        for (var mi = 0; mi < matches.length; mi++) {
+            for (var bj = 0; bj < matches[mi].length; bj++) {
+                all.push(matches[mi][bj]);
+            }
+        }
+
+        var pts = all.length * 10 * (chainCount + 1);
         score += pts;
         chainCount++;
         updateScore();
 
-        // Effects
         playMatchSound();
         if (chainCount > 1) playChainSound(chainCount);
         shakeIntensity = Math.min(chainCount * 5, 14);
         flashOverlay = 1;
 
-        // Record for flash animation + spawn particles
-        for (const [r, c] of all) {
-            const ci = grid[r][c];
+        for (var i = 0; i < all.length; i++) {
+            var r = all[i][0], c = all[i][1];
+            var ci = grid[r][c];
             if (ci >= 0) {
                 spawnParticles(c, r, COLORS[ci].hex);
-                matchedBlocks.push({ r, c, color: ci, timer: FLASH_DURATION });
+                matchedBlocks.push({ r: r, c: c, color: ci, timer: FLASH_DURATION });
                 grid[r][c] = -1;
             }
         }
@@ -356,7 +362,7 @@ ob_start();
 
     function dropPiece() {
         if (!currentPiece || gameOver || isProcessing) return false;
-        const nr = currentPiece.row + 1;
+        var nr = currentPiece.row + 1;
         if (nr < ROWS && grid[nr][currentPiece.col] === -1) {
             currentPiece.row = nr;
             return true;
@@ -375,7 +381,8 @@ ob_start();
 
     function handleColumnClick(col) {
         if (gameOver || !gameActive || isProcessing) return;
-        col = Math.max(0, Math.min(COLS - 1, col));
+        if (col < 0) col = 0;
+        if (col >= COLS) col = COLS - 1;
         currentPiece.col = col;
         hardDrop();
     }
@@ -387,10 +394,9 @@ ob_start();
     function draw() {
         ctx.save();
 
-        // Screen shake
         if (shakeIntensity > 0.5) {
-            const sx = (Math.random() - 0.5) * shakeIntensity;
-            const sy = (Math.random() - 0.5) * shakeIntensity;
+            var sx = (Math.random() - 0.5) * shakeIntensity;
+            var sy = (Math.random() - 0.5) * shakeIntensity;
             ctx.translate(sx, sy);
             shakeIntensity *= 0.88;
         } else {
@@ -398,24 +404,19 @@ ob_start();
         }
 
         ctx.clearRect(-10, -10, canvasW + 20, canvasH + 20);
-
-        // Background
         ctx.fillStyle = '#0f172a';
         ctx.fillRect(-10, -10, canvasW + 20, canvasH + 20);
 
-        // Grid cells
-        for (let r = 0; r < ROWS; r++) {
-            for (let c = 0; c < COLS; c++) {
-                const x = c * BLOCK_SIZE;
-                const y = r * BLOCK_SIZE;
-                const ci = grid[r][c];
+        for (var r = 0; r < ROWS; r++) {
+            for (var c = 0; c < COLS; c++) {
+                var x = c * BLOCK_SIZE;
+                var y = r * BLOCK_SIZE;
+                var ci = grid[r][c];
                 if (ci >= 0) {
                     ctx.fillStyle = COLORS[ci].hex;
                     ctx.shadowColor = COLORS[ci].hex + '50';
                     ctx.shadowBlur = 10;
-                    const pad = 1.5;
-                    const rad = 4;
-                    const bw = BLOCK_SIZE - pad * 2;
+                    var pad = 1.5, rad = 4, bw = BLOCK_SIZE - pad * 2;
                     ctx.beginPath();
                     ctx.roundRect(x + pad, y + pad, bw, bw, rad);
                     ctx.fill();
@@ -426,9 +427,9 @@ ob_start();
                     ctx.fill();
                 } else {
                     ctx.fillStyle = 'rgba(255,255,255,0.03)';
-                    const pad = 1;
+                    var p = 1;
                     ctx.beginPath();
-                    ctx.roundRect(x + pad, y + pad, BLOCK_SIZE - pad * 2, BLOCK_SIZE - pad * 2, 3);
+                    ctx.roundRect(x + p, y + p, BLOCK_SIZE - p * 2, BLOCK_SIZE - p * 2, 3);
                     ctx.fill();
                 }
                 ctx.strokeStyle = 'rgba(255,255,255,0.05)';
@@ -437,31 +438,30 @@ ob_start();
             }
         }
 
-        // Matched blocks (flash animation)
-        for (const mb of matchedBlocks) {
-            const progress = 1 - (mb.timer / FLASH_DURATION);
+        for (var i = matchedBlocks.length - 1; i >= 0; i--) {
+            var mb = matchedBlocks[i];
             mb.timer -= 16;
-            const x = mb.col * BLOCK_SIZE;
-            const y = mb.row * BLOCK_SIZE;
-            const pulse = Math.sin(progress * Math.PI * 6) * 0.3 + 0.7;
-            const scale = 1 - progress * 0.15;
+            if (mb.timer <= 0) { matchedBlocks.splice(i, 1); continue; }
+            var progress = 1 - (mb.timer / FLASH_DURATION);
+            var px = mb.c * BLOCK_SIZE;
+            var py = mb.r * BLOCK_SIZE;
+            var pulse = Math.sin(progress * Math.PI * 6) * 0.3 + 0.7;
+            var scale = 1 - progress * 0.15;
 
             ctx.save();
-            ctx.translate(x + BLOCK_SIZE / 2, y + BLOCK_SIZE / 2);
+            ctx.translate(px + BLOCK_SIZE / 2, py + BLOCK_SIZE / 2);
             ctx.scale(scale, scale);
 
             ctx.fillStyle = COLORS[mb.color].hex;
             ctx.shadowColor = COLORS[mb.color].hex + '80';
             ctx.shadowBlur = 20 * pulse;
-            const s = BLOCK_SIZE * 0.9;
+            var s = BLOCK_SIZE * 0.9;
             ctx.globalAlpha = pulse;
             ctx.beginPath();
             ctx.roundRect(-s / 2, -s / 2, s, s, 5);
             ctx.fill();
             ctx.globalAlpha = 1;
             ctx.shadowBlur = 0;
-
-            // Inner bright pulse
             ctx.fillStyle = 'rgba(255,255,255,' + (0.3 * pulse) + ')';
             ctx.beginPath();
             ctx.roundRect(-s / 2 + 3, -s / 2 + 3, s - 6, s * 0.15, 2);
@@ -469,14 +469,13 @@ ob_start();
             ctx.restore();
         }
 
-        // Current piece
         if (currentPiece && !gameOver) {
-            const x = currentPiece.col * BLOCK_SIZE;
-            const y = currentPiece.row * BLOCK_SIZE;
+            var x = currentPiece.col * BLOCK_SIZE;
+            var y = currentPiece.row * BLOCK_SIZE;
             ctx.fillStyle = COLORS[currentPiece.color].hex;
             ctx.shadowColor = COLORS[currentPiece.color].hex + '70';
             ctx.shadowBlur = 18;
-            const pad = 1.5;
+            var pad = 1.5;
             ctx.beginPath();
             ctx.roundRect(x + pad, y + pad, BLOCK_SIZE - pad * 2, BLOCK_SIZE - pad * 2, 4);
             ctx.fill();
@@ -487,11 +486,9 @@ ob_start();
             ctx.fill();
         }
 
-        // Particles
         drawParticles();
         updateParticles();
 
-        // Flash overlay
         if (flashOverlay > 0.01) {
             ctx.fillStyle = 'rgba(255,255,255,' + (flashOverlay * 0.15) + ')';
             ctx.fillRect(-10, -10, canvasW + 20, canvasH + 20);
@@ -500,11 +497,10 @@ ob_start();
             flashOverlay = 0;
         }
 
-        // Column indicators
         if (gameActive && !gameOver && !isProcessing) {
-            for (let c = 0; c < COLS; c++) {
-                const cx = c * BLOCK_SIZE + BLOCK_SIZE / 2;
-                const cy = ROWS * BLOCK_SIZE - 12;
+            for (var c = 0; c < COLS; c++) {
+                var cx = c * BLOCK_SIZE + BLOCK_SIZE / 2;
+                var cy = ROWS * BLOCK_SIZE - 12;
                 ctx.fillStyle = 'rgba(255,255,255,0.15)';
                 ctx.beginPath();
                 ctx.arc(cx, cy, 4, 0, Math.PI * 2);
@@ -534,19 +530,18 @@ ob_start();
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ game: 'color-swipe', score: pts })
         })
-        .then(r => r.json())
-        .then(data => {
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
             if (data.newBalance !== undefined) {
                 newBalance.textContent = data.newBalance.toLocaleString();
             }
-            if (data.error) {
-                newBalance.textContent = '?';
-            }
+            if (data.error) newBalance.textContent = '?';
         })
-        .catch(() => { newBalance.textContent = '?'; });
+        .catch(function() { newBalance.textContent = '?'; });
     }
 
     function startGame() {
+        initAudio();
         gameActive = true;
         gameOver = false;
         score = 0;
@@ -569,7 +564,7 @@ ob_start();
 
     function gameLoop(timestamp) {
         if (!gameActive) return;
-        const dt = timestamp - lastTime;
+        var dt = timestamp - lastTime;
         lastTime = timestamp;
         if (!gameOver && currentPiece && !isProcessing) {
             accumTime += dt;
@@ -582,35 +577,27 @@ ob_start();
         animFrameId = requestAnimationFrame(gameLoop);
     }
 
-    // Input
-    canvas.addEventListener('click', function(e) {
-        const rect = this.getBoundingClientRect();
-        const scaleX = canvas.width / rect.width;
-        const cx = (e.clientX - rect.left) * scaleX;
-        const col = Math.floor(cx / BLOCK_SIZE);
-        if (!gameActive && !gameOver) return;
+    // --- Input ---
+
+    // Unified pointer handler (mouse + touch)
+    function handlePointer(clientX, clientY) {
+        if (!gameActive) return;
+        var rect = canvas.getBoundingClientRect();
+        var scaleX = canvas.width / rect.width;
+        var cx = (clientX - rect.left) * scaleX;
+        var col = Math.floor(cx / BLOCK_SIZE);
         handleColumnClick(col);
+    }
+
+    canvas.addEventListener('mousedown', function(e) {
+        handlePointer(e.clientX, e.clientY);
     });
 
-    let touchMoved = false;
     canvas.addEventListener('touchstart', function(e) {
         e.preventDefault();
-        touchMoved = false;
+        var touch = e.touches[0] || e.changedTouches[0];
+        handlePointer(touch.clientX, touch.clientY);
     }, { passive: false });
-
-    canvas.addEventListener('touchmove', function() {
-        touchMoved = true;
-    }, { passive: true });
-
-    canvas.addEventListener('touchend', function(e) {
-        if (touchMoved) return;
-        if (!gameActive && !gameOver) return;
-        const rect = this.getBoundingClientRect();
-        const sc = canvas.width / rect.width;
-        const cx = (e.changedTouches[0].clientX - rect.left) * sc;
-        const col = Math.floor(cx / BLOCK_SIZE);
-        handleColumnClick(col);
-    }, { passive: true });
 
     document.addEventListener('keydown', function(e) {
         if (!gameActive) return;
