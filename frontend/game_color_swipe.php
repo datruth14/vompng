@@ -97,7 +97,137 @@ ob_start();
     let canvasW = 0;
     let canvasH = 0;
     let isProcessing = false;
+    let chainCount = 0;
 
+    // Effects state
+    let particles = [];
+    let matchedBlocks = [];
+    let shakeIntensity = 0;
+    let flashOverlay = 0;
+    const FLASH_DURATION = 350;
+    let audioCtx = null;
+
+    // --- Audio ---
+    function getAudio() {
+        if (!audioCtx) {
+            try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+        }
+        return audioCtx;
+    }
+
+    function playTone(freqs, dur, type, vol) {
+        try {
+            const ctx = getAudio();
+            if (!ctx) return;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = type || 'sine';
+            const t = ctx.currentTime;
+            freqs.forEach((f, i) => {
+                if (i === 0) osc.frequency.setValueAtTime(f, t);
+                else osc.frequency.setValueAtTime(f, t + i * 0.04);
+            });
+            gain.gain.setValueAtTime(vol || 0.25, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+            osc.start(t);
+            osc.stop(t + dur);
+        } catch(e) {}
+    }
+
+    function playMatchSound() {
+        playTone([523, 659, 784], 0.25, 'sine', 0.25);
+    }
+
+    function playChainSound(chain) {
+        const base = 523 + Math.min(chain, 8) * 80;
+        playTone([base, base + 150, base + 300, base + 450], 0.3, 'sine', 0.2);
+    }
+
+    function playDropSound() {
+        playTone([200, 120, 80], 0.2, 'triangle', 0.25);
+    }
+
+    function playMoveSound() {
+        playTone([350], 0.05, 'sine', 0.1);
+    }
+
+    function playGameOverSound() {
+        try {
+            const ctx = getAudio();
+            if (!ctx) return;
+            const t = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(400, t);
+            osc.frequency.exponentialRampToValueAtTime(80, t + 0.6);
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.6);
+            osc.start(t);
+            osc.stop(t + 0.6);
+            // Second tone lower
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.type = 'triangle';
+            osc2.frequency.setValueAtTime(300, t + 0.15);
+            osc2.frequency.exponentialRampToValueAtTime(60, t + 0.7);
+            gain2.gain.setValueAtTime(0.12, t + 0.15);
+            gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.7);
+            osc2.start(t + 0.15);
+            osc2.stop(t + 0.7);
+        } catch(e) {}
+    }
+
+    // --- Particles ---
+    function spawnParticles(col, row, hex) {
+        const cx = col * BLOCK_SIZE + BLOCK_SIZE / 2;
+        const cy = row * BLOCK_SIZE + BLOCK_SIZE / 2;
+        for (let i = 0; i < 10; i++) {
+            const angle = (Math.PI * 2 / 10) * i + (Math.random() - 0.5) * 0.6;
+            const speed = 1.2 + Math.random() * 2.5;
+            particles.push({
+                x: cx, y: cy,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                life: 1,
+                decay: 0.012 + Math.random() * 0.018,
+                color: hex,
+                size: 2 + Math.random() * 3.5
+            });
+        }
+    }
+
+    function updateParticles() {
+        for (const p of particles) {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.06;
+            p.life -= p.decay;
+        }
+        particles = particles.filter(p => p.life > 0);
+    }
+
+    function drawParticles() {
+        for (const p of particles) {
+            ctx.globalAlpha = Math.max(0, p.life);
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color + '60';
+            ctx.shadowBlur = 6;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, Math.max(0.5, p.size * p.life), 0, Math.PI * 2);
+            ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+        ctx.shadowBlur = 0;
+    }
+
+    // --- Canvas ---
     function resizeCanvas() {
         const container = canvas.parentElement;
         const maxW = Math.min(380, container.clientWidth - 8);
@@ -181,13 +311,12 @@ ob_start();
             grid[row][col] = color;
         }
         currentPiece = null;
+        playDropSound();
         isProcessing = true;
-        processMatchesLoop();
+        processMatch();
     }
 
-    let chainCount = 0;
-
-    function processMatchesLoop() {
+    function processMatch() {
         const matches = findMatches();
         if (matches.length === 0) {
             isProcessing = false;
@@ -195,14 +324,34 @@ ob_start();
             if (!gameOver) spawnPiece();
             return;
         }
+
         const all = matches.flat();
-        let pts = all.length * 10 * (chainCount + 1);
+        const pts = all.length * 10 * (chainCount + 1);
         score += pts;
         chainCount++;
         updateScore();
-        for (const [r, c] of all) grid[r][c] = -1;
-        applyGravity();
-        setTimeout(processMatchesLoop, 200);
+
+        // Effects
+        playMatchSound();
+        if (chainCount > 1) playChainSound(chainCount);
+        shakeIntensity = Math.min(chainCount * 5, 14);
+        flashOverlay = 1;
+
+        // Record for flash animation + spawn particles
+        for (const [r, c] of all) {
+            const ci = grid[r][c];
+            if (ci >= 0) {
+                spawnParticles(c, r, COLORS[ci].hex);
+                matchedBlocks.push({ r, c, color: ci, timer: FLASH_DURATION });
+                grid[r][c] = -1;
+            }
+        }
+
+        setTimeout(function() {
+            matchedBlocks = [];
+            applyGravity();
+            setTimeout(processMatch, 100);
+        }, FLASH_DURATION);
     }
 
     function dropPiece() {
@@ -232,15 +381,27 @@ ob_start();
     }
 
     function updateScore() {
-        scoreDisplay.textContent = score;
+        scoreDisplay.textContent = score.toLocaleString();
     }
 
     function draw() {
-        ctx.clearRect(0, 0, canvasW, canvasH);
+        ctx.save();
 
-        // Grid background
+        // Screen shake
+        if (shakeIntensity > 0.5) {
+            const sx = (Math.random() - 0.5) * shakeIntensity;
+            const sy = (Math.random() - 0.5) * shakeIntensity;
+            ctx.translate(sx, sy);
+            shakeIntensity *= 0.88;
+        } else {
+            shakeIntensity = 0;
+        }
+
+        ctx.clearRect(-10, -10, canvasW + 20, canvasH + 20);
+
+        // Background
         ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, canvasW, canvasH);
+        ctx.fillRect(-10, -10, canvasW + 20, canvasH + 20);
 
         // Grid cells
         for (let r = 0; r < ROWS; r++) {
@@ -259,7 +420,6 @@ ob_start();
                     ctx.roundRect(x + pad, y + pad, bw, bw, rad);
                     ctx.fill();
                     ctx.shadowBlur = 0;
-                    // highlight top
                     ctx.fillStyle = 'rgba(255,255,255,0.18)';
                     ctx.beginPath();
                     ctx.roundRect(x + pad + 2, y + pad + 2, bw - 4, 5, 2);
@@ -275,6 +435,38 @@ ob_start();
                 ctx.lineWidth = 0.5;
                 ctx.strokeRect(x, y, BLOCK_SIZE, BLOCK_SIZE);
             }
+        }
+
+        // Matched blocks (flash animation)
+        for (const mb of matchedBlocks) {
+            const progress = 1 - (mb.timer / FLASH_DURATION);
+            mb.timer -= 16;
+            const x = mb.col * BLOCK_SIZE;
+            const y = mb.row * BLOCK_SIZE;
+            const pulse = Math.sin(progress * Math.PI * 6) * 0.3 + 0.7;
+            const scale = 1 - progress * 0.15;
+
+            ctx.save();
+            ctx.translate(x + BLOCK_SIZE / 2, y + BLOCK_SIZE / 2);
+            ctx.scale(scale, scale);
+
+            ctx.fillStyle = COLORS[mb.color].hex;
+            ctx.shadowColor = COLORS[mb.color].hex + '80';
+            ctx.shadowBlur = 20 * pulse;
+            const s = BLOCK_SIZE * 0.9;
+            ctx.globalAlpha = pulse;
+            ctx.beginPath();
+            ctx.roundRect(-s / 2, -s / 2, s, s, 5);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+            ctx.shadowBlur = 0;
+
+            // Inner bright pulse
+            ctx.fillStyle = 'rgba(255,255,255,' + (0.3 * pulse) + ')';
+            ctx.beginPath();
+            ctx.roundRect(-s / 2 + 3, -s / 2 + 3, s - 6, s * 0.15, 2);
+            ctx.fill();
+            ctx.restore();
         }
 
         // Current piece
@@ -295,25 +487,42 @@ ob_start();
             ctx.fill();
         }
 
+        // Particles
+        drawParticles();
+        updateParticles();
+
+        // Flash overlay
+        if (flashOverlay > 0.01) {
+            ctx.fillStyle = 'rgba(255,255,255,' + (flashOverlay * 0.15) + ')';
+            ctx.fillRect(-10, -10, canvasW + 20, canvasH + 20);
+            flashOverlay *= 0.85;
+        } else {
+            flashOverlay = 0;
+        }
+
         // Column indicators
-        if (gameActive && !gameOver) {
+        if (gameActive && !gameOver && !isProcessing) {
             for (let c = 0; c < COLS; c++) {
-                const x = c * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const cx = c * BLOCK_SIZE + BLOCK_SIZE / 2;
+                const cy = ROWS * BLOCK_SIZE - 12;
                 ctx.fillStyle = 'rgba(255,255,255,0.15)';
                 ctx.beginPath();
-                ctx.arc(x, ROWS * BLOCK_SIZE - 12, 4, 0, Math.PI * 2);
+                ctx.arc(cx, cy, 4, 0, Math.PI * 2);
                 ctx.fill();
             }
         }
+
+        ctx.restore();
     }
 
     function endGame() {
         gameActive = false;
         gameOver = true;
         cancelAnimationFrame(animFrameId);
+        playGameOverSound();
         draw();
-        finalScore.textContent = score;
-        gpTokensEarned.textContent = score;
+        finalScore.textContent = score.toLocaleString();
+        gpTokensEarned.textContent = score.toLocaleString();
         gameOverOverlay.classList.remove('hidden');
         submitScore(score);
     }
@@ -343,6 +552,10 @@ ob_start();
         score = 0;
         chainCount = 0;
         isProcessing = false;
+        particles = [];
+        matchedBlocks = [];
+        shakeIntensity = 0;
+        flashOverlay = 0;
         initGrid();
         updateScore();
         startScreen.classList.add('hidden');
@@ -402,8 +615,10 @@ ob_start();
     document.addEventListener('keydown', function(e) {
         if (!gameActive) return;
         if (e.key === 'ArrowLeft' && currentPiece && !isProcessing) {
+            if (currentPiece.col > 0) playMoveSound();
             currentPiece.col = Math.max(0, currentPiece.col - 1);
         } else if (e.key === 'ArrowRight' && currentPiece && !isProcessing) {
+            if (currentPiece.col < COLS - 1) playMoveSound();
             currentPiece.col = Math.min(COLS - 1, currentPiece.col + 1);
         } else if (e.key === 'ArrowDown') {
             e.preventDefault();
