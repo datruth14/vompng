@@ -27,7 +27,30 @@ ob_start();
 <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
 <script>
 (function() {
-    var game;
+    var game, audioCtx = null;
+
+    function initAudio() {
+        try {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        } catch(e) {}
+    }
+
+    function playTone(freq, dur, type, vol) {
+        try {
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.type = type || 'sine';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(vol || 0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + dur);
+        } catch(e) {}
+    }
 
     function submitScore(pts) {
         if (pts <= 0) return;
@@ -38,12 +61,61 @@ ob_start();
         }).then(function(r){ return r.json(); }).catch(function(){});
     }
 
-    var GameScene = new Phaser.Class({
-        Extends: Phaser.Scene,
-        initialize: function() { Phaser.Scene.call(this, { key: 'GameScene' }); },
+    function createTextures(scene) {
+        var g;
+        // Player ship
+        g = scene.make.graphics({add:false});
+        g.fillStyle(0x00ff88);
+        g.fillTriangle(18, 0, 36, 32, 0, 32);
+        g.fillStyle(0x66ffbb);
+        g.fillRect(7, 20, 22, 12);
+        g.generateTexture('player', 36, 32);
+        g.destroy();
 
-        create: function() {
+        // Enemy
+        g = scene.make.graphics({add:false});
+        g.fillStyle(0xff3344);
+        g.fillRect(0, 0, 28, 28);
+        g.fillStyle(0xff6677);
+        g.fillRect(4, 4, 20, 8);
+        g.generateTexture('enemy', 28, 28);
+        g.destroy();
+
+        // Bullet
+        g = scene.make.graphics({add:false});
+        g.fillStyle(0xffff44);
+        g.fillRect(0, 0, 4, 14);
+        g.fillStyle(0xffffff);
+        g.fillRect(1, 0, 2, 6);
+        g.generateTexture('bullet', 4, 14);
+        g.destroy();
+
+        // Powerup
+        g = scene.make.graphics({add:false});
+        g.fillStyle(0x4488ff);
+        g.fillCircle(10, 10, 10);
+        g.fillStyle(0x88bbff);
+        g.fillCircle(10, 10, 6);
+        g.generateTexture('powerup', 20, 20);
+        g.destroy();
+
+        // Particle
+        g = scene.make.graphics({add:false});
+        g.fillStyle(0xffffff);
+        g.fillCircle(3, 3, 3);
+        g.generateTexture('particle', 6, 6);
+        g.destroy();
+    }
+
+    class GameScene extends Phaser.Scene {
+        constructor() {
+            super({ key: 'GameScene' });
+        }
+
+        create() {
+            createTextures(this);
             var self = this;
+
             self.gameActive = true;
             self.score = 0;
             self.level = 1;
@@ -57,12 +129,6 @@ ob_start();
             self.enemySpawnTimer = 0;
             self.powerupSpawnTimer = 0;
             self.powerupSpawnDelay = 6000;
-            self.pointerDownTime = 0;
-            self.isPressing = false;
-            self.audioCtx = null;
-
-            self.textures = [];
-            self.createTextures();
 
             self.player = self.physics.add.sprite(180, 560, 'player');
             self.player.setCollideWorldBounds(true);
@@ -94,16 +160,7 @@ ob_start();
             self.physics.add.overlap(self.player, self.powerups, self.onCollectPowerup, null, self);
             self.physics.add.overlap(self.player, self.enemies, self.onEnemyHitPlayer, null, self);
 
-            // Pointer events
-            self.input.on('pointerdown', function() {
-                self.isPressing = true;
-                self.pointerDownTime = self.time.now;
-            });
-            self.input.on('pointerup', function() {
-                self.isPressing = false;
-            });
-
-            // Game over overlay (Phaser DOM)
+            // Game over overlay
             self.gameOverGroup = self.add.container(180, 320).setDepth(100).setVisible(false);
             var bg = self.add.graphics();
             bg.fillStyle(0x000000, 0.75);
@@ -123,79 +180,39 @@ ob_start();
             self.gameOverGroup.add(self.goBtn);
             self.goBtn.setInteractive(new Phaser.Geom.Rectangle(-60, -20, 120, 40), Phaser.Geom.Rectangle.Contains);
             self.goBtn.on('pointerdown', function() { self.scene.restart(); });
-        },
+        }
 
-        createTextures: function() {
-            // Player ship
-            var pg = this.make.graphics({add:false});
-            pg.fillStyle(0x00ff88);
-            pg.fillTriangle(18, 0, 36, 32, 0, 32);
-            pg.fillStyle(0x66ffbb);
-            pg.fillRect(7, 20, 22, 12);
-            pg.generateTexture('player', 36, 32);
-            pg.destroy();
-
-            // Enemy
-            var eg = this.make.graphics({add:false});
-            eg.fillStyle(0xff3344);
-            eg.fillRect(0, 0, 28, 28);
-            eg.fillStyle(0xff6677);
-            eg.fillRect(4, 4, 20, 8);
-            eg.generateTexture('enemy', 28, 28);
-            eg.destroy();
-
-            // Bullet
-            var bg = this.make.graphics({add:false});
-            bg.fillStyle(0xffff44);
-            bg.fillRect(0, 0, 4, 14);
-            bg.fillStyle(0xffffff);
-            bg.fillRect(1, 0, 2, 6);
-            bg.generateTexture('bullet', 4, 14);
-            bg.destroy();
-
-            // Powerup
-            var pg2 = this.make.graphics({add:false});
-            pg2.fillStyle(0x4488ff);
-            pg2.fillCircle(10, 10, 10);
-            pg2.fillStyle(0x88bbff);
-            pg2.fillCircle(10, 10, 6);
-            pg2.generateTexture('powerup', 20, 20);
-            pg2.destroy();
-
-            // Particle
-            var pt = this.make.graphics({add:false});
-            pt.fillStyle(0xffffff);
-            pt.fillCircle(3, 3, 3);
-            pt.generateTexture('particle', 6, 6);
-            pt.destroy();
-        },
-
-        update: function(time, delta) {
+        update(time, delta) {
             var self = this;
             if (!self.gameActive) return;
 
-            // Player follow pointer
             var pointer = self.input.activePointer;
-            if (pointer.isDown || pointer.wasTouch) {
-                var targetX = Phaser.Math.Clamp(pointer.worldX, 18, 342);
-                var targetY = Phaser.Math.Clamp(pointer.worldY, 300, 620);
-                self.player.x += (targetX - self.player.x) * 0.15;
-                self.player.y += (targetY - self.player.y) * 0.15;
+
+            // Player follow pointer
+            if (pointer.isDown) {
+                var tx = Phaser.Math.Clamp(pointer.worldX, 18, 342);
+                var ty = Phaser.Math.Clamp(pointer.worldY, 280, 620);
+                self.player.x += (tx - self.player.x) * 0.15;
+                self.player.y += (ty - self.player.y) * 0.15;
             }
 
             // Tap to fire
-            if (pointer.isDown && time > self.lastFired + self.fireRate) {
+            if (pointer.isDown && time - self.lastFired >= self.fireRate) {
                 self.fire();
                 self.lastFired = time;
             }
 
-            // Update enemy HP text positions
-            self.enemies.getChildren().forEach(function(e) {
+            // Sync enemy HP text
+            var eChildren = self.enemies.getChildren();
+            for (var i = 0; i < eChildren.length; i++) {
+                var e = eChildren[i];
                 if (e.active) {
                     var t = e.getData('hpText');
-                    if (t && t.active) t.setPosition(e.x, e.y);
+                    if (t && t.active) {
+                        t.setPosition(e.x, e.y - 14);
+                    }
                 }
-            });
+            }
 
             // Spawn enemies
             self.enemySpawnTimer += delta;
@@ -211,95 +228,97 @@ ob_start();
                 self.spawnPowerup();
             }
 
-            // Remove off-screen bullets
-            self.bullets.getChildren().forEach(function(b) {
-                if (b.active && b.y < -20) b.destroy();
-            });
+            // Clean off-screen bullets
+            var bChildren = self.bullets.getChildren();
+            for (var i = bChildren.length - 1; i >= 0; i--) {
+                if (bChildren[i].y < -20) bChildren[i].destroy();
+            }
 
-            // Remove off-screen enemies (damage player)
-            self.enemies.getChildren().forEach(function(e) {
-                if (e.active && e.y > 660) {
-                    e.getData('hpText').destroy();
-                    e.destroy();
+            // Clean off-screen enemies → damage
+            for (var i = eChildren.length - 1; i >= 0; i--) {
+                var e2 = eChildren[i];
+                if (e2.active && e2.y > 660) {
+                    var ht = e2.getData('hpText');
+                    if (ht && ht.active) ht.destroy();
+                    e2.destroy();
                     self.takeDamage(1);
                 }
-            });
+            }
 
-            // Remove off-screen powerups
-            self.powerups.getChildren().forEach(function(p) {
-                if (p.active && p.y > 660) p.destroy();
-            });
-        },
+            // Clean off-screen powerups
+            var pChildren = self.powerups.getChildren();
+            for (var i = pChildren.length - 1; i >= 0; i--) {
+                if (pChildren[i].active && pChildren[i].y > 660) pChildren[i].destroy();
+            }
+        }
 
-        fire: function() {
+        fire() {
             var self = this;
-            var x = self.player.x;
-            var y = self.player.y - 18;
-            var speed = -550;
+            var px = self.player.x;
+            var py = self.player.y - 18;
+            playTone(600, 0.06, 'square', 0.04);
 
             if (self.firepower === 1) {
-                var b = self.physics.add.sprite(x, y, 'bullet');
-                b.setVelocityY(speed);
+                var b = self.physics.add.sprite(px, py, 'bullet');
+                b.setVelocityY(-550);
                 self.bullets.add(b);
             } else if (self.firepower === 2) {
-                var b1 = self.physics.add.sprite(x - 7, y, 'bullet');
-                b1.setVelocityY(speed);
+                var b1 = self.physics.add.sprite(px - 7, py, 'bullet');
+                b1.setVelocityY(-550);
                 self.bullets.add(b1);
-                var b2 = self.physics.add.sprite(x + 7, y, 'bullet');
-                b2.setVelocityY(speed);
+                var b2 = self.physics.add.sprite(px + 7, py, 'bullet');
+                b2.setVelocityY(-550);
                 self.bullets.add(b2);
             } else {
                 var angles = [-20, -10, 0, 10, 20];
                 for (var i = 0; i < angles.length; i++) {
-                    var b = self.physics.add.sprite(x, y, 'bullet');
+                    var b = self.physics.add.sprite(px, py, 'bullet');
                     var rad = Phaser.Math.DegToRad(angles[i] - 90);
                     b.setVelocity(Math.cos(rad) * 450, Math.sin(rad) * 450);
                     self.bullets.add(b);
                 }
             }
-        },
+        }
 
-        spawnEnemy: function() {
+        spawnEnemy() {
             var self = this;
             var x = Phaser.Math.Between(20, 340);
             var hp = Phaser.Math.Between(1, 2 + Math.floor(self.level / 2));
             var e = self.physics.add.sprite(x, -20, 'enemy');
             e.setData('hp', hp);
-            var speed = 60 + self.level * 5;
-            e.setVelocityY(speed);
+            e.setVelocityY(60 + self.level * 5);
 
-            var txt = self.add.text(x, x, String(hp), {
-                fontSize:'13px', fontFamily:'monospace', color:'#fff', fontStyle:'bold', stroke:'#000', strokeThickness:2
+            var txt = self.add.text(e.x, e.y - 14, String(hp), {
+                fontSize:'13px', fontFamily:'monospace', color:'#fff', fontStyle:'bold', stroke:'#000', strokeThickness:3
             }).setOrigin(0.5).setDepth(5);
             e.setData('hpText', txt);
             self.enemies.add(e);
-        },
+        }
 
-        spawnPowerup: function() {
+        spawnPowerup() {
             var self = this;
             if (self.firepower >= 3) return;
             var x = Phaser.Math.Between(30, 330);
             var p = self.physics.add.sprite(x, -20, 'powerup');
             p.setVelocityY(80);
             self.powerups.add(p);
-        },
+        }
 
-        onBulletHitEnemy: function(bullet, enemy) {
+        onBulletHitEnemy(bullet, enemy) {
             var self = this;
             if (!bullet.active || !enemy.active) return;
             bullet.destroy();
+            playTone(800, 0.08, 'sine', 0.06);
 
             var hp = enemy.getData('hp') - 1;
             enemy.setData('hp', hp);
             var txt = enemy.getData('hpText');
             if (txt && txt.active) txt.setText(String(hp));
 
-            // Hit particle
             self.spawnParticles(enemy.x, enemy.y, 0xffff44, 3);
 
             if (hp <= 0) {
-                // Destroyed
-                txt.destroy();
+                if (txt && txt.active) txt.destroy();
                 self.spawnParticles(enemy.x, enemy.y, 0xff3344, 10);
                 enemy.destroy();
                 self.score += 10;
@@ -307,9 +326,9 @@ ob_start();
                 self.updateHUD();
                 self.checkLevelUp();
             }
-        },
+        }
 
-        onCollectPowerup: function(player, pu) {
+        onCollectPowerup(player, pu) {
             var self = this;
             if (!pu.active) return;
             pu.destroy();
@@ -317,9 +336,10 @@ ob_start();
             self.fpText.setText('Lv.' + self.firepower);
             self.fpText.setColor(self.firepower >= 3 ? '#ff4444' : '#ffcc00');
             self.spawnParticles(pu.x, pu.y, 0x4488ff, 8);
-        },
+            playTone(500, 0.15, 'sine', 0.08);
+        }
 
-        onEnemyHitPlayer: function(player, enemy) {
+        onEnemyHitPlayer(player, enemy) {
             var self = this;
             if (!enemy.active) return;
             var txt = enemy.getData('hpText');
@@ -327,9 +347,9 @@ ob_start();
             enemy.destroy();
             self.spawnParticles(enemy.x, enemy.y, 0xff3344, 10);
             self.takeDamage(1);
-        },
+        }
 
-        takeDamage: function(amount) {
+        takeDamage(amount) {
             var self = this;
             self.health -= amount;
             self.hpText.setText(String(self.health));
@@ -341,13 +361,12 @@ ob_start();
             self.firepower = Math.max(1, self.firepower - 1);
             self.fpText.setText('Lv.' + self.firepower);
             self.fpText.setColor('#ffcc00');
+            playTone(200, 0.2, 'sawtooth', 0.06);
 
-            if (self.health <= 0) {
-                self.gameOver();
-            }
-        },
+            if (self.health <= 0) self.gameOver();
+        }
 
-        spawnParticles: function(x, y, color, count) {
+        spawnParticles(x, y, color, count) {
             var self = this;
             for (var i = 0; i < count; i++) {
                 var p = self.add.sprite(x, y, 'particle');
@@ -365,9 +384,9 @@ ob_start();
                     onComplete: function() { p.destroy(); }
                 });
             }
-        },
+        }
 
-        checkLevelUp: function() {
+        checkLevelUp() {
             var self = this;
             while (self.xp >= self.xpToNext) {
                 self.xp -= self.xpToNext;
@@ -376,18 +395,18 @@ ob_start();
                 self.enemySpawnDelay = Math.max(500, 1200 - self.level * 50);
                 self.updateHUD();
             }
-        },
+        }
 
-        updateHUD: function() {
+        updateHUD() {
             var self = this;
             self.scoreText.setText(String(self.score));
             var ratio = Math.min(1, self.xp / self.xpToNext);
             self.xpBar.clear();
             self.xpBar.fillStyle(0x00ff88, 1);
             self.xpBar.fillRoundedRect(12, 52, Math.floor(336 * ratio), 8, 4);
-        },
+        }
 
-        gameOver: function() {
+        gameOver() {
             var self = this;
             self.gameActive = false;
             self.physics.pause();
@@ -396,7 +415,7 @@ ob_start();
             self.gameOverGroup.setVisible(true);
             submitScore(self.score);
         }
-    });
+    }
 
     var config = {
         type: Phaser.AUTO,
