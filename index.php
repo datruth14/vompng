@@ -263,6 +263,10 @@ if ($method === 'GET') {
             require 'frontend/game_color_swipe.php';
             break;
 
+        case $requestPath === 'game/space-shooter':
+            require 'frontend/game_space_shooter.php';
+            break;
+
         case $requestPath === 'virtual-topup':
             $pageTitle = 'Virtual TopUp - vomp';
             ob_start();

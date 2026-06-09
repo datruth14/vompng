@@ -61,7 +61,7 @@ $gpTokens = (int) ($currentUser['gptokens'] ?? 0);
                 </div>
                 <h3 class="text-xl font-black text-white mb-2">Space Shooter</h3>
                 <p class="text-gray-400 text-sm mb-6">Blast through asteroids and alien ships. The further you go, the more GPTokens you earn!</p>
-                <button disabled class="px-8 py-3 rounded-2xl bg-emerald-600 text-white font-black text-sm opacity-50 cursor-not-allowed">Coming Soon</button>
+                <a href="/game/space-shooter" class="inline-block px-8 py-3 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-black text-sm hover:scale-105 transition-transform">Play Now</a>
             </div>
             <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center animate__animated animate__fadeInUp" style="animation-delay:0.1s">
                 <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mx-auto mb-4">
