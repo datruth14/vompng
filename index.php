@@ -345,6 +345,27 @@ if ($method === 'GET') {
             $products = product_get_products_by_store($store['id']);
             $transactions = token_history($store['id'], 5);
             $orderCount = order_count_by_store($store['id']);
+            $db = db_get_connection();
+            $dailyVisits = $db->prepare("SELECT DATE(visited_at) as date, COUNT(DISTINCT ip_address) as count FROM store_visits WHERE store_id = ? AND visited_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(visited_at) ORDER BY date ASC");
+            $dailyVisits->execute([$store['id']]);
+            $dailyVisits = $dailyVisits->fetchAll(PDO::FETCH_ASSOC);
+            $dailyOrders = $db->prepare("SELECT DATE(created_at) as date, COUNT(*) as count FROM orders WHERE store_id = ? AND created_at >= DATE_SUB(CURDATE(), INTERVAL 7 DAY) GROUP BY DATE(created_at) ORDER BY date ASC");
+            $dailyOrders->execute([$store['id']]);
+            $dailyOrders = $dailyOrders->fetchAll(PDO::FETCH_ASSOC);
+            $todayVisits = $db->prepare("SELECT COUNT(DISTINCT ip_address) as count FROM store_visits WHERE store_id = ? AND DATE(visited_at) = CURDATE()");
+            $todayVisits->execute([$store['id']]);
+            $todayVisits = (int) $todayVisits->fetchColumn();
+
+            // Build 7-day arrays for chart (fill missing days with 0)
+            $chartLabels = []; $chartVisits = []; $chartOrders = [];
+            for ($i = 6; $i >= 0; $i--) {
+                $d = date('Y-m-d', strtotime("-$i days"));
+                $chartLabels[] = date('D', strtotime($d));
+                $found = array_filter($dailyVisits, fn($v) => $v['date'] === $d);
+                $chartVisits[] = $found ? (int) reset($found)['count'] : 0;
+                $found = array_filter($dailyOrders, fn($v) => $v['date'] === $d);
+                $chartOrders[] = $found ? (int) reset($found)['count'] : 0;
+            }
             include 'frontend/dashboard_overview.php';
             break;
 

@@ -30,9 +30,65 @@ ob_start();
             <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo count(array_filter($products, fn($p) => (int) ($p['is_available'] ?? 1) === 1)); ?></p>
         </article>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 animate__animated animate__fadeInUp" style="animation-delay:0.3s">
-            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Store Visits</p>
-            <p class="text-4xl md:text-5xl font-black text-purple-400"><?php echo number_format((int) ($store['visits'] ?? 0)); ?></p>
+            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Today's Visits</p>
+            <p class="text-4xl md:text-5xl font-black text-purple-400"><?php echo number_format($todayVisits); ?></p>
+            <p class="text-xs text-gray-500 mt-2">All time: <?php echo number_format((int) ($store['visits'] ?? 0)); ?></p>
         </article>
+    </div>
+
+    <!-- 7-Day Chart -->
+    <div class="glass-morphism rounded-[2.5rem] p-8 border border-white/10 animate__animated animate__fadeInUp">
+        <h2 class="text-2xl font-black text-white mb-6">Last 7 Days</h2>
+        <div class="relative" style="max-height:260px">
+            <canvas id="storeChart"></canvas>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+        <script>
+        (function() {
+            var ctx = document.getElementById('storeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: <?php echo json_encode($chartLabels); ?>,
+                    datasets: [{
+                        label: 'Visits',
+                        data: <?php echo json_encode($chartVisits); ?>,
+                        backgroundColor: 'rgba(168,85,247,0.6)',
+                        borderColor: '#a855f7',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }, {
+                        label: 'Orders',
+                        data: <?php echo json_encode($chartOrders); ?>,
+                        backgroundColor: 'rgba(34,197,94,0.6)',
+                        borderColor: '#22c55e',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: { color: '#9ca3af', font: { weight: 'bold', size: 11 } }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: '#6b7280', font: { size: 11 } },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: '#6b7280', font: { size: 11 }, stepSize: 1 },
+                            grid: { color: 'rgba(255,255,255,0.05)' }
+                        }
+                    }
+                }
+            });
+        })();
+        </script>
     </div>
 
     <div class="grid md:grid-cols-4 gap-6">
