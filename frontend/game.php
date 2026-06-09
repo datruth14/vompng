@@ -12,6 +12,10 @@ $gpTokens = (int) ($currentUser['gptokens'] ?? 0);
         </div>
         <h1 class="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">Gamepad</h1>
         <p class="text-gray-400 text-lg leading-relaxed">Play fun web games, rack up high scores, and earn <span class="text-emerald-400 font-bold">GPTokens</span> that can be converted to Vomp Coins when we launch rewards.</p>
+        <div class="flex items-center justify-center gap-4 mt-8">
+            <a href="#gameSelection" class="px-8 py-3 rounded-2xl bg-white/10 text-white font-black text-sm hover:bg-white/15 transition-all">Select Game</a>
+            <button onclick="playRandomGame()" class="px-8 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm hover:scale-105 transition-all">Random Play</button>
+        </div>
     </div>
 
     <!-- GPTokens Balance -->
@@ -52,7 +56,7 @@ $gpTokens = (int) ($currentUser['gptokens'] ?? 0);
     </div>
 
     <!-- Games Grid -->
-    <div class="max-w-4xl mx-auto space-y-8">
+    <div id="gameSelection" class="max-w-4xl mx-auto space-y-8">
         <h2 class="text-3xl font-black text-white text-center animate__animated animate__fadeInDown">Available Games</h2>
         <div class="grid md:grid-cols-2 gap-6">
             <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 text-center animate__animated animate__fadeInUp" style="animation-delay:0.05s">
@@ -94,6 +98,12 @@ $gpTokens = (int) ($currentUser['gptokens'] ?? 0);
     </div>
 </section>
 
+<script>
+function playRandomGame() {
+    var games = ['/game/space-shooter', '/game/color-swipe'];
+    window.location.href = games[Math.floor(Math.random() * games.length)];
+}
+</script>
 <footer class="py-16 md:py-20 border-t border-white/5 mt-16">
     <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10">
         <div class="md:col-span-2">
