@@ -401,7 +401,7 @@ ob_start();
             }
         }
 
-        var pts = all.length * 2 * (chainCount + 1);
+        var pts = all.length * difficultyLevel * (chainCount + 1);
         score += pts;
         chainCount++;
         updateScore();
