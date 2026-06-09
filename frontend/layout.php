@@ -156,6 +156,7 @@
         </div>
     </nav>
 
+    <script>
         /* Light-mode override styles injected last in <head> to beat Tailwind CDN layers */
         var LIGHT_CSS = [
             'body{background-color:#f3f4f6!important;color:#1f2937!important}',
