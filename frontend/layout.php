@@ -157,50 +157,12 @@
     </nav>
 
     <script>
-        /* Light-mode override styles injected last in <head> to beat Tailwind CDN layers */
-        var LIGHT_CSS = [
-            'body{background-color:#f3f4f6!important;color:#1f2937!important}',
-            '.text-white{color:#030712!important}',
-            '.hover\\:text-white:hover{color:#030712!important}',
-            '.text-gray-100{color:#1f2937!important}',
-            '.text-gray-300{color:#1f2937!important}',
-            '.text-gray-400{color:#6b7280!important}',
-            '.bg-gray-950,.bg-gray-950\\/95,.bg-gray-950\\/80,.bg-gray-950\\/85{background-color:#f3f4f6!important}',
-            '.bg-gray-900{background-color:#e5e7eb!important}',
-            '.border-white\\/10,.border-white\\/5,.border-white\\/20{border-color:rgba(0,0,0,0.1)!important}',
-            '.bg-white\\/5{background-color:rgba(0,0,0,0.04)!important}',
-            '.bg-white\\/10{background-color:rgba(0,0,0,0.06)!important}',
-            '.bg-black\\/50{background-color:rgba(107,114,128,0.5)!important}',
-            '.hover\\:bg-white\\/5:hover{background-color:rgba(0,0,0,0.04)!important}',
-            '.hover\\:bg-white\\/10:hover{background-color:rgba(0,0,0,0.06)!important}',
-            /* Keep white text on colored backgrounds */
-            '.bg-\\[#ff610a\\].text-white,.bg-emerald-500.text-white,[class*="bg-gradient"].text-white{color:#fff!important}'
-        ].join('');
-        function setThemeStyle(light) {
-            var s = document.getElementById('theme-style');
-            if (light) {
-                if (!s) { s = document.createElement('style'); s.id = 'theme-style'; document.head.appendChild(s); }
-                s.textContent = LIGHT_CSS;
-            } else {
-                if (s) s.remove();
-            }
-        }
+        /* Page reloads on toggle — FOUC script + CSS handle theme on next load */
         function toggleTheme() {
             var html = document.documentElement;
             var isLight = html.getAttribute('data-theme') === 'light';
-            if (isLight) {
-                html.removeAttribute('data-theme');
-                html.style.colorScheme = '';
-                localStorage.setItem('vompTheme', 'dark');
-            } else {
-                html.setAttribute('data-theme', 'light');
-                html.style.colorScheme = 'light';
-                localStorage.setItem('vompTheme', 'light');
-            }
-            setThemeStyle(!isLight);
-            updateThemeUI();
-            var m = document.querySelector('meta[name="theme-color"]');
-            if (m) m.content = isLight ? '#030712' : '#f3f4f6';
+            localStorage.setItem('vompTheme', isLight ? 'dark' : 'light');
+            location.reload();
         }
         function updateThemeUI() {
             var icon = document.getElementById('themeIcon');
@@ -213,7 +175,6 @@
                 : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>';
         }
         updateThemeUI();
-        (function(){ if (localStorage.getItem('vompTheme') === 'light') setThemeStyle(true); })();
 
         /* Mobile menu toggle functionality */
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
