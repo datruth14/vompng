@@ -9,14 +9,18 @@ ob_start();
     </div>
 
     <!-- Score + GPTokens -->
-    <div class="flex justify-between items-center mb-4">
-        <div class="glass-morphism rounded-2xl px-5 py-2 border border-white/10">
-            <p class="text-xs text-gray-500 font-black uppercase tracking-wider">Score</p>
-            <p id="scoreDisplay" class="text-2xl font-black text-white">0</p>
+    <div class="grid grid-cols-3 gap-2 mb-4">
+        <div class="glass-morphism rounded-2xl px-3 py-2 border border-white/10 text-center">
+            <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider">Score</p>
+            <p id="scoreDisplay" class="text-lg font-black text-white">0</p>
         </div>
-        <div class="glass-morphism rounded-2xl px-5 py-2 border border-white/10">
-            <p class="text-xs text-gray-500 font-black uppercase tracking-wider">GPTokens</p>
-            <p class="text-2xl font-black text-emerald-400"><?php echo number_format((int)($currentUser['gptokens'] ?? 0)); ?></p>
+        <div class="glass-morphism rounded-2xl px-3 py-2 border border-white/10 text-center">
+            <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider">Level</p>
+            <p id="csLevel" class="text-lg font-black text-purple-400">1</p>
+        </div>
+        <div class="glass-morphism rounded-2xl px-3 py-2 border border-white/10 text-center">
+            <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider">GPTokens</p>
+            <p class="text-lg font-black text-emerald-400"><?php echo number_format((int)($currentUser['gptokens'] ?? 0)); ?></p>
         </div>
     </div>
 
@@ -72,7 +76,10 @@ ob_start();
         { name: 'purple', hex: '#A855F7' },
         { name: 'yellow', hex: '#FACC15' },
         { name: 'blue',   hex: '#2563EB' },
-        { name: 'red',    hex: '#EF4444' }
+        { name: 'red',    hex: '#EF4444' },
+        { name: 'orange', hex: '#F97316' },
+        { name: 'green',  hex: '#22C55E' },
+        { name: 'cyan',   hex: '#06B6D4' }
     ];
 
     const canvas = document.getElementById('gameCanvas');
@@ -91,19 +98,22 @@ ob_start();
     let gameActive = false;
     let animFrameId = null;
     let accumTime = 0;
-    const DROP_INTERVAL = 700;
+    let dropInterval = 700;
     let lastTime = 0;
     let BLOCK_SIZE = 50;
     let canvasW = 0;
     let canvasH = 0;
     let isProcessing = false;
     let chainCount = 0;
+    let difficultyLevel = 1;
+    let activeColors = 5;
 
     // Effects state
     let particles = [];
     let matchedBlocks = [];
     let shakeIntensity = 0;
     let flashOverlay = 0;
+    let levelUpFlash = 0;
     const FLASH_DURATION = 350;
     let audioCtx = null;
 
@@ -296,7 +306,7 @@ ob_start();
         }
     }
 
-    function rng() { return Math.floor(Math.random() * COLORS.length); }
+    function rng() { return Math.floor(Math.random() * activeColors); }
 
     function spawnPiece() {
         currentPiece = { col: Math.floor(COLS / 2), row: 0, color: rng() };
@@ -445,8 +455,32 @@ ob_start();
         hardDrop();
     }
 
+    function getDifficultyForScore(s) {
+        if (s < 30) return { level: 1, dropSpeed: 700, colors: 5 };
+        if (s < 80) return { level: 2, dropSpeed: 580, colors: 5 };
+        if (s < 150) return { level: 3, dropSpeed: 470, colors: 6 };
+        if (s < 250) return { level: 4, dropSpeed: 380, colors: 6 };
+        if (s < 400) return { level: 5, dropSpeed: 310, colors: 7 };
+        if (s < 600) return { level: 6, dropSpeed: 250, colors: 7 };
+        if (s < 900) return { level: 7, dropSpeed: 200, colors: 8 };
+        return { level: 8, dropSpeed: 160, colors: 8 };
+    }
+
+    function applyDifficulty() {
+        var d = getDifficultyForScore(score);
+        if (d.level !== difficultyLevel) {
+            difficultyLevel = d.level;
+            activeColors = d.colors;
+            dropInterval = d.dropSpeed;
+            levelUpFlash = 1;
+            playTone([660, 880, 1100], 0.3, 'sine', 0.12);
+            document.getElementById('csLevel').textContent = difficultyLevel;
+        }
+    }
+
     function updateScore() {
         scoreDisplay.textContent = score.toLocaleString();
+        applyDifficulty();
     }
 
     function draw() {
@@ -555,6 +589,14 @@ ob_start();
             flashOverlay = 0;
         }
 
+        if (levelUpFlash > 0.01) {
+            ctx.fillStyle = 'rgba(168,85,247,' + (levelUpFlash * 0.2) + ')';
+            ctx.fillRect(-10, -10, canvasW + 20, canvasH + 20);
+            levelUpFlash *= 0.85;
+        } else {
+            levelUpFlash = 0;
+        }
+
         if (gameActive && !gameOver && !isProcessing) {
             for (var c = 0; c < COLS; c++) {
                 var cx = c * BLOCK_SIZE + BLOCK_SIZE / 2;
@@ -606,11 +648,15 @@ ob_start();
         gameOver = false;
         score = 0;
         chainCount = 0;
+        difficultyLevel = 1;
+        activeColors = 5;
+        dropInterval = 700;
         isProcessing = false;
         particles = [];
         matchedBlocks = [];
         shakeIntensity = 0;
         flashOverlay = 0;
+        levelUpFlash = 0;
         initGrid();
         updateScore();
         startScreen.classList.add('hidden');
@@ -628,7 +674,7 @@ ob_start();
         lastTime = timestamp;
         if (!gameOver && currentPiece && !isProcessing) {
             accumTime += dt;
-            if (accumTime >= DROP_INTERVAL) {
+            if (accumTime >= dropInterval) {
                 accumTime = 0;
                 dropPiece();
             }
