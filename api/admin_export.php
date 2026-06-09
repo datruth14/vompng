@@ -44,7 +44,9 @@ if ($type === 'stores') {
         SELECT s.name, s.slug, u.name AS owner_name, u.email AS owner_email,
                s.contact_phone, s.contact_email,
                s.token_balance, s.plan, s.is_active,
+               s.visits,
                (SELECT COUNT(*) FROM products p WHERE p.store_id = s.id OR p.store_id = s.owner_id) AS product_count,
+               (SELECT COUNT(*) FROM orders o WHERE o.store_id = s.id) AS order_count,
                s.created_at
         FROM stores s
         LEFT JOIN users u ON s.owner_id = u.id
@@ -54,7 +56,7 @@ if ($type === 'stores') {
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="stores_export_' . date('Y-m-d') . '.csv"');
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['Store Name', 'Slug', 'Owner', 'Owner Email', 'Phone', 'Email', 'Token Balance', 'Plan', 'Active', 'Products', 'Created']);
+    fputcsv($out, ['Store Name', 'Slug', 'Owner', 'Owner Email', 'Phone', 'Email', 'Token Balance', 'Plan', 'Active', 'Visits', 'Orders', 'Products', 'Created']);
     foreach ($rows as $r) {
         fputcsv($out, [
             $r['name'],
@@ -66,6 +68,8 @@ if ($type === 'stores') {
             (int) ($r['token_balance'] ?? 0),
             $r['plan'] ?? 'free',
             (int) ($r['is_active'] ?? 1) === 1 ? 'Yes' : 'No',
+            (int) ($r['visits'] ?? 0),
+            (int) ($r['order_count'] ?? 0),
             (int) ($r['product_count'] ?? 0),
             $r['created_at'],
         ]);

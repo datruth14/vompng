@@ -154,7 +154,8 @@ function admin_get_stores_paginated($page = 1, $perPage = 20)
     $offset = max(0, ($page - 1) * $perPage);
     $stmt = $db->prepare('
         SELECT s.*, u.name AS owner_name, u.email AS owner_email,
-               (SELECT COUNT(*) FROM products p WHERE p.store_id = s.id OR p.store_id = s.owner_id) AS product_count
+               (SELECT COUNT(*) FROM products p WHERE p.store_id = s.id OR p.store_id = s.owner_id) AS product_count,
+               (SELECT COUNT(*) FROM orders o WHERE o.store_id = s.id) AS order_count
         FROM stores s
         LEFT JOIN users u ON s.owner_id = u.id
         ORDER BY product_count DESC
@@ -178,7 +179,8 @@ function admin_search_stores_paginated($query, $page = 1, $perPage = 20)
     $offset = max(0, ($page - 1) * $perPage);
     $stmt = $db->prepare('
         SELECT s.*, u.name AS owner_name, u.email AS owner_email,
-               (SELECT COUNT(*) FROM products p WHERE p.store_id = s.id OR p.store_id = s.owner_id) AS product_count
+               (SELECT COUNT(*) FROM products p WHERE p.store_id = s.id OR p.store_id = s.owner_id) AS product_count,
+               (SELECT COUNT(*) FROM orders o WHERE o.store_id = s.id) AS order_count
         FROM stores s
         LEFT JOIN users u ON s.owner_id = u.id
         WHERE s.name LIKE ? OR s.slug LIKE ? OR u.name LIKE ? OR u.email LIKE ?

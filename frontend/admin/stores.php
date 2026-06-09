@@ -33,6 +33,8 @@ ob_start();
                     <th class="text-left p-3">Store</th>
                     <th class="text-left p-3">Owner</th>
                     <th class="text-left p-3">Products</th>
+                    <th class="text-left p-3">Visits</th>
+                    <th class="text-left p-3">Orders</th>
                     <th class="text-left p-3">Tokens</th>
                     <th class="text-left p-3">Plan</th>
                     <th class="text-left p-3">Status</th>
@@ -48,6 +50,8 @@ ob_start();
                         </td>
                         <td class="p-3 text-gray-400"><?php echo htmlspecialchars($s['owner_name'] ?? $s['owner_email'] ?? '-'); ?></td>
                         <td class="p-3 text-white"><?php echo number_format((int) ($s['product_count'] ?? 0)); ?></td>
+                        <td class="p-3 text-white"><?php echo number_format((int) ($s['visits'] ?? 0)); ?></td>
+                        <td class="p-3 text-white"><?php echo number_format((int) ($s['order_count'] ?? 0)); ?></td>
                         <td class="p-3 text-white"><?php echo number_format((int) ($s['token_balance'] ?? 0)); ?></td>
                         <td class="p-3">
                             <?php if (($s['plan'] ?? 'free') === 'premium'): ?>
@@ -75,7 +79,7 @@ ob_start();
                     </tr>
                 <?php endforeach; ?>
                 <?php if (!$stores): ?>
-                    <tr><td colspan="8" class="p-6 text-center text-gray-500">No stores found.</td></tr>
+                    <tr><td colspan="10" class="p-6 text-center text-gray-500">No stores found.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

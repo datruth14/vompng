@@ -173,6 +173,16 @@ function db_init_schema(PDO $db)
                 INDEX idx_orders_store_id (store_id),
                 FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ",
+        'store_visits' => "
+            CREATE TABLE IF NOT EXISTS store_visits (
+                id VARCHAR(24) PRIMARY KEY,
+                store_id VARCHAR(24) NOT NULL,
+                ip_address VARCHAR(45) NOT NULL,
+                visited_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_sv_store_date (store_id, visited_at),
+                FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         "
     ];
 
@@ -215,6 +225,7 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'stores', 'social_twitter', 'VARCHAR(255)');
     db_ensure_column($db, 'stores', 'social_tiktok', 'VARCHAR(255)');
     db_ensure_column($db, 'stores', 'social_youtube', 'VARCHAR(255)');
+    db_ensure_column($db, 'stores', 'visits', 'INT DEFAULT 0');
 
     db_ensure_column($db, 'products', 'media_url', 'TEXT');
     db_ensure_column($db, 'products', 'media_type', "VARCHAR(20) DEFAULT 'image'");

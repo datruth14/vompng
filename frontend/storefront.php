@@ -3,6 +3,15 @@
  * Public store front-end template.
  */
 
+// Track unique daily store visit
+$visitorIp = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
+$today = date('Y-m-d');
+$existing = db_fetch("SELECT id FROM store_visits WHERE store_id = ? AND ip_address = ? AND DATE(visited_at) = ?", [$store['id'], $visitorIp, $today]);
+if (!$existing) {
+    db_insert('store_visits', ['id' => bin2hex(random_bytes(12)), 'store_id' => $store['id'], 'ip_address' => $visitorIp]);
+    db_get_connection()->prepare("UPDATE stores SET visits = visits + 1 WHERE id = ?")->execute([$store['id']]);
+}
+
 $pageTitle = htmlspecialchars($store['name']) . ' - Storefront';
 ob_start();
 ?>
