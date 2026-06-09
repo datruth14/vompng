@@ -201,6 +201,8 @@
     </button>
     <?php endif; ?>
 
+    <?php $hideNav = str_starts_with($requestPath, 'game'); ?>
+    <?php if (!$hideNav): ?>
     <!-- Nav Drawer Toggle (stays on left edge when collapsed) -->
     <button id="navToggleBtn" class="fixed bottom-6 left-4 z-50 w-12 h-12 rounded-full bg-[#ff610a] text-white shadow-lg shadow-[#ff610a]/30 hover:bg-[#e05500] transition-all flex items-center justify-center">
         <svg id="navToggleIcon" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
@@ -211,6 +213,9 @@
 
     <!-- Nav Drawer (slides from left) -->
     <div id="navDrawer" class="fixed top-0 left-0 z-40 h-full w-72 bg-gray-950/95 border-r border-white/10 shadow-2xl transition-transform duration-300 -translate-x-full will-change-transform overflow-y-auto">
+    <?php else: ?>
+    <div id="navDrawer" class="fixed top-0 left-0 z-40 h-full w-72 bg-gray-950/95 border-r border-white/10 shadow-2xl transition-transform duration-300 -translate-x-full will-change-transform overflow-y-auto hidden">
+    <?php endif; ?>
         <div class="flex flex-col items-stretch gap-2 p-6 pt-20">
             <a href="/" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
@@ -272,38 +277,45 @@
     </div>
 
     <script>
-        /* Nav drawer toggle */
-        const navToggleBtn = document.getElementById('navToggleBtn');
-        const navDrawer = document.getElementById('navDrawer');
-        const navOverlay = document.getElementById('navOverlay');
-        const navToggleIcon = document.getElementById('navToggleIcon');
         const shareBtn = document.getElementById('shareBtn');
+        const navToggleBtn = document.getElementById('navToggleBtn');
         let navOpen = false;
 
-        function openNav() {
-            navOpen = true;
-            navDrawer.classList.remove('-translate-x-full');
-            navOverlay.classList.remove('opacity-0', 'pointer-events-none');
-            navToggleBtn.style.bottom = '1rem';
-            if (shareBtn) shareBtn.style.bottom = '5.5rem';
-            navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+        if (navToggleBtn) {
+            const navDrawer = document.getElementById('navDrawer');
+            const navOverlay = document.getElementById('navOverlay');
+            const navToggleIcon = document.getElementById('navToggleIcon');
+
+            function openNav() {
+                navOpen = true;
+                navDrawer.classList.remove('-translate-x-full');
+                navOverlay.classList.remove('opacity-0', 'pointer-events-none');
+                navToggleBtn.style.bottom = '1rem';
+                if (shareBtn) shareBtn.style.bottom = '5.5rem';
+                navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />';
+            }
+
+            function closeNav() {
+                navOpen = false;
+                navDrawer.classList.add('-translate-x-full');
+                navOverlay.classList.add('opacity-0', 'pointer-events-none');
+                navToggleBtn.style.bottom = '';
+                if (shareBtn) shareBtn.style.bottom = '';
+                navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />';
+            }
+
+            navToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (navOpen) closeNav(); else openNav();
+            });
+
+            navOverlay.addEventListener('click', closeNav);
+
+            /* Close drawer when a link is clicked */
+            navDrawer.querySelectorAll('a').forEach(link => {
+                link.addEventListener('click', closeNav);
+            });
         }
-
-        function closeNav() {
-            navOpen = false;
-            navDrawer.classList.add('-translate-x-full');
-            navOverlay.classList.add('opacity-0', 'pointer-events-none');
-            navToggleBtn.style.bottom = '';
-            if (shareBtn) shareBtn.style.bottom = '';
-            navToggleIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />';
-        }
-
-        navToggleBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (navOpen) closeNav(); else openNav();
-        });
-
-        navOverlay.addEventListener('click', closeNav);
 
         /* Native share */
         function shareCurrentPage() {
@@ -335,11 +347,6 @@
                 document.body.appendChild(overlay);
             }
         }
-
-        /* Close drawer when a link is clicked */
-        navDrawer.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', closeNav);
-        });
 
         /* Auto-fit: shrink text font-size to fit its container without overflow */
         function autoFitText() {
