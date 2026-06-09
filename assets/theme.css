@@ -180,7 +180,13 @@ body {
 }
 
 [data-theme="light"] .text-white {
-  color: #111827 !important;
+  color: #030712 !important;
+}
+/* Keep white text on colored backgrounds (buttons, badges, gradients) */
+[data-theme="light"] .bg-\[#ff610a\].text-white,
+[data-theme="light"] .bg-emerald-500.text-white,
+[data-theme="light"] [class*="bg-gradient"].text-white {
+  color: #fff !important;
 }
 
 [data-theme="light"] .text-gray-100 {
@@ -188,7 +194,7 @@ body {
 }
 
 [data-theme="light"] .text-gray-300 {
-  color: #374151 !important;
+  color: #1f2937 !important;
 }
 
 [data-theme="light"] .text-gray-400 {
@@ -242,7 +248,7 @@ body {
 }
 
 [data-theme="light"] .hover\:text-white:hover {
-  color: #111827 !important;
+  color: #030712 !important;
 }
 
 [data-theme="light"] .hover\:text-gray-300:hover {
