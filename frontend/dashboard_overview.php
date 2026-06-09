@@ -10,7 +10,7 @@ ob_start();
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Managing <?php echo htmlspecialchars($store['slug']); ?></p>
-            <h1 class="text-5xl font-black text-white tracking-tight mb-2"><?php echo htmlspecialchars($store['name']); ?></h1>
+            <h1 class="text-5xl font-black text-white tracking-tight mb-2"><?php echo htmlspecialchars($store['name']); ?> <?php if (($currentUser['plan'] ?? 'free') === 'premium'): ?><span class="inline-block align-middle text-xs font-black text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-full">PREMIUM</span><?php endif; ?></h1>
             <p class="text-gray-500 font-medium text-lg"><?php echo htmlspecialchars($store['description'] ?: 'No store description yet.'); ?></p>
         </div>
         <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>" target="_blank" class="btn-secondary px-8 py-4 rounded-2xl">Open Storefront</a>
@@ -30,12 +30,8 @@ ob_start();
             <p class="text-4xl md:text-5xl font-black text-white break-all"><?php echo count(array_filter($products, fn($p) => (int) ($p['is_available'] ?? 1) === 1)); ?></p>
         </article>
         <article class="glass-morphism rounded-[2rem] p-8 border border-white/10 animate__animated animate__fadeInUp" style="animation-delay:0.3s">
-            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Current Plan</p>
-            <?php if (($currentUser['plan'] ?? 'free') === 'premium'): ?>
-                <p class="text-3xl font-black text-emerald-400">PREMIUM</p>
-            <?php else: ?>
-                <p class="text-3xl font-black text-[#ff8c3a]">FREE</p>
-            <?php endif; ?>
+            <p class="text-xs uppercase tracking-wider font-black text-gray-500 mb-3">Store Visits</p>
+            <p class="text-4xl md:text-5xl font-black text-purple-400"><?php echo number_format((int) ($store['visits'] ?? 0)); ?></p>
         </article>
     </div>
 
