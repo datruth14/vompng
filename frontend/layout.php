@@ -9,7 +9,8 @@
     <link rel="apple-touch-icon" href="/assets/img/icon-192.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="theme-color" content="#030712">
+    <meta name="theme-color" content="#030712" id="themeColor">
+    <script>!function(){var t=localStorage.getItem('vompTheme');if(t==='light'){document.documentElement.setAttribute('data-theme','light');var m=document.querySelector('meta[name="theme-color"]');if(m)m.content='#f3f4f6';}}();</script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
     <link rel="stylesheet" href="/assets/theme.css">
@@ -156,6 +157,33 @@
     </nav>
 
     <script>
+        /* Theme toggle */
+        function toggleTheme() {
+            var html = document.documentElement;
+            var isLight = html.getAttribute('data-theme') === 'light';
+            if (isLight) {
+                html.removeAttribute('data-theme');
+                localStorage.setItem('vompTheme', 'dark');
+            } else {
+                html.setAttribute('data-theme', 'light');
+                localStorage.setItem('vompTheme', 'light');
+            }
+            updateThemeUI();
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.content = isLight ? '#030712' : '#f3f4f6';
+        }
+        function updateThemeUI() {
+            var icon = document.getElementById('themeIcon');
+            var label = document.getElementById('themeLabel');
+            if (!icon) return;
+            var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+            label.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+            icon.innerHTML = isLight
+                ? '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/>'
+                : '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>';
+        }
+        updateThemeUI();
+
         /* Mobile menu toggle functionality */
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenu = document.getElementById('mobile-menu');
@@ -273,6 +301,11 @@
                     <span>Download App</span>
                 </a>
             <?php endif; ?>
+            <div class="border-t border-white/10 my-2"></div>
+            <button onclick="toggleTheme()" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm w-full text-left">
+                <svg id="themeIcon" class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z"/></svg>
+                <span id="themeLabel">Dark Mode</span>
+            </button>
         </div>
     </div>
 

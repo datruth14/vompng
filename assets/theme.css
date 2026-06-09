@@ -128,3 +128,208 @@ body {
 .img-skeleton.loaded {
   opacity: 1;
 }
+
+/* ===== Light Mode ===== */
+
+[data-theme="light"] {
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] body {
+  background-color: #f3f4f6 !important;
+  color: #1f2937;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-track {
+  background: #f3f4f6;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-color: #f3f4f6;
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+[data-theme="light"] .glass-morphism {
+  background: var(--glass-bg);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+[data-theme="light"] .skeleton-box {
+  background: rgba(255, 97, 10, 0.06);
+}
+
+/* Override Tailwind utility classes for light mode */
+
+[data-theme="light"] .bg-gray-950,
+[data-theme="light"] .bg-gray-950\/95,
+[data-theme="light"] .bg-gray-950\/80,
+[data-theme="light"] .bg-gray-950\/85 {
+  background-color: #f3f4f6 !important;
+}
+
+[data-theme="light"] .bg-gray-900 {
+  background-color: #e5e7eb !important;
+}
+
+[data-theme="light"] .text-white {
+  color: #111827 !important;
+}
+
+[data-theme="light"] .text-gray-100 {
+  color: #1f2937 !important;
+}
+
+[data-theme="light"] .text-gray-300 {
+  color: #374151 !important;
+}
+
+[data-theme="light"] .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+[data-theme="light"] .text-gray-500 {
+  color: #4b5563 !important;
+}
+
+[data-theme="light"] .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+[data-theme="light"] .text-gray-700 {
+  color: #d1d5db !important;
+}
+
+[data-theme="light"] .border-white\/10,
+[data-theme="light"] .border-white\/5,
+[data-theme="light"] .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .bg-black\/50 {
+  background-color: rgba(107, 114, 128, 0.5) !important;
+}
+
+[data-theme="light"] .bg-rose-500\/10 {
+  background-color: rgba(239, 68, 68, 0.08) !important;
+}
+
+[data-theme="light"] .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.08) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .hover\:text-white:hover {
+  color: #111827 !important;
+}
+
+[data-theme="light"] .hover\:text-gray-300:hover {
+  color: #374151 !important;
+}
+
+[data-theme="light"] .text-emerald-400 {
+  color: #059669 !important;
+}
+
+[data-theme="light"] .border-emerald-500\/20 {
+  border-color: rgba(5, 150, 105, 0.25) !important;
+}
+
+[data-theme="light"] .bg-emerald-500\/10 {
+  background-color: rgba(5, 150, 105, 0.08) !important;
+}
+
+[data-theme="light"] .bg-emerald-600\/20 {
+  background-color: rgba(5, 150, 105, 0.12) !important;
+}
+
+[data-theme="light"] .text-emerald-300 {
+  color: #059669;
+}
+
+[data-theme="light"] .border-emerald-500\/30 {
+  border-color: rgba(5, 150, 105, 0.3) !important;
+}
+
+[data-theme="light"] .text-purple-400 {
+  color: #7c3aed !important;
+}
+
+[data-theme="light"] .text-rose-300 {
+  color: #dc2626;
+}
+
+[data-theme="light"] .text-rose-400 {
+  color: #dc2626 !important;
+}
+
+[data-theme="light"] .border-rose-500\/20 {
+  border-color: rgba(220, 38, 38, 0.2) !important;
+}
+
+[data-theme="light"] .bg-rose-500\/10 {
+  background-color: rgba(220, 38, 38, 0.08) !important;
+}
+
+[data-theme="light"] .border-rose-500\/30 {
+  border-color: rgba(220, 38, 38, 0.25) !important;
+}
+
+[data-theme="light"] .text-\[#ff8c3a\] {
+  color: #ea580c !important;
+}
+
+[data-theme="light"] .hover\:text-\[#ffb07a\]:hover {
+  color: #c2410c !important;
+}
+
+[data-theme="light"] .bg-\[#ff610a\] {
+  color: #fff !important;
+}
+
+[data-theme="light"] .bg-\[#ff610a\]\/20 {
+  background-color: rgba(234, 88, 12, 0.12) !important;
+}
+
+[data-theme="light"] .border-\[#ff610a\]\/20 {
+  border-color: rgba(234, 88, 12, 0.2) !important;
+}
+
+[data-theme="light"] #navDrawer {
+  background: rgba(243, 244, 246, 0.98) !important;
+  border-right-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] #navDrawer .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] #navDrawer .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+/* Override for the bio-hazard background blobs in light mode */
+[data-theme="light"] .fixed.inset-0.pointer-events-none > div {
+  opacity: 0.3;
+}
