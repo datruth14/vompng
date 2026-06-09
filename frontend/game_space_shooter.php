@@ -252,7 +252,7 @@ ob_start();
                     snd(900, 0.05, 'sine', 0.05);
                     if (e.hp <= 0) {
                         spawnParticles(e.x + e.w/2, e.y + e.h/2, '#ff4444', 12);
-                        score += e.maxHp * 10;
+                        score += e.maxHp;
                         enemies.splice(j, 1);
                     }
                     break;
