@@ -8,18 +8,22 @@ ob_start();
         <p class="text-gray-400 text-sm">Drag to move &bull; Hold to fire</p>
     </div>
 
-    <div class="flex justify-between items-center mb-4">
-        <div class="glass-morphism rounded-2xl px-5 py-2 border border-white/10">
-            <p class="text-xs text-gray-500 font-black uppercase tracking-wider">Score</p>
-            <p id="ssScore" class="text-2xl font-black text-white">0</p>
+    <div class="grid grid-cols-4 gap-2 mb-4">
+        <div class="glass-morphism rounded-2xl px-2 py-2 border border-white/10 text-center">
+            <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider">Score</p>
+            <p id="ssScore" class="text-lg font-black text-white">0</p>
         </div>
-        <div class="glass-morphism rounded-2xl px-5 py-2 border border-white/10">
-            <p class="text-xs text-gray-500 font-black uppercase tracking-wider">HP</p>
-            <p id="ssHp" class="text-2xl font-black text-rose-400">5</p>
+        <div class="glass-morphism rounded-2xl px-2 py-2 border border-white/10 text-center">
+            <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider">Wave</p>
+            <p id="ssWave" class="text-lg font-black text-purple-400">1</p>
         </div>
-        <div class="glass-morphism rounded-2xl px-5 py-2 border border-white/10">
-            <p class="text-xs text-gray-500 font-black uppercase tracking-wider">GPTokens</p>
-            <p class="text-2xl font-black text-emerald-400"><?php echo number_format((int)($currentUser['gptokens'] ?? 0)); ?></p>
+        <div class="glass-morphism rounded-2xl px-2 py-2 border border-white/10 text-center">
+            <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider">Shield</p>
+            <p id="ssHp" class="text-lg font-black text-rose-400">5</p>
+        </div>
+        <div class="glass-morphism rounded-2xl px-2 py-2 border border-white/10 text-center">
+            <p class="text-[10px] text-gray-500 font-black uppercase tracking-wider">GPT</p>
+            <p class="text-lg font-black text-emerald-400"><?php echo number_format((int)($currentUser['gptokens'] ?? 0)); ?></p>
         </div>
     </div>
 
@@ -61,7 +65,8 @@ ob_start();
 (function() {
     var cv, ctx, W, H, BS;
     var player, bullets, enemies, particles, stars;
-    var score, hp, gameActive, gameOver;
+    var score, hp, gameActive, gameOver, gameTime;
+    var waveTier = 1;
     var lastFire, fireRate = 180;
     var enemyTimer, enemyDelay = 900;
     var pointerX, pointerY, pointerDown;
@@ -96,6 +101,8 @@ ob_start();
         }
         score = 0;
         hp = 5;
+        gameTime = 0;
+        waveTier = 1;
         enemyTimer = 0;
         enemyDelay = 900;
         lastFire = 0;
@@ -105,14 +112,17 @@ ob_start();
 
     // --- Spawn ---
     function spawnEnemy() {
+        var diff = getDifficulty(gameTime);
         var w = BS * 1.1;
+        var ehp = pickHp(diff.tier);
         var e = {
             x: BS + Math.random() * (W - BS*2),
             y: -w,
             w: w,
             h: w,
-            hp: 1 + Math.floor(Math.random() * 2),
-            speed: 40 + Math.random() * 30
+            hp: ehp,
+            maxHp: ehp,
+            speed: diff.minSpeed + Math.random() * (diff.maxSpeed - diff.minSpeed)
         };
         enemies.push(e);
     }
@@ -144,11 +154,46 @@ ob_start();
         }
     }
 
+    // --- Difficulty ---
+    function getDifficulty(t) {
+        var s = t / 1000;
+        var tier;
+        if (s < 30) tier = 1;
+        else if (s < 60) tier = 2;
+        else if (s < 100) tier = 3;
+        else if (s < 150) tier = 4;
+        else tier = 5;
+        var spawnDelay = Math.max(250, 900 - s * 4.3);
+        var minSpeed = Math.min(100, 40 + s * 0.4);
+        var maxSpeed = Math.min(160, 70 + s * 0.6);
+        return { tier: tier, spawnDelay: Math.floor(spawnDelay), minSpeed: minSpeed, maxSpeed: maxSpeed };
+    }
+    function pickHp(tier) {
+        var r = Math.random();
+        switch(tier) {
+            case 1: return r < 0.9 ? 1 : 2;
+            case 2: return r < 0.7 ? 1 : (r < 0.95 ? 2 : 3);
+            case 3: return r < 0.4 ? 1 : (r < 0.75 ? 2 : (r < 0.95 ? 3 : 4));
+            case 4: return r < 0.2 ? 1 : (r < 0.55 ? 2 : (r < 0.85 ? 3 : (r < 0.98 ? 4 : 5)));
+            case 5: return r < 0.1 ? 1 : (r < 0.35 ? 2 : (r < 0.7 ? 3 : (r < 0.95 ? 4 : 5)));
+            default: return 1;
+        }
+    }
+
     // --- Update ---
     function update(dt) {
         if (!gameActive) return;
 
         var dts = dt / 1000;
+
+        // Track game time & update difficulty
+        gameTime += dt;
+        var diff = getDifficulty(gameTime);
+        enemyDelay = diff.spawnDelay;
+        if (diff.tier !== waveTier) {
+            waveTier = diff.tier;
+            updateHUD();
+        }
 
         // Player follow pointer
         if (pointerDown) {
@@ -207,7 +252,7 @@ ob_start();
                     snd(900, 0.05, 'sine', 0.05);
                     if (e.hp <= 0) {
                         spawnParticles(e.x + e.w/2, e.y + e.h/2, '#ff4444', 12);
-                        score += 10;
+                        score += e.maxHp * 10;
                         enemies.splice(j, 1);
                     }
                     break;
@@ -259,6 +304,16 @@ ob_start();
         }
         ctx.globalAlpha = 1;
 
+        // Wave indicator
+        ctx.fillStyle = '#a855f7';
+        ctx.font = 'bold ' + Math.floor(BS * 0.5) + 'px monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.shadowColor = '#a855f7';
+        ctx.shadowBlur = 4;
+        ctx.fillText('WAVE ' + waveTier, 6, 6);
+        ctx.shadowBlur = 0;
+
         // Bullets
         for (var i = 0; i < bullets.length; i++) {
             var b = bullets[i];
@@ -269,19 +324,22 @@ ob_start();
         }
         ctx.shadowBlur = 0;
 
-        // Enemies
+        // Enemies (color-coded by HP)
+        var hpColors = ['#cc2233','#dd6633','#ccaa22','#9933cc','#cc2266'];
+        var hpHighlights = ['#ff4455','#ff8844','#eebb44','#bb55ee','#ee4477'];
         for (var i = 0; i < enemies.length; i++) {
             var e = enemies[i];
+            var ci = Math.min(e.hp, 5) - 1;
             var x = e.x, y = e.y, w = e.w, h = e.h;
             // Body
-            ctx.fillStyle = '#cc2233';
-            ctx.shadowColor = '#ff4444';
+            ctx.fillStyle = hpColors[ci] || '#cc2233';
+            ctx.shadowColor = hpColors[ci] || '#ff4444';
             ctx.shadowBlur = 6;
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, 3);
             ctx.fill();
             // Top highlight
-            ctx.fillStyle = '#ff4455';
+            ctx.fillStyle = hpHighlights[ci] || '#ff4455';
             ctx.shadowBlur = 0;
             ctx.beginPath();
             ctx.roundRect(x + 3, y + 3, w - 6, h * 0.25, 2);
@@ -341,6 +399,7 @@ ob_start();
     function updateHUD() {
         document.getElementById('ssScore').textContent = score;
         document.getElementById('ssHp').textContent = hp;
+        document.getElementById('ssWave').textContent = waveTier;
     }
 
     // --- Game Loop ---
