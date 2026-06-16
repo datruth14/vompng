@@ -12,13 +12,13 @@ ob_start();
     <div class="max-w-4xl mx-auto text-center mb-14">
         <h1 class="text-5xl md:text-7xl font-black tracking-tight text-white mb-4 animate__animated animate__fadeInDown">Sell Smarter With <span class="text-gradient">VOMP</span></h1>
         <p class="text-gray-400 text-lg md:text-xl font-medium animate__animated animate__fadeInUp">Create your online store in minutes, list products with zero upfront cost, and receive orders directly via WhatsApp. No technical skills required.</p>
-        <div class="mt-10 flex flex-wrap justify-center gap-4">
+        <div class="mt-10 flex flex-nowrap justify-center gap-3 md:gap-4">
             <?php if (!empty($currentUser)): ?>
-                <a href="/dashboard" class="btn-press px-8 py-4 rounded-2xl bg-emerald-500 text-white font-black text-lg shadow-xl shadow-emerald-500/20 hover:bg-emerald-400 transition-all animate__animated animate__zoomIn">Go to Dashboard</a>
-                <a href="/marketplace" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all animate__animated animate__zoomIn">Browse Marketplace</a>
+                <a href="/dashboard" class="btn-press px-4 md:px-8 py-3 md:py-4 rounded-2xl bg-emerald-500 text-white font-black text-sm md:text-lg shadow-xl shadow-emerald-500/20 hover:bg-emerald-400 transition-all animate__animated animate__zoomIn whitespace-nowrap">Go to Dashboard</a>
+                <a href="/marketplace" class="btn-press px-4 md:px-8 py-3 md:py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm md:text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all animate__animated animate__zoomIn whitespace-nowrap">Browse Marketplace</a>
             <?php else: ?>
-                <a href="/register" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all animate__animated animate__zoomIn">Start Selling — It's Free</a>
-                <a href="/login" class="px-8 py-4 rounded-2xl glass-morphism border border-white/10 text-white font-black text-lg hover:bg-white/10 transition-all animate__animated animate__zoomIn">Sign In</a>
+                <a href="/register" class="btn-press px-4 md:px-8 py-3 md:py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm md:text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all animate__animated animate__zoomIn whitespace-nowrap">Start Selling — It's Free</a>
+                <a href="/login" class="px-4 md:px-8 py-3 md:py-4 rounded-2xl glass-morphism border border-white/10 text-white font-black text-sm md:text-lg hover:bg-white/10 transition-all animate__animated animate__zoomIn whitespace-nowrap">Sign In</a>
             <?php endif; ?>
         </div>
     </div>
