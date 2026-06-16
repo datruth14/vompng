@@ -15,13 +15,10 @@ ob_start();
         <div class="mt-10 flex flex-wrap justify-center gap-4">
             <?php if (!empty($currentUser)): ?>
                 <a href="/dashboard" class="btn-press px-8 py-4 rounded-2xl bg-emerald-500 text-white font-black text-lg shadow-xl shadow-emerald-500/20 hover:bg-emerald-400 transition-all animate__animated animate__zoomIn">Go to Dashboard</a>
+                <a href="/marketplace" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all animate__animated animate__zoomIn">Browse Marketplace</a>
             <?php else: ?>
                 <a href="/register" class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all animate__animated animate__zoomIn">Start Selling — It's Free</a>
-                <?php if ($currentUser): ?>
-                    <a href="/dashboard" class="px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg hover:bg-[#e05500] transition-all shadow-xl shadow-[#ff610a]/20">Dashboard</a>
-                <?php else: ?>
-                    <a href="/login" class="px-8 py-4 rounded-2xl glass-morphism border border-white/10 text-white font-black text-lg hover:bg-white/10 transition-all animate__animated animate__zoomIn">Sign In</a>
-                <?php endif; ?>
+                <a href="/login" class="px-8 py-4 rounded-2xl glass-morphism border border-white/10 text-white font-black text-lg hover:bg-white/10 transition-all animate__animated animate__zoomIn">Sign In</a>
             <?php endif; ?>
         </div>
     </div>
