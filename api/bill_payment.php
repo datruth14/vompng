@@ -16,9 +16,23 @@ if (!$currentUser) {
 
 $data = json_decode(file_get_contents('php://input'), true) ?: [];
 $type = $data['type'] ?? '';
+$pin = $data['pin'] ?? '';
 $request_id = 'vomp_' . uniqid() . '_' . bin2hex(random_bytes(4));
 
 $userId = $currentUser['id'];
+
+if (!$pin) {
+    http_response_code(400);
+    echo json_encode(['error' => 'Transaction PIN is required']);
+    exit;
+}
+
+$pinCheck = auth_verify_transaction_pin($userId, $pin);
+if (!$pinCheck['success']) {
+    http_response_code(400);
+    echo json_encode(['error' => $pinCheck['error']]);
+    exit;
+}
 
 switch ($type) {
     case 'airtime':

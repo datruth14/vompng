@@ -225,7 +225,164 @@ ob_start();
     <?php endif; ?>
 </section>
 
+<!-- PIN Modal -->
+<div id="pinModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    <div class="glass-morphism rounded-2xl p-6 md:p-8 border border-white/10 max-w-sm w-full mx-4 shadow-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <h2 id="pinModalTitle" class="text-white font-black text-xl">Enter Transaction PIN</h2>
+            <button onclick="closePinModal()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div id="pinModalBody">
+            <p id="pinModalDesc" class="text-gray-400 text-sm mb-5">Enter your 4-digit transaction PIN to continue.</p>
+            <div class="mb-4">
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Transaction PIN</label>
+                <input type="password" id="pinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="••••" class="w-full text-center text-2xl tracking-[0.5em] bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all">
+            </div>
+            <div id="pinConfirmGroup" class="mb-4 hidden">
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Confirm PIN</label>
+                <input type="password" id="pinConfirmInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="••••" class="w-full text-center text-2xl tracking-[0.5em] bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all">
+            </div>
+        </div>
+        <div id="pinFeedback" class="mb-4 hidden"></div>
+        <button id="pinSubmitBtn" class="btn-press w-full py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Continue</button>
+    </div>
+</div>
+
 <script>
+let pendingAction = null;
+let pendingPayload = null;
+
+function requirePin(action, payload) {
+    pendingAction = action;
+    pendingPayload = payload;
+    openPinModal();
+}
+
+function openPinModal() {
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinConfirmInput').value = '';
+    document.getElementById('pinFeedback').classList.add('hidden');
+    document.getElementById('pinConfirmGroup').classList.add('hidden');
+    document.getElementById('pinModalTitle').textContent = 'Enter Transaction PIN';
+    document.getElementById('pinModalDesc').textContent = 'Enter your 4-digit transaction PIN to continue.';
+    document.getElementById('pinSubmitBtn').textContent = 'Verify PIN';
+    document.getElementById('pinModal').classList.remove('hidden');
+    document.getElementById('pinInput').focus();
+}
+
+function closePinModal() {
+    document.getElementById('pinModal').classList.add('hidden');
+    pendingAction = null;
+    pendingPayload = null;
+}
+
+document.getElementById('pinSubmitBtn').addEventListener('click', async function() {
+    var pin = document.getElementById('pinInput').value.trim();
+    if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+        document.getElementById('pinFeedback').className = 'mb-4 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
+        document.getElementById('pinFeedback').textContent = 'Enter a valid 4-digit PIN';
+        document.getElementById('pinFeedback').classList.remove('hidden');
+        return;
+    }
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Verifying...';
+
+    try {
+        var res = await fetch('/api/verify_pin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pin })
+        });
+        var data = await res.json();
+
+        if (data.success) {
+            // PIN verified — proceed
+            closePinModal();
+            executePending(pin);
+            return;
+        }
+
+        if (data.setup_required) {
+            // No PIN set — show setup mode
+            document.getElementById('pinModalTitle').textContent = 'Set Transaction PIN';
+            document.getElementById('pinModalDesc').textContent = 'You need to set a 4-digit transaction PIN before proceeding.';
+            document.getElementById('pinConfirmGroup').classList.remove('hidden');
+            document.getElementById('pinSubmitBtn').textContent = 'Set PIN';
+            document.getElementById('pinFeedback').className = 'mb-4 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-bold';
+            document.getElementById('pinFeedback').textContent = 'No PIN set. Create one now.';
+            document.getElementById('pinFeedback').classList.remove('hidden');
+
+            // Switch button handler to set PIN
+            btn.onclick = async function() {
+                var newPin = document.getElementById('pinInput').value.trim();
+                var confirmPin = document.getElementById('pinConfirmInput').value.trim();
+
+                if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+                    document.getElementById('pinFeedback').textContent = 'Enter a valid 4-digit PIN';
+                    return;
+                }
+                if (newPin !== confirmPin) {
+                    document.getElementById('pinFeedback').textContent = 'PINs do not match';
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = 'Setting PIN...';
+
+                try {
+                    var setRes = await fetch('/api/set_pin.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pin: newPin })
+                    });
+                    var setData = await setRes.json();
+                    if (setData.success) {
+                        closePinModal();
+                        executePending(newPin);
+                    } else {
+                        document.getElementById('pinFeedback').textContent = setData.error || 'Failed to set PIN';
+                        btn.disabled = false;
+                        btn.textContent = 'Set PIN';
+                    }
+                } catch(e) {
+                    document.getElementById('pinFeedback').textContent = 'Network error. Try again.';
+                    btn.disabled = false;
+                    btn.textContent = 'Set PIN';
+                }
+            };
+            btn.disabled = false;
+            btn.textContent = 'Set PIN';
+            return;
+        }
+
+        document.getElementById('pinFeedback').className = 'mb-4 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
+        document.getElementById('pinFeedback').textContent = data.error || 'Invalid PIN';
+        document.getElementById('pinFeedback').classList.remove('hidden');
+    } catch(e) {
+        document.getElementById('pinFeedback').className = 'mb-4 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
+        document.getElementById('pinFeedback').textContent = 'Network error. Try again.';
+        document.getElementById('pinFeedback').classList.remove('hidden');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Verify PIN';
+});
+
+function executePending(pin) {
+    var action = pendingAction;
+    var payload = pendingPayload || {};
+    pendingAction = null;
+    pendingPayload = null;
+
+    if (action === 'buy') executeBuy(pin);
+    else if (action === 'transfer') executeTransfer(pin);
+    else if (action === 'withdraw') executeWithdraw(pin);
+}
+
 const TOKEN_PRICE = 20;
 const TOKEN_MIN = 50;
 const tokenInput = document.getElementById('tokenInput');
@@ -280,44 +437,49 @@ tokenInput.addEventListener('blur', function () {
     updatePrice();
 });
 
+function executeBuy(pin) {
+    const tokens = rawNum(tokenInput.value);
+    const btn = document.getElementById('purchaseBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    <?php if (isset($store) && $store): ?>
+    const slug = '<?php echo $store['slug']; ?>';
+    var url = '/api/tokens_purchase.php?storeSlug=' + slug;
+    <?php else: ?>
+    var url = '/api/tokens_purchase.php';
+    <?php endif; ?>
+
+    fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tokens, pin })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        if (result.success && result.authorization_url) {
+            window.location.href = result.authorization_url;
+        } else {
+            document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Failed to initiate payment') + '</div>';
+            btn.disabled = false;
+            btn.textContent = 'Buy Vomp Coins';
+        }
+    })
+    .catch(function() {
+        document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
+        btn.disabled = false;
+        btn.textContent = 'Buy Vomp Coins';
+    });
+}
+
 if (purchaseBtn) {
-    purchaseBtn.addEventListener('click', async function () {
+    purchaseBtn.addEventListener('click', function () {
         const tokens = rawNum(tokenInput.value);
         if (tokens < TOKEN_MIN) {
             document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Minimum purchase is ' + TOKEN_MIN + ' Vomp Coins (₦' + (TOKEN_MIN * TOKEN_PRICE).toLocaleString() + ')</div>';
             return;
         }
-
-        const btn = this;
-        btn.disabled = true;
-        btn.textContent = 'Processing...';
-
-        <?php if (isset($store) && $store): ?>
-        const slug = '<?php echo $store['slug']; ?>';
-        var url = '/api/tokens_purchase.php?storeSlug=' + slug;
-        <?php else: ?>
-        var url = '/api/tokens_purchase.php';
-        <?php endif; ?>
-
-        try {
-            const res = await fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ tokens })
-            });
-            const result = await res.json();
-            if (result.success && result.authorization_url) {
-                window.location.href = result.authorization_url;
-            } else {
-                document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Failed to initiate payment') + '</div>';
-                btn.disabled = false;
-                btn.textContent = 'Buy Vomp Coins';
-            }
-        } catch (err) {
-            document.getElementById('purchaseMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
-            btn.disabled = false;
-            btn.textContent = 'Buy Vomp Coins';
-        }
+        requirePin('buy', { tokens });
     });
 }
 
@@ -325,8 +487,39 @@ if (purchaseBtn) {
 document.getElementById('transferAmount').addEventListener('focus', function () { this.value = rawNum(this.value); });
 document.getElementById('transferAmount').addEventListener('blur', function () { this.value = fmtInt(rawNum(this.value)) || '1'; });
 
+function executeTransfer(pin) {
+    const email = document.getElementById('transferEmail').value.trim();
+    const amount = rawNum(document.getElementById('transferAmount').value);
+    const btn = document.getElementById('transferBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    fetch('/api/tokens_transfer.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, amount, pin })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        if (result.success) {
+            document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Successfully transferred ' + amount.toLocaleString() + ' Vomp Coins to ' + email + '</div>';
+            document.getElementById('transferBalance').textContent = result.token_balance.toLocaleString();
+            document.getElementById('transferAmount').value = 1;
+        } else {
+            document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Transfer failed') + '</div>';
+        }
+        btn.disabled = false;
+        btn.textContent = 'Transfer Vomp Coins';
+    })
+    .catch(function() {
+        document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
+        btn.disabled = false;
+        btn.textContent = 'Transfer Vomp Coins';
+    });
+}
+
 if (transferBtn) {
-    transferBtn.addEventListener('click', async function () {
+    transferBtn.addEventListener('click', function () {
         const email = document.getElementById('transferEmail').value.trim();
         const amount = rawNum(document.getElementById('transferAmount').value);
 
@@ -340,30 +533,7 @@ if (transferBtn) {
             return;
         }
 
-        const btn = this;
-        btn.disabled = true;
-        btn.textContent = 'Processing...';
-
-        try {
-            const res = await fetch('/api/tokens_transfer.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, amount })
-            });
-            const result = await res.json();
-            if (result.success) {
-                document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Successfully transferred ' + amount.toLocaleString() + ' Vomp Coins to ' + email + '</div>';
-                document.getElementById('transferBalance').textContent = result.token_balance.toLocaleString();
-                document.getElementById('transferAmount').value = 1;
-            } else {
-                document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Transfer failed') + '</div>';
-            }
-        } catch (err) {
-            document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
-        }
-
-        btn.disabled = false;
-        btn.textContent = 'Transfer Vomp Coins';
+        requirePin('transfer', { email, amount });
     });
 }
 
@@ -450,9 +620,58 @@ function updateWithdrawNaira() {
     document.getElementById('withdrawNaira').textContent = '₦' + (val * TOKEN_PRICE).toLocaleString();
 }
 
+function executeWithdraw(pin) {
+    const amount = rawNum(document.getElementById('withdrawAmount').value);
+    let accountNumber, accountName, bankCode, bankName;
+
+    if (hasSavedBank) {
+        accountNumber = savedAccountNumber;
+        accountName = savedAccountName;
+        bankCode = document.getElementById('withdrawBank').value;
+        const sel = document.getElementById('withdrawBank');
+        const opt = sel.options[sel.selectedIndex];
+        bankName = opt ? opt.text : '';
+    } else {
+        accountNumber = document.getElementById('verifyAccount').value.trim();
+        accountName = withdrawAccountName;
+        bankCode = document.getElementById('verifyBank').value;
+        const sel = document.getElementById('verifyBank');
+        const opt = sel.options[sel.selectedIndex];
+        bankName = opt ? opt.text : '';
+    }
+
+    const btn = document.getElementById('withdrawBtn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+
+    fetch('/api/tokens_withdraw.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, bank_name: bankName, bank_code: bankCode, account_number: accountNumber, account_name: accountName, pin })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(result) {
+        if (result.success) {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount.toLocaleString() + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + bankName + ' ' + accountNumber + ' (' + accountName + ')</div>';
+            document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
+            document.getElementById('withdrawAmount').value = '5';
+            updateWithdrawNaira();
+        } else {
+            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
+        }
+        btn.disabled = false;
+        btn.textContent = 'Submit Withdrawal Request';
+    })
+    .catch(function() {
+        document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
+        btn.disabled = false;
+        btn.textContent = 'Submit Withdrawal Request';
+    });
+}
+
 // Withdraw button
 if (withdrawBtn) {
-    withdrawBtn.addEventListener('click', async function () {
+    withdrawBtn.addEventListener('click', function () {
         const amount = rawNum(document.getElementById('withdrawAmount').value);
         let accountNumber, accountName, bankCode, bankName;
 
@@ -485,31 +704,7 @@ if (withdrawBtn) {
             return;
         }
 
-        const btn = this;
-        btn.disabled = true;
-        btn.textContent = 'Processing...';
-
-        try {
-            const res = await fetch('/api/tokens_withdraw.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ amount, bank_name: bankName, bank_code: bankCode, account_number: accountNumber, account_name: accountName })
-            });
-            const result = await res.json();
-            if (result.success) {
-                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Withdrawal successful! ' + amount.toLocaleString() + ' Vomp Coins (₦' + (amount * TOKEN_PRICE).toLocaleString() + ') sent to ' + bankName + ' ' + accountNumber + ' (' + accountName + ')</div>';
-                document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
-                document.getElementById('withdrawAmount').value = '5';
-                updateWithdrawNaira();
-            } else {
-                document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
-            }
-        } catch (err) {
-            document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">Network error. Please try again.</div>';
-        }
-
-        btn.disabled = false;
-        btn.textContent = 'Submit Withdrawal Request';
+        requirePin('withdraw', { amount, bankName, bankCode, accountNumber, accountName });
     });
 }
 

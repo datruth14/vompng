@@ -165,6 +165,22 @@ function auth_update_user($userId, $data)
     return $result ? ['success' => true, 'message' => 'Profile updated'] : ['success' => false, 'error' => 'Failed to update profile'];
 }
 
+/* Verify a transaction PIN for the given user. Called from transaction APIs. */
+function auth_verify_transaction_pin($userId, $pin)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT transaction_pin FROM users WHERE id = ?');
+    $stmt->execute([$userId]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if (!$row || empty($row['transaction_pin'])) {
+        return ['success' => false, 'error' => 'No transaction PIN set. Set one in your profile first.'];
+    }
+    if (!password_verify($pin, $row['transaction_pin'])) {
+        return ['success' => false, 'error' => 'Invalid transaction PIN'];
+    }
+    return ['success' => true];
+}
+
 /* Check if the current user is an admin. */
 function auth_is_admin()
 {

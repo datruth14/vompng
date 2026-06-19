@@ -43,16 +43,100 @@ ob_start();
                 <input type="password" name="password_confirm" id="password_confirm" placeholder="Re-enter new password" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors" />
             </div>
 
-            <div class="flex items-center justify-end gap-3 pt-2">
-                <button type="button" id="saveBtn" class="btn-press px-6 py-3 rounded-2xl bg-[#ff610a] text-white font-black">Save Changes</button>
-            </div>
+    <div class="flex items-center justify-end gap-3 pt-2">
+        <button type="button" id="saveBtn" class="btn-press px-6 py-3 rounded-2xl bg-[#ff610a] text-white font-black">Save Changes</button>
+    </div>
 
-            <div id="msg" class="mt-3"></div>
-        </form>
+    <div id="msg" class="mt-3"></div>
+</form>
+
+<!-- Transaction PIN Section -->
+<div class="glass-morphism rounded-[2rem] p-6 md:p-8 border border-white/10 mt-8">
+    <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Security</p>
+    <h2 class="text-2xl font-black text-white mb-2">Transaction PIN</h2>
+    <p class="text-gray-400 text-sm mb-6">Used to authorize token purchases, transfers, withdrawals, and bill payments.</p>
+
+    <div class="space-y-5 max-w-md">
+        <div>
+            <label class="text-sm text-gray-300 font-bold"><?php echo empty($currentUser['transaction_pin']) ? 'New PIN' : 'Current PIN'; ?></label>
+            <input type="password" id="pinCurrent" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="••••" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors text-center text-2xl tracking-[0.5em]" />
+        </div>
+        <?php if (!empty($currentUser['transaction_pin'])): ?>
+        <div>
+            <label class="text-sm text-gray-300 font-bold">New PIN</label>
+            <input type="password" id="pinNew" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="••••" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors text-center text-2xl tracking-[0.5em]" />
+        </div>
+        <div>
+            <label class="text-sm text-gray-300 font-bold">Confirm New PIN</label>
+            <input type="password" id="pinConfirm" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="••••" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors text-center text-2xl tracking-[0.5em]" />
+        </div>
+        <?php endif; ?>
+    </div>
+
+    <div class="flex items-center gap-3 pt-4">
+        <button type="button" id="pinSaveBtn" class="btn-press px-6 py-3 rounded-2xl bg-[#ff610a] text-white font-black"><?php echo empty($currentUser['transaction_pin']) ? 'Set PIN' : 'Change PIN'; ?></button>
+    </div>
+    <div id="pinMsg" class="mt-3"></div>
+</div>
     </div>
 </section>
 
 <script>
+// Transaction PIN
+document.getElementById('pinSaveBtn')?.addEventListener('click', async function() {
+    var btn = this;
+    var cur = document.getElementById('pinCurrent').value.trim();
+    var newPin = document.getElementById('pinNew') ? document.getElementById('pinNew').value.trim() : '';
+    var confirmPin = document.getElementById('pinConfirm') ? document.getElementById('pinConfirm').value.trim() : '';
+    var hasExisting = <?php echo empty($currentUser['transaction_pin']) ? 'false' : 'true'; ?>;
+
+    if (hasExisting) {
+        if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+            document.getElementById('pinMsg').innerHTML = '<div class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold">Enter a valid 4-digit new PIN</div>';
+            return;
+        }
+        if (newPin !== confirmPin) {
+            document.getElementById('pinMsg').innerHTML = '<div class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold">PINs do not match</div>';
+            return;
+        }
+    } else {
+        if (!cur || cur.length !== 4 || !/^\d{4}$/.test(cur)) {
+            document.getElementById('pinMsg').innerHTML = '<div class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold">Enter a valid 4-digit PIN</div>';
+            return;
+        }
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    var body = hasExisting ? { pin: newPin, current_pin: cur } : { pin: cur };
+
+    try {
+        var res = await fetch('/api/set_pin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        var json = await res.json();
+        if (json.success) {
+            document.getElementById('pinMsg').innerHTML = '<div class="px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-bold">PIN ' + (hasExisting ? 'changed' : 'set') + ' successfully</div>';
+            document.getElementById('pinCurrent').value = '';
+            if (document.getElementById('pinNew')) document.getElementById('pinNew').value = '';
+            if (document.getElementById('pinConfirm')) document.getElementById('pinConfirm').value = '';
+            if (!hasExisting) {
+                setTimeout(function() { location.reload(); }, 1500);
+            }
+        } else {
+            document.getElementById('pinMsg').innerHTML = '<div class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold">' + (json.error || 'Failed to save PIN') + '</div>';
+        }
+    } catch (err) {
+        document.getElementById('pinMsg').innerHTML = '<div class="px-4 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 font-bold">Network error. Please try again.</div>';
+    }
+
+    btn.disabled = false;
+    btn.textContent = hasExisting ? 'Change PIN' : 'Set PIN';
+});
+
 document.getElementById('saveBtn').addEventListener('click', async function() {
     const btn = document.getElementById('saveBtn');
     btn.disabled = true;

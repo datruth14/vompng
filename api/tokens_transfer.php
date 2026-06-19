@@ -16,6 +16,20 @@ if (!$currentUser) {
 $data = json_decode(file_get_contents('php://input'), true);
 $email = trim($data['email'] ?? '');
 $amount = (int) ($data['amount'] ?? 0);
+$pin = $data['pin'] ?? '';
+
+if (!$pin) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => 'Transaction PIN is required']);
+    exit;
+}
+
+$pinCheck = auth_verify_transaction_pin($currentUser['id'], $pin);
+if (!$pinCheck['success']) {
+    http_response_code(400);
+    echo json_encode(['success' => false, 'error' => $pinCheck['error']]);
+    exit;
+}
 
 if (!$email) {
     http_response_code(400);

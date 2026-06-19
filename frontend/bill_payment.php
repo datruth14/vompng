@@ -160,7 +160,139 @@ ob_start();
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+<!-- PIN Modal -->
+<div id="pinModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
+    <div class="glass-morphism rounded-2xl p-6 md:p-8 border border-white/10 max-w-sm w-full mx-4 shadow-2xl">
+        <div class="flex items-center justify-between mb-4">
+            <h2 id="pinModalTitle" class="text-white font-black text-xl">Enter Transaction PIN</h2>
+            <button onclick="closePinModal()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <div id="pinModalBody">
+            <p id="pinModalDesc" class="text-gray-400 text-sm mb-5">Enter your 4-digit transaction PIN to continue.</p>
+            <div class="mb-4">
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Transaction PIN</label>
+                <input type="password" id="pinInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="••••" class="w-full text-center text-2xl tracking-[0.5em] bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all">
+            </div>
+            <div id="pinConfirmGroup" class="mb-4 hidden">
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Confirm PIN</label>
+                <input type="password" id="pinConfirmInput" maxlength="4" inputmode="numeric" pattern="[0-9]*" autocomplete="off" placeholder="••••" class="w-full text-center text-2xl tracking-[0.5em] bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all">
+            </div>
+        </div>
+        <div id="pinFeedback" class="mb-4 hidden"></div>
+        <button id="pinSubmitBtn" class="btn-press w-full py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Continue</button>
+    </div>
+</div>
+
 <script>
+var PENDING_PAYLOAD = null;
+
+function openPinModal() {
+    document.getElementById('pinInput').value = '';
+    document.getElementById('pinConfirmInput').value = '';
+    document.getElementById('pinFeedback').classList.add('hidden');
+    document.getElementById('pinConfirmGroup').classList.add('hidden');
+    document.getElementById('pinModalTitle').textContent = 'Enter Transaction PIN';
+    document.getElementById('pinModalDesc').textContent = 'Enter your 4-digit transaction PIN to continue.';
+    document.getElementById('pinSubmitBtn').textContent = 'Verify PIN';
+    document.getElementById('pinModal').classList.remove('hidden');
+    document.getElementById('pinInput').focus();
+}
+
+function closePinModal() {
+    document.getElementById('pinModal').classList.add('hidden');
+    PENDING_PAYLOAD = null;
+}
+
+document.getElementById('pinSubmitBtn').addEventListener('click', async function() {
+    var pin = document.getElementById('pinInput').value.trim();
+    if (!pin || pin.length !== 4 || !/^\d{4}$/.test(pin)) {
+        document.getElementById('pinFeedback').className = 'mb-4 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
+        document.getElementById('pinFeedback').textContent = 'Enter a valid 4-digit PIN';
+        document.getElementById('pinFeedback').classList.remove('hidden');
+        return;
+    }
+
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Verifying...';
+
+    try {
+        var res = await fetch('/api/verify_pin.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ pin: pin })
+        });
+        var data = await res.json();
+
+        if (data.success) {
+            closePinModal();
+            executeBillPayment(pin);
+            return;
+        }
+
+        if (data.setup_required) {
+            document.getElementById('pinModalTitle').textContent = 'Set Transaction PIN';
+            document.getElementById('pinModalDesc').textContent = 'You need to set a 4-digit transaction PIN before proceeding.';
+            document.getElementById('pinConfirmGroup').classList.remove('hidden');
+            document.getElementById('pinSubmitBtn').textContent = 'Set PIN';
+            document.getElementById('pinFeedback').className = 'mb-4 px-4 py-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-sm font-bold';
+            document.getElementById('pinFeedback').textContent = 'No PIN set. Create one now.';
+            document.getElementById('pinFeedback').classList.remove('hidden');
+
+            btn.onclick = async function() {
+                var newPin = document.getElementById('pinInput').value.trim();
+                var confirmPin = document.getElementById('pinConfirmInput').value.trim();
+                if (!newPin || newPin.length !== 4 || !/^\d{4}$/.test(newPin)) {
+                    document.getElementById('pinFeedback').textContent = 'Enter a valid 4-digit PIN';
+                    return;
+                }
+                if (newPin !== confirmPin) {
+                    document.getElementById('pinFeedback').textContent = 'PINs do not match';
+                    return;
+                }
+                btn.disabled = true;
+                btn.textContent = 'Setting PIN...';
+                try {
+                    var setRes = await fetch('/api/set_pin.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ pin: newPin })
+                    });
+                    var setData = await setRes.json();
+                    if (setData.success) {
+                        closePinModal();
+                        executeBillPayment(newPin);
+                    } else {
+                        document.getElementById('pinFeedback').textContent = setData.error || 'Failed to set PIN';
+                        btn.disabled = false;
+                        btn.textContent = 'Set PIN';
+                    }
+                } catch(e) {
+                    document.getElementById('pinFeedback').textContent = 'Network error. Try again.';
+                    btn.disabled = false;
+                    btn.textContent = 'Set PIN';
+                }
+            };
+            btn.disabled = false;
+            btn.textContent = 'Set PIN';
+            return;
+        }
+
+        document.getElementById('pinFeedback').className = 'mb-4 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
+        document.getElementById('pinFeedback').textContent = data.error || 'Invalid PIN';
+        document.getElementById('pinFeedback').classList.remove('hidden');
+    } catch(e) {
+        document.getElementById('pinFeedback').className = 'mb-4 px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold';
+        document.getElementById('pinFeedback').textContent = 'Network error. Try again.';
+        document.getElementById('pinFeedback').classList.remove('hidden');
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'Verify PIN';
+});
+
 var USER_BALANCE = <?= $userBalance ?>;
 var TOKEN_PRICE = <?= TOKEN_PRICE_PER_UNIT ?>;
 var billTomSelects = [];
@@ -188,27 +320,42 @@ var billServices = {
         getAmount: function(fields) { return parseInt(fields.amount) || 0; },
         getCustomerId: function(fields) { return fields.phone || ''; },
         onNetworkChange: function(serviceId, selectEl) {
+            var container = selectEl.closest('.modal-fields');
+            var variationSelect = container.querySelector('[data-name="variation_id"]');
+            if (!variationSelect) return;
+            destroyTomSelect(variationSelect);
+            variationSelect.innerHTML = '<option value="">Loading plans...</option>';
+            initSingleTomSelect(variationSelect);
             fetch('/api/bill_variations.php?type=data&service_id=' + encodeURIComponent(serviceId))
                 .then(function(r) { return r.json(); })
                 .then(function(res) {
-                    if (!res.success || !res.data || !res.data.length) return;
-                    var container = selectEl.closest('.modal-fields');
-                    var variationSelect = container.querySelector('[data-name="variation_id"]');
-                    if (!variationSelect) return;
+                    if (!res.success || !res.data || !res.data.length) {
+                        destroyTomSelect(variationSelect);
+                        variationSelect.innerHTML = '<option value="">No plans available</option>';
+                        initSingleTomSelect(variationSelect);
+                        return;
+                    }
                     destroyTomSelect(variationSelect);
                     variationSelect.innerHTML = '';
                     res.data.forEach(function(v) {
-                        if (v.availability !== 'Available') return;
+                        if (v.availability === 'Unavailable') return;
                         var opt = document.createElement('option');
                         opt.value = v.variation_id;
                         opt.textContent = v.data_plan + ' - ₦' + v.price;
                         opt.setAttribute('data-price', v.price);
                         variationSelect.appendChild(opt);
                     });
+                    if (variationSelect.options.length === 0) {
+                        variationSelect.innerHTML = '<option value="">No plans available</option>';
+                    }
                     initSingleTomSelect(variationSelect);
                     variationSelect.dispatchEvent(new Event('change'));
                 })
-                .catch(function() {});
+                .catch(function() {
+                    destroyTomSelect(variationSelect);
+                    variationSelect.innerHTML = '<option value="">Failed to load plans</option>';
+                    initSingleTomSelect(variationSelect);
+                });
         },
         fields: [
             { name: 'service_id', label: 'Network', type: 'select', tomSelect: true, options: [
@@ -257,27 +404,42 @@ var billServices = {
         getAmount: function(fields) { return parseInt(fields.amount) || 0; },
         getCustomerId: function(fields) { return fields.customer_id || ''; },
         onNetworkChange: function(serviceId, selectEl) {
+            var container = selectEl.closest('.modal-fields');
+            var variationSelect = container.querySelector('[data-name="variation_id"]');
+            if (!variationSelect) return;
+            destroyTomSelect(variationSelect);
+            variationSelect.innerHTML = '<option value="">Loading packages...</option>';
+            initSingleTomSelect(variationSelect);
             fetch('/api/bill_variations.php?type=tv&service_id=' + encodeURIComponent(serviceId))
                 .then(function(r) { return r.json(); })
                 .then(function(res) {
-                    if (!res.success || !res.data || !res.data.length) return;
-                    var container = selectEl.closest('.modal-fields');
-                    var variationSelect = container.querySelector('[data-name="variation_id"]');
-                    if (!variationSelect) return;
+                    if (!res.success || !res.data || !res.data.length) {
+                        destroyTomSelect(variationSelect);
+                        variationSelect.innerHTML = '<option value="">No packages available</option>';
+                        initSingleTomSelect(variationSelect);
+                        return;
+                    }
                     destroyTomSelect(variationSelect);
                     variationSelect.innerHTML = '';
                     res.data.forEach(function(v) {
-                        if (v.availability !== 'Available') return;
+                        if (v.availability === 'Unavailable') return;
                         var opt = document.createElement('option');
                         opt.value = v.variation_id;
                         opt.textContent = v.package_bouquet + ' - ₦' + v.price;
                         opt.setAttribute('data-price', v.price);
                         variationSelect.appendChild(opt);
                     });
+                    if (variationSelect.options.length === 0) {
+                        variationSelect.innerHTML = '<option value="">No packages available</option>';
+                    }
                     initSingleTomSelect(variationSelect);
                     variationSelect.dispatchEvent(new Event('change'));
                 })
-                .catch(function() {});
+                .catch(function() {
+                    destroyTomSelect(variationSelect);
+                    variationSelect.innerHTML = '<option value="">Failed to load packages</option>';
+                    initSingleTomSelect(variationSelect);
+                });
         },
         fields: [
             { name: 'service_id', label: 'Provider', type: 'select', tomSelect: true, options: [
@@ -355,7 +517,8 @@ function initSingleTomSelect(el) {
     new TomSelect(el, {
         placeholder: 'Search...',
         allowEmptyOption: true,
-        maxOptions: 100,
+        maxOptions: null,
+        maxItems: 1,
         searchField: ['text'],
         onChange: function() { updateCoinCost(billServices[lastModalType]); }
     });
@@ -522,6 +685,14 @@ function proceedBill(svc) {
     var payload = { type: svc.type };
     Object.keys(fields).forEach(function(k) { payload[k] = fields[k]; });
     payload.amount = nairaAmount;
+    PENDING_PAYLOAD = payload;
+    openPinModal();
+}
+
+function executeBillPayment(pin) {
+    var payload = PENDING_PAYLOAD || {};
+    PENDING_PAYLOAD = null;
+    payload.pin = pin;
 
     var btn = document.querySelector('.submit-btn');
     btn.disabled = true;
@@ -538,7 +709,7 @@ function proceedBill(svc) {
         btn.disabled = false;
         btn.textContent = 'Proceed';
         if (res.success) {
-            USER_BALANCE = res.new_balance || (USER_BALANCE - coins);
+            USER_BALANCE = res.new_balance || (USER_BALANCE - Math.ceil((payload.amount || 0) / TOKEN_PRICE));
             showFeedback('✅ ' + (res.message || 'Payment successful!'), 'success');
             setTimeout(function() {
                 closeBillModal();
