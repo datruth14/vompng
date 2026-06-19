@@ -73,7 +73,9 @@ if (
         str_starts_with($requestPath, 'api/list_banks') ||
         str_starts_with($requestPath, 'api/store/') ||
         str_starts_with($requestPath, 'api/upgrade') ||
-        str_starts_with($requestPath, 'api/game_')
+        str_starts_with($requestPath, 'api/game_') ||
+        str_starts_with($requestPath, 'api/bill_payment') ||
+        str_starts_with($requestPath, 'api/bill_variations')
     )
 ) {
     header('Location: /login');
@@ -551,6 +553,14 @@ if ($method === 'GET') {
             include 'api/tokens_verify.php';
             exit;
 
+        case $requestPath === 'api/bill_variations.php':
+            include 'api/bill_variations.php';
+            exit;
+
+        case $requestPath === 'api/bill_payment.php':
+            include 'api/bill_payment.php';
+            exit;
+
         default:
             http_response_code(404);
             $content = '<div class="text-center py-12"><h2 class="text-2xl font-bold">404 - Page Not Found</h2></div>';
@@ -619,6 +629,10 @@ if ($method === 'GET') {
         case 'api/tokens/deduct':
         case 'api/tokens_deduct.php':
             include 'api/tokens_deduct.php';
+            exit;
+        case 'api/bill_payment':
+        case 'api/bill_payment.php':
+            include 'api/bill_payment.php';
             exit;
         default:
             http_response_code(404);

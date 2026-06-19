@@ -212,6 +212,80 @@ APP_URL=http://localhost:8000
 - `frontend/dashboard_tokens.php` — Updated JS to redirect to Paystack checkout URL
 - `.env` — Cleaned up, only contains Paystack keys and APP_URL
 
+## Bill Payment (VTU.NG Integration)
+
+### Overview
+Users pay for airtime, data, electricity, and cable TV using Vomp Coins (1 VC = ₦20). The system calls the VTU.NG API v2 (JWT auth) to fulfill orders. A dedicated `bill_payments` table tracks all transactions.
+
+### Flow
+1. User opens `/bill-payment` (auth required), sees Vomp Coin balance
+2. Clicks a service card → modal with dynamic form fields
+3. For Data and Cable TV: selecting the network/provider auto-fetches available plans from VTU.NG via `api/bill_variations.php`
+4. Modal shows estimated VC cost in real-time
+5. Proceed button POSTs to `api/bill_payment.php`
+6. Backend checks balance → calls VTU.NG API → deducts VC → logs to `bill_payments` + `token_transactions`
+
+### VTU.NG API (v2)
+- **Auth**: JWT token via `POST /jwt-auth/v1/token` (email + password), cached in `cache/vtung_token.json` (6-day expiry)
+- **Base URL**: `https://vtu.ng/wp-json/api/v2/`
+- **Endpoints used**: `airtime`, `data`, `electricity`, `tv`, `verify-customer`, `variations/data`, `variations/tv`
+- All POST calls use `file_get_contents` with stream context (no cURL)
+
+### Files
+- `backend/BillPayment.php` — All VTU.NG helpers + Vomp Coin deduction logic
+  - `vtung_get_token()` — get/cache JWT
+  - `vtung_http_post($endpoint, $data)` — authenticated POST
+  - `vtung_purchase_airtime()`, `vtung_purchase_data()`, `vtung_purchase_electricity()`, `vtung_purchase_tv()` — service purchases
+  - `vtung_get_data_variations()`, `vtung_get_tv_variations()` — public GET, no auth needed
+  - `vtung_verify_customer()` — verify meter/smartcard
+  - `bill_deduct_coins($userId, $coins, ...)` — deduct VC + log bill_payments record
+  - `bill_naira_to_coins($amountNaira)` — ceil(amount / TOKEN_PRICE_PER_UNIT)
+- `api/bill_payment.php` — POST endpoint (auth required, self-contained). Routes: `airtime`, `data`, `electricity`, `tv`
+- `api/bill_variations.php` — GET endpoint, fetches data/TV plans from VTU.NG. Public variations endpoint (no auth needed)
+- `frontend/bill_payment.php` — Updated with balance display, dynamic form with `modal-fields`, real-time VC cost bar, `fetch()` API call, success/error feedback
+- `backend/Database.php` — Added `bill_payments` table (id, user_id, type, service_id, customer_id, amount_naira, coins_deducted, provider_ref, status, meta_data, created_at)
+
+### .env Config
+```
+VTU_NG_USERNAME=your_vtung_email_or_username
+VTU_NG_PASSWORD=your_vtung_password
+```
+
+### Request IDs
+Format: `vomp_<uniqid>_<random4bytes>` (max 50 chars, meets VTU.NG requirement)
+
+### Pricing
+- 1 Vomp Coin = ₦20 (from `TOKEN_PRICE_PER_UNIT`)
+- VC cost = `ceil(naira_amount / 20)`
+- For data/TV: price comes from the selected plan's `data-price` attribute (fetched from VTU.NG variations API)
+- Platform keeps any spread between retail price and VTU.NG reseller price
+
+### Variation Plans
+Data and Cable TV plans are fetched dynamically from VTU.NG public API when the user selects a network/provider. The `onNetworkChange` handler in each service definition fetches available plans from `api/bill_variations.php` and populates the variation select dropdown.
+
+### To update variation IDs
+No manual updates needed — plans are fetched live from VTU.NG. If VTU.NG adds/changes plans, they automatically appear.
+
+### To add new service categories
+Add a new entry to `billServices` JS object with `title`, `type`, `getAmount()`, `getCustomerId()`, and `fields` array. Add the corresponding case in `api/bill_payment.php` switch.
+
+### Bill Payments Table
+```sql
+bill_payments (
+    id VARCHAR(24) PRIMARY KEY,
+    user_id VARCHAR(24) NOT NULL,
+    type VARCHAR(20) NOT NULL,       -- airtime, data, electricity, tv
+    service_id VARCHAR(50) NOT NULL,  -- mtn, ikeja-electric, dstv, etc.
+    customer_id VARCHAR(100),          -- phone, meter, smartcard
+    amount_naira DECIMAL(10,2) NOT NULL,
+    coins_deducted INT NOT NULL,
+    provider_ref VARCHAR(100),         -- VTU.NG order_id
+    status VARCHAR(20) DEFAULT 'processing',  -- processing, completed, refunded
+    meta_data TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+)
+```
+
 ## Dev Server
 ```bash
 php -S localhost:8000 router.php

@@ -183,6 +183,24 @@ function db_init_schema(PDO $db)
                 INDEX idx_sv_store_date (store_id, visited_at),
                 FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ",
+        'bill_payments' => "
+            CREATE TABLE IF NOT EXISTS bill_payments (
+                id VARCHAR(24) PRIMARY KEY,
+                user_id VARCHAR(24) NOT NULL,
+                type VARCHAR(20) NOT NULL,
+                service_id VARCHAR(50) NOT NULL,
+                customer_id VARCHAR(100),
+                amount_naira DECIMAL(10,2) NOT NULL,
+                coins_deducted INT NOT NULL,
+                provider_ref VARCHAR(100),
+                status VARCHAR(20) DEFAULT 'processing',
+                meta_data TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_bp_user (user_id),
+                INDEX idx_bp_type (type),
+                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         "
     ];
 

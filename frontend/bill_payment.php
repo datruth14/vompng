@@ -1,11 +1,22 @@
 <?php
 $pageTitle = 'Bill Payment - vomp';
+$userBalance = $currentUser ? token_user_balance($currentUser['id']) : 0;
+$coinsWorth = $userBalance * TOKEN_PRICE_PER_UNIT;
 ob_start();
 ?>
 <section class="py-12">
-    <div class="max-w-4xl mx-auto text-center mb-12">
+    <div class="max-w-4xl mx-auto text-center mb-8">
         <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4 animate__animated animate__fadeInDown">Bill Payment</h1>
-        <p class="text-gray-400 text-lg animate__animated animate__fadeInUp">Pay for airtime, data, electricity, and TV subscriptions instantly.</p>
+        <p class="text-gray-400 text-lg animate__animated animate__fadeInUp">Pay for airtime, data, electricity, and TV subscriptions instantly with Vomp Coins.</p>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="max-w-xs mx-auto mb-12 animate__animated animate__bounceIn">
+        <div class="glass-morphism rounded-2xl p-5 border border-white/10 text-center">
+            <p class="text-gray-500 text-xs uppercase tracking-widest font-bold mb-2">Your Balance</p>
+            <p id="vcBalanceDisplay" class="text-3xl md:text-4xl font-black text-white text-fit"><?= number_format($userBalance) ?> <span class="text-[#ff610a] text-xl">VC</span></p>
+            <p class="text-gray-500 text-xs mt-1">≈ ₦<?= number_format($coinsWorth) ?></p>
+        </div>
     </div>
 
     <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16">
@@ -37,7 +48,7 @@ ob_start();
         </button>
 
         <!-- Cable TV -->
-        <button onclick="openBillModal('cable')" class="glass-morphism rounded-2xl p-6 md:p-8 border border-white/10 text-center hover:bg-white/[0.06] transition-all group animate__animated animate__fadeInUp" style="animation-delay:0.3s">
+        <button onclick="openBillModal('tv')" class="glass-morphism rounded-2xl p-6 md:p-8 border border-white/10 text-center hover:bg-white/[0.06] transition-all group animate__animated animate__fadeInUp" style="animation-delay:0.3s">
             <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" /></svg>
             </div>
@@ -49,52 +60,156 @@ ob_start();
     <!-- Bill Modal -->
     <div id="billModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm hidden">
         <div class="glass-morphism rounded-2xl p-6 md:p-8 border border-white/10 max-w-md w-full mx-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center justify-between mb-4">
                 <h2 id="billModalTitle" class="text-white font-black text-xl">Select Service</h2>
                 <button onclick="closeBillModal()" class="p-2 rounded-xl bg-white/5 text-gray-400 hover:text-white hover:bg-white/10 transition-all">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </button>
             </div>
+
+            <!-- Coin cost indicator -->
+            <div id="coinCostBar" class="mb-5 px-4 py-3 rounded-xl bg-white/5 border border-white/10 hidden">
+                <div class="flex justify-between items-center">
+                    <span class="text-gray-400 text-sm">Cost:</span>
+                    <span id="coinCostDisplay" class="text-white font-bold text-lg">0 <span class="text-[#ff610a] text-sm">VC</span></span>
+                </div>
+            </div>
+
             <div id="billModalBody" class="space-y-3">
                 <!-- Dynamically populated -->
             </div>
-            <p class="text-center text-xs text-gray-600 mt-6">Powered by VomP</p>
+
+            <!-- Feedback -->
+            <div id="billFeedback" class="mt-4 hidden"></div>
+
+            <p class="text-center text-xs text-gray-600 mt-4">Powered by VomP &amp; VTU.NG</p>
         </div>
     </div>
 </section>
 
 <script>
+var USER_BALANCE = <?= $userBalance ?>;
+var TOKEN_PRICE = <?= TOKEN_PRICE_PER_UNIT ?>;
+
 var billServices = {
     airtime: {
         title: 'Buy Airtime',
+        type: 'airtime',
+        getAmount: function(fields) { return parseInt(fields.amount) || 0; },
+        getCustomerId: function(fields) { return fields.phone || ''; },
         fields: [
-            { label: 'Network', type: 'select', options: ['MTN', 'Glo', 'Airtel', '9mobile'] },
-            { label: 'Phone Number', type: 'tel', placeholder: '08012345678' },
-            { label: 'Amount (₦)', type: 'number', placeholder: '100' }
+            { name: 'service_id', label: 'Network', type: 'select', options: [
+                { label: 'MTN', value: 'mtn' },
+                { label: 'Glo', value: 'glo' },
+                { label: 'Airtel', value: 'airtel' },
+                { label: '9mobile', value: '9mobile' }
+            ]},
+            { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '08012345678' },
+            { name: 'amount', label: 'Amount (₦)', type: 'number', inputmode: 'numeric', placeholder: '100' }
         ]
     },
     data: {
         title: 'Buy Data Bundle',
+        type: 'data',
+        getAmount: function(fields) { return parseInt(fields.amount) || 0; },
+        getCustomerId: function(fields) { return fields.phone || ''; },
+        onNetworkChange: function(serviceId, selectEl) {
+            fetch('/api/bill_variations.php?type=data&service_id=' + encodeURIComponent(serviceId))
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (!res.success || !res.data || !res.data.length) return;
+                    var variationSelect = selectEl.closest('.modal-fields').querySelector('[data-name="variation_id"]');
+                    if (!variationSelect) return;
+                    variationSelect.innerHTML = '';
+                    res.data.forEach(function(v) {
+                        if (v.availability !== 'Available') return;
+                        var opt = document.createElement('option');
+                        opt.value = v.variation_id;
+                        opt.textContent = v.data_plan + ' - ₦' + v.price;
+                        opt.setAttribute('data-price', v.price);
+                        variationSelect.appendChild(opt);
+                    });
+                    variationSelect.dispatchEvent(new Event('change'));
+                })
+                .catch(function() {});
+        },
         fields: [
-            { label: 'Network', type: 'select', options: ['MTN', 'Glo', 'Airtel', '9mobile'] },
-            { label: 'Phone Number', type: 'tel', placeholder: '08012345678' },
-            { label: 'Data Plan', type: 'select', options: ['1GB - ₦300', '2GB - ₦550', '5GB - ₦1000', '10GB - ₦1500'] }
+            { name: 'service_id', label: 'Network', type: 'select', options: [
+                { label: 'MTN', value: 'mtn' },
+                { label: 'Glo', value: 'glo' },
+                { label: 'Airtel', value: 'airtel' },
+                { label: '9mobile', value: '9mobile' }
+            ]},
+            { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '08012345678' },
+            { name: 'variation_id', label: 'Data Plan', type: 'select', options: [
+                { label: 'Select a network first...', value: '' }
+            ]}
         ]
     },
     electricity: {
         title: 'Pay Electricity Bill',
+        type: 'electricity',
+        getAmount: function(fields) { return parseInt(fields.amount) || 0; },
+        getCustomerId: function(fields) { return fields.customer_id || ''; },
         fields: [
-            { label: 'Disco', type: 'select', options: ['IKEDC', 'AEDC', 'EKEDC', 'PHED', 'KAEDCO', 'JED'] },
-            { label: 'Meter Number', type: 'text', placeholder: 'Enter meter number' },
-            { label: 'Amount (₦)', type: 'number', placeholder: 'Amount' }
+            { name: 'service_id', label: 'Disco', type: 'select', options: [
+                { label: 'IKEDC (Ikeja)', value: 'ikeja-electric' },
+                { label: 'EKEDC (Eko)', value: 'eko-electric' },
+                { label: 'AEDC (Abuja)', value: 'abuja-electric' },
+                { label: 'IBEDC (Ibadan)', value: 'ibadan-electric' },
+                { label: 'PHED (Port Harcourt)', value: 'portharcourt-electric' },
+                { label: 'KAEDCO (Kaduna)', value: 'kaduna-electric' },
+                { label: 'JED (Jos)', value: 'jos-electric' },
+                { label: 'KEDCO (Kano)', value: 'kano-electric' },
+                { label: 'EEDC (Enugu)', value: 'enugu-electric' },
+                { label: 'BEDC (Benin)', value: 'benin-electric' },
+                { label: 'ABEDC (Aba)', value: 'aba-electric' },
+                { label: 'YEDC (Yola)', value: 'yola-electric' }
+            ]},
+            { name: 'customer_id', label: 'Meter Number', type: 'text', placeholder: 'Enter meter number' },
+            { name: 'variation_id', label: 'Meter Type', type: 'select', options: [
+                { label: 'Prepaid', value: 'prepaid' },
+                { label: 'Postpaid', value: 'postpaid' }
+            ]},
+            { name: 'amount', label: 'Amount (₦)', type: 'number', inputmode: 'numeric', placeholder: '1000' }
         ]
     },
-    cable: {
+    tv: {
         title: 'Pay Cable TV',
+        type: 'tv',
+        getAmount: function(fields) { return parseInt(fields.amount) || 0; },
+        getCustomerId: function(fields) { return fields.customer_id || ''; },
+        onNetworkChange: function(serviceId, selectEl) {
+            fetch('/api/bill_variations.php?type=tv&service_id=' + encodeURIComponent(serviceId))
+                .then(function(r) { return r.json(); })
+                .then(function(res) {
+                    if (!res.success || !res.data || !res.data.length) return;
+                    var variationSelect = selectEl.closest('.modal-fields').querySelector('[data-name="variation_id"]');
+                    if (!variationSelect) return;
+                    variationSelect.innerHTML = '';
+                    res.data.forEach(function(v) {
+                        if (v.availability !== 'Available') return;
+                        var opt = document.createElement('option');
+                        opt.value = v.variation_id;
+                        opt.textContent = v.package_bouquet + ' - ₦' + v.price;
+                        opt.setAttribute('data-price', v.price);
+                        variationSelect.appendChild(opt);
+                    });
+                    variationSelect.dispatchEvent(new Event('change'));
+                })
+                .catch(function() {});
+        },
         fields: [
-            { label: 'Provider', type: 'select', options: ['DSTV', 'GOtv', 'Showmax'] },
-            { label: 'Smart Card / IUC Number', type: 'text', placeholder: 'Enter smart card number' },
-            { label: 'Package', type: 'select', options: ['Basic - ₦2,500', 'Standard - ₦5,000', 'Premium - ₦10,000'] }
+            { name: 'service_id', label: 'Provider', type: 'select', options: [
+                { label: 'DSTV', value: 'dstv' },
+                { label: 'GOtv', value: 'gotv' },
+                { label: 'Startimes', value: 'startimes' },
+                { label: 'Showmax', value: 'showmax' }
+            ]},
+            { name: 'customer_id', label: 'Smart Card / IUC Number', type: 'text', placeholder: 'Enter smart card number' },
+            { name: 'variation_id', label: 'Package', type: 'select', options: [
+                { label: 'Select a provider first...', value: '' }
+            ]}
         ]
     }
 };
@@ -105,6 +220,9 @@ function openBillModal(type) {
     document.getElementById('billModalTitle').textContent = svc.title;
     var body = document.getElementById('billModalBody');
     body.innerHTML = '';
+    var container = document.createElement('div');
+    container.className = 'modal-fields';
+
     svc.fields.forEach(function(f) {
         var wrapper = document.createElement('div');
         wrapper.className = 'mb-4';
@@ -118,29 +236,179 @@ function openBillModal(type) {
             el.className = 'w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm focus:outline-none focus:border-[#ff610a]/50 transition-all';
             f.options.forEach(function(o) {
                 var opt = document.createElement('option');
-                opt.value = o;
-                opt.textContent = o;
+                opt.value = o.value || o;
+                opt.textContent = o.label || o;
+                if (o.price) opt.setAttribute('data-price', o.price);
                 el.appendChild(opt);
             });
         } else {
             el = document.createElement('input');
             el.type = f.type;
+            el.inputMode = f.inputmode || 'text';
             el.className = 'w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white text-sm placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all';
             if (f.placeholder) el.placeholder = f.placeholder;
         }
+        if (f.name) el.setAttribute('data-name', f.name);
         wrapper.appendChild(el);
-        body.appendChild(wrapper);
+        container.appendChild(wrapper);
+
+        // On change handler for network/provider selects that should load variations
+        if (f.name === 'service_id' && svc.onNetworkChange) {
+            el.addEventListener('change', function() {
+                svc.onNetworkChange(this.value, this);
+                updateCoinCost(svc);
+            });
+        }
+        // On change/input handler for any field that affects amount
+        el.addEventListener('change', function() { updateCoinCost(svc); });
+        el.addEventListener('input', function() { updateCoinCost(svc); });
     });
+
+    body.appendChild(container);
+
+    // Proceed button
+    var btnWrap = document.createElement('div');
+    btnWrap.className = 'mt-6';
     var btn = document.createElement('button');
-    btn.className = 'btn-press w-full py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all';
+    btn.className = 'btn-press w-full py-4 rounded-2xl bg-[#ff610a] text-white font-black text-lg shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all submit-btn';
     btn.textContent = 'Proceed';
-    btn.onclick = function() { alert('Bill payment coming soon!'); };
-    body.appendChild(btn);
+    btn.onclick = function() { proceedBill(svc); };
+    btnWrap.appendChild(btn);
+    body.appendChild(btnWrap);
+
     document.getElementById('billModal').classList.remove('hidden');
+    updateCoinCost(svc);
+
+    // Auto-fetch variations if network/provider is pre-selected
+    var netSelect = container.querySelector('[data-name="service_id"]');
+    if (netSelect && netSelect.value && svc.onNetworkChange) {
+        svc.onNetworkChange(netSelect.value, netSelect);
+    }
+}
+
+function getFieldValues(svc) {
+    var fields = {};
+    var container = document.querySelector('.modal-fields');
+    if (!container) return fields;
+    container.querySelectorAll('[data-name]').forEach(function(el) {
+        fields[el.getAttribute('data-name')] = el.value;
+    });
+    return fields;
+}
+
+function updateCoinCost(svc) {
+    var fields = getFieldValues(svc);
+    var nairaAmount = svc.getAmount ? svc.getAmount(fields) : 0;
+
+    // For select fields with data-price, use the selected option's price
+    var container = document.querySelector('.modal-fields');
+    if (container) {
+        container.querySelectorAll('select[data-name]').forEach(function(sel) {
+            var selected = sel.options[sel.selectedIndex];
+            if (selected && selected.getAttribute('data-price')) {
+                var price = parseInt(selected.getAttribute('data-price'));
+                if (price > 0) {
+                    // Use the price from the data plan / package selection
+                    var name = sel.getAttribute('data-name');
+                    if (name === 'variation_id') {
+                        nairaAmount = price;
+                    }
+                }
+            }
+        });
+    }
+
+    var coins = nairaAmount > 0 ? Math.ceil(nairaAmount / TOKEN_PRICE) : 0;
+    var bar = document.getElementById('coinCostBar');
+    var display = document.getElementById('coinCostDisplay');
+    if (coins > 0) {
+        bar.classList.remove('hidden');
+        display.innerHTML = coins + ' <span class="text-[#ff610a] text-sm">VC</span> <span class="text-gray-500 text-sm font-normal">(₦' + nairaAmount.toLocaleString() + ')</span>';
+    } else {
+        bar.classList.add('hidden');
+    }
+}
+
+function proceedBill(svc) {
+    var fields = getFieldValues(svc);
+    var nairaAmount = svc.getAmount ? svc.getAmount(fields) : 0;
+
+    // For select fields with data-price, recalc
+    var container = document.querySelector('.modal-fields');
+    if (container) {
+        container.querySelectorAll('select[data-name]').forEach(function(sel) {
+            var selected = sel.options[sel.selectedIndex];
+            if (selected && selected.getAttribute('data-price')) {
+                var price = parseInt(selected.getAttribute('data-price'));
+                if (price > 0 && sel.getAttribute('data-name') === 'variation_id') {
+                    nairaAmount = price;
+                }
+            }
+        });
+    }
+
+    var coins = Math.ceil(nairaAmount / TOKEN_PRICE);
+
+    if (!nairaAmount || nairaAmount <= 0) {
+        showFeedback('Please fill in all required fields.', 'error');
+        return;
+    }
+
+    if (USER_BALANCE < coins) {
+        showFeedback('Insufficient Vomp Coins. You need ' + coins + ' VC but have ' + USER_BALANCE + ' VC. <a href="/tokens" class="underline text-[#ff610a]">Buy more</a>', 'error');
+        return;
+    }
+
+    var payload = { type: svc.type };
+    Object.keys(fields).forEach(function(k) { payload[k] = fields[k]; });
+    payload.amount = nairaAmount;
+
+    var btn = document.querySelector('.submit-btn');
+    btn.disabled = true;
+    btn.textContent = 'Processing...';
+    showFeedback('', '');
+
+    fetch('/api/bill_payment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(res) {
+        btn.disabled = false;
+        btn.textContent = 'Proceed';
+        if (res.success) {
+            USER_BALANCE = res.new_balance || (USER_BALANCE - coins);
+            showFeedback('✅ ' + (res.message || 'Payment successful!'), 'success');
+            // Close modal after 2.5s
+            setTimeout(function() {
+                closeBillModal();
+                // Update balance display
+                var balanceEl = document.getElementById('vcBalanceDisplay');
+                if (balanceEl) balanceEl.innerHTML = USER_BALANCE.toLocaleString() + ' <span class="text-[#ff610a] text-xl">VC</span>';
+            }, 2500);
+        } else {
+            showFeedback('❌ ' + (res.error || 'Payment failed. Please try again.'), 'error');
+        }
+    })
+    .catch(function() {
+        btn.disabled = false;
+        btn.textContent = 'Proceed';
+        showFeedback('❌ Network error. Please try again.', 'error');
+    });
+}
+
+function showFeedback(msg, type) {
+    var el = document.getElementById('billFeedback');
+    if (!msg) { el.classList.add('hidden'); el.innerHTML = ''; return; }
+    el.classList.remove('hidden');
+    el.className = 'mt-4 px-4 py-3 rounded-xl text-sm font-medium ' + (type === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' : 'bg-red-500/10 border border-red-500/20 text-red-400');
+    el.innerHTML = msg;
 }
 
 function closeBillModal() {
     document.getElementById('billModal').classList.add('hidden');
+    document.getElementById('billFeedback').classList.add('hidden');
 }
 
 document.getElementById('billModal').addEventListener('click', function(e) {
