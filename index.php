@@ -59,6 +59,7 @@ if (
         $requestPath === 'tokens' ||
         $requestPath === 'game' ||
         str_starts_with($requestPath, 'game/') ||
+        $requestPath === 'bill-payment' ||
         str_starts_with($requestPath, 'api/products') ||
         str_starts_with($requestPath, 'api/settings') ||
         str_starts_with($requestPath, 'api/tokens/purchase') ||
@@ -267,21 +268,8 @@ if ($method === 'GET') {
             require 'frontend/game_space_shooter.php';
             break;
 
-        case $requestPath === 'virtual-topup':
-            $pageTitle = 'Virtual TopUp - vomp';
-            ob_start();
-            ?>
-            <section class="py-20 text-center">
-                <div class="max-w-lg mx-auto">
-                    <div class="inline-flex items-center justify-center w-24 h-24 rounded-full bg-[#ff610a]/10 border border-[#ff610a]/20 mb-6">
-                        <svg class="w-12 h-12 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 1.5H8.25A2.25 2.25 0 006 3.75v16.5a2.25 2.25 0 002.25 2.25h7.5A2.25 2.25 0 0018 20.25V3.75a2.25 2.25 0 00-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" /></svg>
-                    </div>
-                    <h1 class="text-5xl md:text-6xl font-black text-white tracking-tight mb-4">Coming Soon</h1>
-                    <p class="text-gray-400 text-lg">Virtual TopUp is coming soon. Stay tuned!</p>
-                </div>
-            </section>
-            <?php
-            $content = ob_get_clean();
+        case $requestPath === 'bill-payment':
+            require 'frontend/bill_payment.php';
             break;
 
         case $requestPath === 'profile':
