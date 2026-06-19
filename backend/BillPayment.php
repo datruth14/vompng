@@ -171,6 +171,26 @@ function vtung_get_tv_variations($service_id = null)
     return $body['data'] ?? [];
 }
 
+function vtung_purchase_betting($customer_id, $service_id, $amount, $request_id)
+{
+    return vtung_http_post('betting', [
+        'request_id' => $request_id,
+        'customer_id' => $customer_id,
+        'service_id' => $service_id,
+        'amount' => (int) $amount,
+    ]);
+}
+
+function vtung_purchase_epins($service_id, $value, $quantity, $request_id)
+{
+    return vtung_http_post('epins', [
+        'request_id' => $request_id,
+        'service_id' => $service_id,
+        'value' => (int) $value,
+        'quantity' => (int) $quantity,
+    ]);
+}
+
 /* Verify customer with VTU.NG */
 
 function vtung_verify_customer($customer_id, $service_id, $variation_id = null)

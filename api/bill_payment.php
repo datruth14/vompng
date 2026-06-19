@@ -185,6 +185,88 @@ switch ($type) {
         ]);
         break;
 
+    case 'betting':
+        $service_id = $data['service_id'] ?? '';
+        $customer_id = $data['customer_id'] ?? '';
+        $amount = (int) ($data['amount'] ?? 0);
+
+        if (!$service_id || !$customer_id || !$amount) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing or invalid fields']);
+            exit;
+        }
+
+        $coins = bill_naira_to_coins($amount);
+        $balance = token_user_balance($userId);
+        if ($balance < $coins) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Insufficient Vomp Coins', 'needed' => $coins, 'balance' => $balance]);
+            exit;
+        }
+
+        $result = vtung_purchase_betting($customer_id, $service_id, $amount, $request_id);
+        if (!$result['success']) {
+            http_response_code(400);
+            echo json_encode(['error' => $result['error']]);
+            exit;
+        }
+
+        $providerRef = $result['data']['order_id'] ?? '';
+        $vtungStatus = str_starts_with($result['message'], 'ORDER COMPLETED') ? 'completed' : 'processing';
+        $meta = json_encode($result['data']);
+        $deduct = bill_deduct_coins($userId, $coins, $type, $service_id, $customer_id, $amount, $providerRef, $meta, $vtungStatus);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'Betting account funded successfully',
+            'data' => $result['data'],
+            'coins_deducted' => $coins,
+            'new_balance' => $deduct['new_balance'] ?? $balance - $coins,
+        ]);
+        break;
+
+    case 'epins':
+        $service_id = $data['service_id'] ?? '';
+        $value = (int) ($data['value'] ?? 0);
+        $quantity = (int) ($data['quantity'] ?? 1);
+
+        if (!$service_id || !$value || $quantity < 1) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Missing or invalid fields']);
+            exit;
+        }
+
+        $amount = $value * $quantity;
+        $coins = bill_naira_to_coins($amount);
+        $balance = token_user_balance($userId);
+        if ($balance < $coins) {
+            http_response_code(400);
+            echo json_encode(['error' => 'Insufficient Vomp Coins', 'needed' => $coins, 'balance' => $balance]);
+            exit;
+        }
+
+        $result = vtung_purchase_epins($service_id, $value, $quantity, $request_id);
+        if (!$result['success']) {
+            http_response_code(400);
+            echo json_encode(['error' => $result['error']]);
+            exit;
+        }
+
+        $providerRef = $result['data']['order_id'] ?? '';
+        $vtungStatus = str_starts_with($result['message'], 'ORDER COMPLETED') ? 'completed' : 'processing';
+        $meta = json_encode($result['data']);
+        $customerId = 'qty_' . $quantity . '_val_' . $value;
+        $deduct = bill_deduct_coins($userId, $coins, $type, $service_id, $customerId, $amount, $providerRef, $meta, $vtungStatus);
+
+        echo json_encode([
+            'success' => true,
+            'message' => 'ePINs purchased successfully',
+            'data' => $result['data'],
+            'coins_deducted' => $coins,
+            'new_balance' => $deduct['new_balance'] ?? $balance - $coins,
+        ]);
+        break;
+
     case 'verify':
         $customer_id = $data['customer_id'] ?? '';
         $service_id = $data['service_id'] ?? '';

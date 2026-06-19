@@ -4,10 +4,64 @@ $userBalance = $currentUser ? token_user_balance($currentUser['id']) : 0;
 $coinsWorth = $userBalance * TOKEN_PRICE_PER_UNIT;
 ob_start();
 ?>
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+<style>
+.ts-wrapper .ts-control {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.875rem;
+    box-shadow: none;
+}
+.ts-wrapper .ts-control:hover {
+    border-color: rgba(255,255,255,0.15);
+}
+.ts-wrapper.focus .ts-control {
+    border-color: rgba(255,97,10,0.5);
+    box-shadow: none;
+}
+.ts-wrapper .ts-control input {
+    color: #fff;
+}
+.ts-wrapper .ts-control .item {
+    color: #fff;
+}
+.ts-dropdown {
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    color: #fff;
+    z-index: 9999;
+}
+.ts-dropdown .option {
+    color: #ccc;
+    padding: 0.5rem 1rem;
+}
+.ts-dropdown .option.active {
+    background: rgba(255,97,10,0.2);
+    color: #fff;
+}
+.ts-dropdown .option.highlight {
+    background: rgba(255,97,10,0.3);
+    color: #fff;
+}
+.ts-dropdown .no-results {
+    color: #666;
+    padding: 0.5rem 1rem;
+}
+.ts-wrapper .ts-control .dropdown-active {
+    border-color: rgba(255,97,10,0.5);
+}
+.ts-wrapper .ts-control .dropdown-menu {
+    background: #1a1a2e;
+}
+</style>
 <section class="py-12">
     <div class="max-w-4xl mx-auto text-center mb-8">
         <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-4 animate__animated animate__fadeInDown">Bill Payment</h1>
-        <p class="text-gray-400 text-lg animate__animated animate__fadeInUp">Pay for airtime, data, electricity, and TV subscriptions instantly with Vomp Coins.</p>
+        <p class="text-gray-400 text-lg animate__animated animate__fadeInUp">Pay for airtime, data, electricity, TV, betting, and ePINs instantly with Vomp Coins.</p>
     </div>
 
     <!-- Balance Card -->
@@ -19,7 +73,7 @@ ob_start();
         </div>
     </div>
 
-    <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 mb-16">
+    <div class="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6 mb-16">
         <!-- Airtime -->
         <button onclick="openBillModal('airtime')" class="glass-morphism rounded-2xl p-6 md:p-8 border border-white/10 text-center hover:bg-white/[0.06] transition-all group animate__animated animate__fadeInUp">
             <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-orange-500 to-rose-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
@@ -55,6 +109,24 @@ ob_start();
             <p class="text-white font-black text-sm md:text-base">Cable TV</p>
             <p class="text-gray-500 text-xs mt-1">DSTV, GOtv, Showmax</p>
         </button>
+
+        <!-- Betting -->
+        <button onclick="openBillModal('betting')" class="glass-morphism rounded-2xl p-6 md:p-8 border border-white/10 text-center hover:bg-white/[0.06] transition-all group animate__animated animate__fadeInUp" style="animation-delay:0.35s">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" /></svg>
+            </div>
+            <p class="text-white font-black text-sm md:text-base">Betting</p>
+            <p class="text-gray-500 text-xs mt-1">Bet9ja, BetKing, 1xBet</p>
+        </button>
+
+        <!-- ePINs -->
+        <button onclick="openBillModal('epins')" class="glass-morphism rounded-2xl p-6 md:p-8 border border-white/10 text-center hover:bg-white/[0.06] transition-all group animate__animated animate__fadeInUp" style="animation-delay:0.4s">
+            <div class="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 flex items-center justify-center mb-4 group-hover:scale-105 transition-transform">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" /></svg>
+            </div>
+            <p class="text-white font-black text-sm md:text-base">ePINs</p>
+            <p class="text-gray-500 text-xs mt-1">Recharge card PINs</p>
+        </button>
     </div>
 
     <!-- Bill Modal -->
@@ -87,9 +159,11 @@ ob_start();
     </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <script>
 var USER_BALANCE = <?= $userBalance ?>;
 var TOKEN_PRICE = <?= TOKEN_PRICE_PER_UNIT ?>;
+var billTomSelects = [];
 
 var billServices = {
     airtime: {
@@ -98,7 +172,7 @@ var billServices = {
         getAmount: function(fields) { return parseInt(fields.amount) || 0; },
         getCustomerId: function(fields) { return fields.phone || ''; },
         fields: [
-            { name: 'service_id', label: 'Network', type: 'select', options: [
+            { name: 'service_id', label: 'Network', type: 'select', tomSelect: true, options: [
                 { label: 'MTN', value: 'mtn' },
                 { label: 'Glo', value: 'glo' },
                 { label: 'Airtel', value: 'airtel' },
@@ -118,8 +192,10 @@ var billServices = {
                 .then(function(r) { return r.json(); })
                 .then(function(res) {
                     if (!res.success || !res.data || !res.data.length) return;
-                    var variationSelect = selectEl.closest('.modal-fields').querySelector('[data-name="variation_id"]');
+                    var container = selectEl.closest('.modal-fields');
+                    var variationSelect = container.querySelector('[data-name="variation_id"]');
                     if (!variationSelect) return;
+                    destroyTomSelect(variationSelect);
                     variationSelect.innerHTML = '';
                     res.data.forEach(function(v) {
                         if (v.availability !== 'Available') return;
@@ -129,19 +205,20 @@ var billServices = {
                         opt.setAttribute('data-price', v.price);
                         variationSelect.appendChild(opt);
                     });
+                    initSingleTomSelect(variationSelect);
                     variationSelect.dispatchEvent(new Event('change'));
                 })
                 .catch(function() {});
         },
         fields: [
-            { name: 'service_id', label: 'Network', type: 'select', options: [
+            { name: 'service_id', label: 'Network', type: 'select', tomSelect: true, options: [
                 { label: 'MTN', value: 'mtn' },
                 { label: 'Glo', value: 'glo' },
                 { label: 'Airtel', value: 'airtel' },
                 { label: '9mobile', value: '9mobile' }
             ]},
             { name: 'phone', label: 'Phone Number', type: 'tel', placeholder: '08012345678' },
-            { name: 'variation_id', label: 'Data Plan', type: 'select', options: [
+            { name: 'variation_id', label: 'Data Plan', type: 'select', tomSelect: true, options: [
                 { label: 'Select a network first...', value: '' }
             ]}
         ]
@@ -152,7 +229,7 @@ var billServices = {
         getAmount: function(fields) { return parseInt(fields.amount) || 0; },
         getCustomerId: function(fields) { return fields.customer_id || ''; },
         fields: [
-            { name: 'service_id', label: 'Disco', type: 'select', options: [
+            { name: 'service_id', label: 'Disco', type: 'select', tomSelect: true, options: [
                 { label: 'IKEDC (Ikeja)', value: 'ikeja-electric' },
                 { label: 'EKEDC (Eko)', value: 'eko-electric' },
                 { label: 'AEDC (Abuja)', value: 'abuja-electric' },
@@ -167,7 +244,7 @@ var billServices = {
                 { label: 'YEDC (Yola)', value: 'yola-electric' }
             ]},
             { name: 'customer_id', label: 'Meter Number', type: 'text', placeholder: 'Enter meter number' },
-            { name: 'variation_id', label: 'Meter Type', type: 'select', options: [
+            { name: 'variation_id', label: 'Meter Type', type: 'select', tomSelect: true, options: [
                 { label: 'Prepaid', value: 'prepaid' },
                 { label: 'Postpaid', value: 'postpaid' }
             ]},
@@ -184,8 +261,10 @@ var billServices = {
                 .then(function(r) { return r.json(); })
                 .then(function(res) {
                     if (!res.success || !res.data || !res.data.length) return;
-                    var variationSelect = selectEl.closest('.modal-fields').querySelector('[data-name="variation_id"]');
+                    var container = selectEl.closest('.modal-fields');
+                    var variationSelect = container.querySelector('[data-name="variation_id"]');
                     if (!variationSelect) return;
+                    destroyTomSelect(variationSelect);
                     variationSelect.innerHTML = '';
                     res.data.forEach(function(v) {
                         if (v.availability !== 'Available') return;
@@ -195,26 +274,97 @@ var billServices = {
                         opt.setAttribute('data-price', v.price);
                         variationSelect.appendChild(opt);
                     });
+                    initSingleTomSelect(variationSelect);
                     variationSelect.dispatchEvent(new Event('change'));
                 })
                 .catch(function() {});
         },
         fields: [
-            { name: 'service_id', label: 'Provider', type: 'select', options: [
+            { name: 'service_id', label: 'Provider', type: 'select', tomSelect: true, options: [
                 { label: 'DSTV', value: 'dstv' },
                 { label: 'GOtv', value: 'gotv' },
                 { label: 'Startimes', value: 'startimes' },
                 { label: 'Showmax', value: 'showmax' }
             ]},
             { name: 'customer_id', label: 'Smart Card / IUC Number', type: 'text', placeholder: 'Enter smart card number' },
-            { name: 'variation_id', label: 'Package', type: 'select', options: [
+            { name: 'variation_id', label: 'Package', type: 'select', tomSelect: true, options: [
                 { label: 'Select a provider first...', value: '' }
             ]}
+        ]
+    },
+    betting: {
+        title: 'Fund Betting Account',
+        type: 'betting',
+        getAmount: function(fields) { return parseInt(fields.amount) || 0; },
+        getCustomerId: function(fields) { return fields.customer_id || ''; },
+        fields: [
+            { name: 'service_id', label: 'Provider', type: 'select', tomSelect: true, options: [
+                { label: 'Bet9ja', value: 'Bet9ja' },
+                { label: 'BetKing', value: 'BetKing' },
+                { label: '1xBet', value: '1xBet' },
+                { label: 'NairaBet', value: 'NairaBet' },
+                { label: 'NaijaBet', value: 'NaijaBet' },
+                { label: 'MerryBet', value: 'MerryBet' },
+                { label: 'BetLion', value: 'BetLion' },
+                { label: 'BetWay', value: 'BetWay' },
+                { label: 'LiveScoreBet', value: 'LiveScoreBet' },
+                { label: 'SupaBet', value: 'SupaBet' },
+                { label: 'CloudBet', value: 'CloudBet' },
+                { label: 'BangBet', value: 'BangBet' },
+                { label: 'BetLand', value: 'BetLand' }
+            ]},
+            { name: 'customer_id', label: 'Betting ID / Username', type: 'text', placeholder: 'Enter your betting account ID' },
+            { name: 'amount', label: 'Amount (₦)', type: 'number', inputmode: 'numeric', placeholder: '500' }
+        ]
+    },
+    epins: {
+        title: 'Buy ePINs',
+        type: 'epins',
+        getAmount: function(fields) {
+            var val = parseInt(fields.value) || 0;
+            var qty = parseInt(fields.quantity) || 1;
+            return val * qty;
+        },
+        getCustomerId: function(fields) { return 'qty_' + (fields.quantity || 1); },
+        fields: [
+            { name: 'service_id', label: 'Network', type: 'select', tomSelect: true, options: [
+                { label: 'MTN', value: 'mtn' },
+                { label: 'Glo', value: 'glo' },
+                { label: 'Airtel', value: 'airtel' },
+                { label: '9mobile', value: '9mobile' }
+            ]},
+            { name: 'value', label: 'Denomination', type: 'select', tomSelect: true, options: [
+                { label: '₦100', value: '100' },
+                { label: '₦200', value: '200' },
+                { label: '₦500', value: '500' }
+            ]},
+            { name: 'quantity', label: 'Quantity', type: 'number', inputmode: 'numeric', placeholder: '1' }
         ]
     }
 };
 
+function destroyTomSelect(el) {
+    if (el && el.tomselect) {
+        el.tomselect.destroy();
+        el.tomselect = null;
+    }
+}
+
+function initSingleTomSelect(el) {
+    if (!el || el.tomselect) return;
+    new TomSelect(el, {
+        placeholder: 'Search...',
+        allowEmptyOption: true,
+        maxOptions: 100,
+        searchField: ['text'],
+        onChange: function() { updateCoinCost(billServices[lastModalType]); }
+    });
+}
+
+var lastModalType = null;
+
 function openBillModal(type) {
+    lastModalType = type;
     var svc = billServices[type];
     if (!svc) return;
     document.getElementById('billModalTitle').textContent = svc.title;
@@ -252,19 +402,29 @@ function openBillModal(type) {
         wrapper.appendChild(el);
         container.appendChild(wrapper);
 
-        // On change handler for network/provider selects that should load variations
         if (f.name === 'service_id' && svc.onNetworkChange) {
             el.addEventListener('change', function() {
                 svc.onNetworkChange(this.value, this);
                 updateCoinCost(svc);
             });
         }
-        // On change/input handler for any field that affects amount
         el.addEventListener('change', function() { updateCoinCost(svc); });
         el.addEventListener('input', function() { updateCoinCost(svc); });
     });
 
     body.appendChild(container);
+
+    // Initialize TomSelect on all select elements with tomSelect: true
+    svc.fields.forEach(function(f, idx) {
+        if (f.type === 'select' && f.tomSelect) {
+            var selectEl = container.querySelectorAll('select[data-name]')[idx];
+            if (selectEl) {
+                setTimeout(function() {
+                    initSingleTomSelect(selectEl);
+                }, 50);
+            }
+        }
+    });
 
     // Proceed button
     var btnWrap = document.createElement('div');
@@ -300,7 +460,6 @@ function updateCoinCost(svc) {
     var fields = getFieldValues(svc);
     var nairaAmount = svc.getAmount ? svc.getAmount(fields) : 0;
 
-    // For select fields with data-price, use the selected option's price
     var container = document.querySelector('.modal-fields');
     if (container) {
         container.querySelectorAll('select[data-name]').forEach(function(sel) {
@@ -308,7 +467,6 @@ function updateCoinCost(svc) {
             if (selected && selected.getAttribute('data-price')) {
                 var price = parseInt(selected.getAttribute('data-price'));
                 if (price > 0) {
-                    // Use the price from the data plan / package selection
                     var name = sel.getAttribute('data-name');
                     if (name === 'variation_id') {
                         nairaAmount = price;
@@ -333,7 +491,9 @@ function proceedBill(svc) {
     var fields = getFieldValues(svc);
     var nairaAmount = svc.getAmount ? svc.getAmount(fields) : 0;
 
-    // For select fields with data-price, recalc
+    // Close any open TomSelect dropdowns
+    document.querySelectorAll('.ts-dropdown').forEach(function(d) { d.style.display = 'none'; });
+
     var container = document.querySelector('.modal-fields');
     if (container) {
         container.querySelectorAll('select[data-name]').forEach(function(sel) {
@@ -380,10 +540,8 @@ function proceedBill(svc) {
         if (res.success) {
             USER_BALANCE = res.new_balance || (USER_BALANCE - coins);
             showFeedback('✅ ' + (res.message || 'Payment successful!'), 'success');
-            // Close modal after 2.5s
             setTimeout(function() {
                 closeBillModal();
-                // Update balance display
                 var balanceEl = document.getElementById('vcBalanceDisplay');
                 if (balanceEl) balanceEl.innerHTML = USER_BALANCE.toLocaleString() + ' <span class="text-[#ff610a] text-xl">VC</span>';
             }, 2500);
