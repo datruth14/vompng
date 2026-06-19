@@ -4,6 +4,8 @@
   "description": "Nigeria's fastest growing marketplace. Buy and sell with ease.",
   "start_url": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "minimal-ui", "standalone"],
+  "scope": "/",
   "orientation": "portrait-primary",
   "background_color": "#030712",
   "theme_color": "#ff610a",
