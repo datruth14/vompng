@@ -24,7 +24,7 @@ ob_start();
             <p class="text-xs text-gray-500 mt-3">Score points in games to earn more</p>
         </div>
 
-        <!-- Exchange Rate Card -->
+        <!-- Exchange Rate Card (commented out until ready)
         <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 animate__animated animate__fadeInUp">
             <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-4 text-center">Exchange Rate</p>
             <div class="flex items-center justify-center gap-4 text-2xl font-black">
@@ -34,6 +34,7 @@ ob_start();
             </div>
             <p class="text-gray-500 text-xs text-center mt-4">1 Vomp Coin (VC) = 20,000 GPTokens</p>
         </div>
+        -->
 
         <!-- Progress Card -->
         <div class="glass-morphism rounded-[2rem] p-8 border border-white/10 animate__animated animate__fadeInUp" style="animation-delay:0.1s">
