@@ -78,3 +78,25 @@ function mailer_notify_withdrawal($userName, $userEmail, $amount, $nairaAmount, 
 
     return mailer_send('virtualopenmarket@gmail.com', 'Withdrawal Request — ' . $userName . ' — ' . number_format($amount) . ' Vomp Coins', $html);
 }
+
+function mailer_notify_bill_payment($userName, $userEmail, $type, $serviceId, $customerId, $amount, $error)
+{
+    $html = '
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+            <div style="text-align: center; margin-bottom: 32px;">
+                <div style="font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">vomp</div>
+            </div>
+            <p style="font-size: 16px; margin-bottom: 8px;">Bill Payment Failed</p>
+            <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">' . htmlspecialchars($userName) . ' (' . htmlspecialchars($userEmail) . ') tried to make a bill payment but it failed:</p>
+            <div style="background: rgba(255,97,10,0.1); padding: 24px; border-radius: 16px; margin-bottom: 24px;">
+                <p style="font-size: 14px; color: #fff; margin: 4px 0;"><strong>Type:</strong> ' . htmlspecialchars(ucfirst($type)) . '</p>
+                <p style="font-size: 14px; color: #fff; margin: 4px 0;"><strong>Service:</strong> ' . htmlspecialchars($serviceId) . '</p>
+                <p style="font-size: 14px; color: #fff; margin: 4px 0;"><strong>Customer:</strong> ' . htmlspecialchars($customerId) . '</p>
+                <p style="font-size: 14px; color: #fff; margin: 4px 0;"><strong>Amount:</strong> ₦' . number_format($amount) . '</p>
+                <p style="font-size: 14px; color: #f87171; margin: 4px 0;"><strong>Error:</strong> ' . htmlspecialchars($error) . '</p>
+            </div>
+            <p style="font-size: 12px; color: #ff610a; text-align: center; font-weight: bold;">Please fund the VTU.NG wallet to enable bill payments</p>
+        </div>';
+
+    return mailer_send('virtualopenmarket@gmail.com', 'Bill Payment Failed — ' . $userName . ' — ' . ucfirst($type), $html);
+}

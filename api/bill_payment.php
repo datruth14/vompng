@@ -4,6 +4,7 @@ require_once __DIR__ . '/../backend/Database.php';
 require_once __DIR__ . '/../backend/Auth.php';
 require_once __DIR__ . '/../backend/Token.php';
 require_once __DIR__ . '/../backend/BillPayment.php';
+require_once __DIR__ . '/../backend/Mailer.php';
 
 header('Content-Type: application/json');
 
@@ -56,8 +57,9 @@ switch ($type) {
 
         $result = vtung_purchase_airtime($phone, $service_id, $amount, $request_id);
         if (!$result['success']) {
+            mailer_notify_bill_payment($currentUser['name'], $currentUser['email'], $type, $service_id, $phone, $amount, $result['error']);
             http_response_code(400);
-            echo json_encode(['error' => $result['error']]);
+            echo json_encode(['error' => 'The network is currently unstable. Please try again later. Thank you.']);
             exit;
         }
 
@@ -97,8 +99,9 @@ switch ($type) {
 
         $result = vtung_purchase_data($phone, $service_id, $variation_id, $request_id);
         if (!$result['success']) {
+            mailer_notify_bill_payment($currentUser['name'], $currentUser['email'], $type, $service_id, $phone, $amount, $result['error']);
             http_response_code(400);
-            echo json_encode(['error' => $result['error']]);
+            echo json_encode(['error' => 'The network is currently unstable. Please try again later. Thank you.']);
             exit;
         }
 
@@ -138,8 +141,9 @@ switch ($type) {
 
         $result = vtung_purchase_electricity($customer_id, $service_id, $variation_id, $amount, $request_id);
         if (!$result['success']) {
+            mailer_notify_bill_payment($currentUser['name'], $currentUser['email'], $type, $service_id, $customer_id, $amount, $result['error']);
             http_response_code(400);
-            echo json_encode(['error' => $result['error']]);
+            echo json_encode(['error' => 'The network is currently unstable. Please try again later. Thank you.']);
             exit;
         }
 
@@ -180,8 +184,9 @@ switch ($type) {
 
         $result = vtung_purchase_tv($customer_id, $service_id, $variation_id, $request_id, $subscription_type, $amount);
         if (!$result['success']) {
+            mailer_notify_bill_payment($currentUser['name'], $currentUser['email'], $type, $service_id, $customer_id, $amount, $result['error']);
             http_response_code(400);
-            echo json_encode(['error' => $result['error']]);
+            echo json_encode(['error' => 'The network is currently unstable. Please try again later. Thank you.']);
             exit;
         }
 
@@ -220,8 +225,9 @@ switch ($type) {
 
         $result = vtung_purchase_betting($customer_id, $service_id, $amount, $request_id);
         if (!$result['success']) {
+            mailer_notify_bill_payment($currentUser['name'], $currentUser['email'], $type, $service_id, $customer_id, $amount, $result['error']);
             http_response_code(400);
-            echo json_encode(['error' => $result['error']]);
+            echo json_encode(['error' => 'The network is currently unstable. Please try again later. Thank you.']);
             exit;
         }
 
@@ -261,8 +267,9 @@ switch ($type) {
 
         $result = vtung_purchase_epins($service_id, $value, $quantity, $request_id);
         if (!$result['success']) {
+            mailer_notify_bill_payment($currentUser['name'], $currentUser['email'], $type, $service_id, 'qty_' . $quantity . '_val_' . $value, $amount, $result['error']);
             http_response_code(400);
-            echo json_encode(['error' => $result['error']]);
+            echo json_encode(['error' => 'The network is currently unstable. Please try again later. Thank you.']);
             exit;
         }
 
@@ -295,7 +302,7 @@ switch ($type) {
         $result = vtung_verify_customer($customer_id, $service_id, $variation_id);
         if (!$result['success']) {
             http_response_code(400);
-            echo json_encode(['error' => $result['error']]);
+            echo json_encode(['error' => 'The network is currently unstable. Please try again later. Thank you.']);
             exit;
         }
 
