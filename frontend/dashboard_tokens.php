@@ -274,8 +274,6 @@ function openPinModal() {
 
 function closePinModal() {
     document.getElementById('pinModal').classList.add('hidden');
-    pendingAction = null;
-    pendingPayload = null;
 }
 
 document.getElementById('pinSubmitBtn').addEventListener('click', async function() {

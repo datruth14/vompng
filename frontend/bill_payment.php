@@ -202,7 +202,6 @@ function openPinModal() {
 
 function closePinModal() {
     document.getElementById('pinModal').classList.add('hidden');
-    PENDING_PAYLOAD = null;
 }
 
 document.getElementById('pinSubmitBtn').addEventListener('click', async function() {
