@@ -712,9 +712,8 @@ function executeBillPayment(pin) {
             showFeedback('✅ ' + (res.message || 'Payment successful!'), 'success');
             setTimeout(function() {
                 closeBillModal();
-                var balanceEl = document.getElementById('vcBalanceDisplay');
-                if (balanceEl) balanceEl.innerHTML = USER_BALANCE.toLocaleString() + ' <span class="text-[#ff610a] text-xl">VC</span>';
-            }, 2500);
+                location.reload();
+            }, 1500);
         } else {
             showFeedback('❌ ' + (res.error || 'Payment failed. Please try again.'), 'error');
         }

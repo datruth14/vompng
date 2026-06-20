@@ -503,6 +503,7 @@ function executeTransfer(pin) {
             document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm font-bold">Successfully transferred ' + amount.toLocaleString() + ' Vomp Coins to ' + email + '</div>';
             document.getElementById('transferBalance').textContent = result.token_balance.toLocaleString();
             document.getElementById('transferAmount').value = 1;
+            setTimeout(function() { location.reload(); }, 1500);
         } else {
             document.getElementById('transferMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Transfer failed') + '</div>';
         }
@@ -654,6 +655,7 @@ function executeWithdraw(pin) {
             document.getElementById('withdrawBalance').textContent = result.token_balance.toLocaleString();
             document.getElementById('withdrawAmount').value = '5';
             updateWithdrawNaira();
+            setTimeout(function() { location.reload(); }, 1500);
         } else {
             document.getElementById('withdrawMsg').innerHTML = '<div class="px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-sm font-bold">' + (result.error || 'Withdrawal failed') + '</div>';
         }
