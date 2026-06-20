@@ -24,6 +24,7 @@ $gpTokens = (int) ($currentUser['gptokens'] ?? 0);
             <p class="text-xs uppercase tracking-widest font-black text-gray-500 mb-2">Your GPTokens</p>
             <p class="text-5xl font-black text-emerald-400"><?php echo number_format($gpTokens); ?></p>
             <p class="text-xs text-gray-500 mt-3">Score points in games to earn more</p>
+            <a href="/game/exchange" class="mt-5 inline-block px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-black text-sm hover:scale-105 transition-transform">Exchange Token</a>
         </div>
     </div>
 

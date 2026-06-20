@@ -270,6 +270,10 @@ if ($method === 'GET') {
             require 'frontend/game_space_shooter.php';
             break;
 
+        case $requestPath === 'game/exchange':
+            require 'frontend/game_exchange.php';
+            break;
+
         case $requestPath === 'bill-payment':
             require 'frontend/bill_payment.php';
             break;
@@ -633,6 +637,10 @@ if ($method === 'GET') {
         case 'api/bill_payment':
         case 'api/bill_payment.php':
             include 'api/bill_payment.php';
+            exit;
+        case 'api/game_exchange':
+        case 'api/game_exchange.php':
+            include 'api/game_exchange.php';
             exit;
         default:
             http_response_code(404);
