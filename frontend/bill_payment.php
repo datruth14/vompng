@@ -27,6 +27,17 @@ ob_start();
 }
 .ts-wrapper .ts-control .item {
     color: #fff;
+    background: rgba(255,255,255,0.1);
+    border-radius: 0.375rem;
+}
+.ts-wrapper.multi .ts-control .item {
+    background: rgba(255,97,10,0.15);
+    color: #fff;
+    border: 1px solid rgba(255,97,10,0.3);
+}
+.ts-wrapper .ts-control .item .remove {
+    border-color: rgba(255,255,255,0.15);
+    color: #ccc;
 }
 .ts-dropdown {
     background: #1a1a2e;
