@@ -88,6 +88,11 @@ http_response_code(200);
 if ($method === 'GET') {
     switch (true) {
         case $requestPath === '':
+            $host = $_SERVER['HTTP_HOST'] ?? '';
+            if ($host === 'app.vomp.ng') {
+                header('Location: /marketplace');
+                exit;
+            }
             include 'frontend/home.php';
             break;
 
