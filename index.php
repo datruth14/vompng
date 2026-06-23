@@ -538,6 +538,10 @@ if ($method === 'GET') {
                     include 'frontend/admin/orders.php';
                     break;
 
+                case 'admin/backfill-bill-commission':
+                    include 'api/admin_backfill_bill_commission.php';
+                    exit;
+
                 default:
                     http_response_code(404);
                     $content = '<div class="text-center py-12"><h2 class="text-2xl font-bold">404 - Admin page not found</h2></div>';
