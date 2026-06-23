@@ -207,6 +207,8 @@ function vtung_verify_customer($customer_id, $service_id, $variation_id = null)
 
 /* Deduct Vomp Coins for bill payment, log transaction, and save bill_payments record. */
 
+define('BILL_COMMISSION_PERCENT', 5); // 5% platform commission on bill payments
+
 function bill_deduct_coins($userId, $coinsToDeduct, $type, $serviceId, $customerId, $amountNaira, $providerRef = '', $metaData = '', $vtungStatus = 'processing')
 {
     $db = db_get_connection();
@@ -219,6 +221,7 @@ function bill_deduct_coins($userId, $coinsToDeduct, $type, $serviceId, $customer
     }
 
     $newBalance = (int) $user['token_balance'] - $coinsToDeduct;
+    $commission = round($amountNaira * BILL_COMMISSION_PERCENT / 100, 2);
 
     $db->beginTransaction();
     try {
@@ -233,7 +236,7 @@ function bill_deduct_coins($userId, $coinsToDeduct, $type, $serviceId, $customer
             "Bill payment: {$type} - ₦" . number_format($amountNaira) . " ({$serviceId})",
         ]);
 
-        $stmt = $db->prepare('INSERT INTO bill_payments (id, user_id, type, service_id, customer_id, amount_naira, coins_deducted, provider_ref, status, meta_data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())');
+        $stmt = $db->prepare('INSERT INTO bill_payments (id, user_id, type, service_id, customer_id, amount_naira, commission, coins_deducted, provider_ref, status, meta_data, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())');
         $stmt->execute([
             bin2hex(random_bytes(12)),
             $userId,
@@ -241,6 +244,7 @@ function bill_deduct_coins($userId, $coinsToDeduct, $type, $serviceId, $customer
             $serviceId,
             $customerId,
             $amountNaira,
+            $commission,
             $coinsToDeduct,
             $providerRef,
             $vtungStatus,
@@ -248,7 +252,7 @@ function bill_deduct_coins($userId, $coinsToDeduct, $type, $serviceId, $customer
         ]);
 
         $db->commit();
-        return ['success' => true, 'new_balance' => $newBalance, 'deducted' => $coinsToDeduct];
+        return ['success' => true, 'new_balance' => $newBalance, 'deducted' => $coinsToDeduct, 'commission' => $commission];
     } catch (Exception $e) {
         $db->rollBack();
         return ['success' => false, 'error' => 'Failed to process payment'];

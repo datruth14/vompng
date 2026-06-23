@@ -517,6 +517,7 @@ if ($method === 'GET') {
                     break;
 
                 case 'admin/orders':
+                    require_once 'backend/BillPayment.php';
                     $searchQuery = isset($_GET['q']) && $_GET['q'] !== '' ? trim($_GET['q']) : null;
                     $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
                     $perPage = 30;
@@ -531,6 +532,8 @@ if ($method === 'GET') {
                         $withdrawals = admin_get_withdrawals_paginated($page, $perPage);
                         $withdrawTotalPages = max(1, (int) ceil(admin_count_withdrawals_total() / $perPage));
                     }
+                    $billPayments = admin_get_bill_payments_paginated(1, 30);
+                    $billPaymentsTotal = admin_count_bill_payments_total();
                     $commissionSummary = admin_commission_summary();
                     include 'frontend/admin/orders.php';
                     break;

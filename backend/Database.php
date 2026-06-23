@@ -192,6 +192,7 @@ function db_init_schema(PDO $db)
                 service_id VARCHAR(50) NOT NULL,
                 customer_id VARCHAR(100),
                 amount_naira DECIMAL(10,2) NOT NULL,
+                commission DECIMAL(10,2) DEFAULT 0,
                 coins_deducted INT NOT NULL,
                 provider_ref VARCHAR(100),
                 status VARCHAR(20) DEFAULT 'processing',
@@ -251,6 +252,8 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'products', 'is_available', "TINYINT(1) DEFAULT 1");
     db_ensure_column($db, 'products', 'category', "VARCHAR(100) DEFAULT 'Others'");
     db_ensure_column($db, 'products', 'product_condition', "VARCHAR(50) DEFAULT 'Brand-New'");
+
+    db_ensure_column($db, 'bill_payments', 'commission', 'DECIMAL(10,2) DEFAULT 0');
     db_ensure_column($db, 'products', 'location', 'VARCHAR(255)');
 
     // Migration: make token_transactions.store_id nullable and add user_id column

@@ -5,16 +5,26 @@ require_once __DIR__ . '/Database.php';
 function admin_commission_summary()
 {
     $db = db_get_connection();
-    // Commission = 2% platform fee on each withdrawal naira_amount
+
+    // Withdrawal commission = 2% platform fee on each withdrawal naira_amount
     $stmt = $db->query("SELECT COUNT(*) AS total_withdrawals, COALESCE(SUM(naira_amount), 0) AS total_naira_withdrawn FROM withdrawals WHERE status IN ('success', 'otp')");
     $row = $stmt->fetch(PDO::FETCH_ASSOC);
     $totalNaira = (int) $row['total_naira_withdrawn'];
     $totalWithdrawals = (int) $row['total_withdrawals'];
-    $commission = (int) ($totalNaira * 0.02); // 2% platform fee
+    $withdrawCommission = (int) ($totalNaira * 0.02); // 2% platform fee
+
+    // Bill payment commission = SUM(commission) from bill_payments
+    $stmt = $db->query("SELECT COUNT(*) AS total_bill_payments, COALESCE(SUM(commission), 0) AS total_bill_commission FROM bill_payments WHERE status IN ('completed', 'processing')");
+    $billRow = $stmt->fetch(PDO::FETCH_ASSOC);
+    $totalBillPayments = (int) $billRow['total_bill_payments'];
+    $totalBillCommission = (float) $billRow['total_bill_commission'];
+
     return [
         'total_withdrawals' => $totalWithdrawals,
         'total_naira_withdrawn' => $totalNaira,
-        'total_commission' => $commission,
+        'total_commission' => $withdrawCommission,
+        'total_bill_payments' => $totalBillPayments,
+        'total_bill_commission' => $totalBillCommission,
     ];
 }
 
@@ -287,6 +297,28 @@ function admin_get_transactions_paginated($page = 1, $perPage = 30)
 function admin_count_transactions_total()
 {
     return (int) db_get_connection()->query('SELECT COUNT(*) FROM token_transactions')->fetchColumn();
+}
+
+function admin_get_bill_payments_paginated($page = 1, $perPage = 30)
+{
+    $db = db_get_connection();
+    $offset = max(0, ($page - 1) * $perPage);
+    $stmt = $db->prepare('
+        SELECT bp.*, u.name AS user_name, u.email AS user_email
+        FROM bill_payments bp
+        LEFT JOIN users u ON bp.user_id = u.id
+        ORDER BY bp.created_at DESC
+        LIMIT ? OFFSET ?
+    ');
+    $stmt->bindValue(1, (int) $perPage, PDO::PARAM_INT);
+    $stmt->bindValue(2, (int) $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function admin_count_bill_payments_total()
+{
+    return (int) db_get_connection()->query('SELECT COUNT(*) FROM bill_payments')->fetchColumn();
 }
 
 function admin_search_transactions_paginated($query, $page = 1, $perPage = 30)

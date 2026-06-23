@@ -132,6 +132,41 @@ if ($type === 'transactions') {
     exit;
 }
 
+if ($type === 'bill_payments') {
+    require_once __DIR__ . '/../backend/BillPayment.php';
+    $rows = db_fetch_all('
+        SELECT u.name AS user_name, u.email AS user_email,
+               bp.type, bp.service_id, bp.customer_id,
+               bp.amount_naira, bp.commission, bp.coins_deducted,
+               bp.provider_ref, bp.status, bp.created_at
+        FROM bill_payments bp
+        LEFT JOIN users u ON bp.user_id = u.id
+        ORDER BY bp.created_at DESC
+    ');
+
+    header('Content-Type: text/csv; charset=utf-8');
+    header('Content-Disposition: attachment; filename="bill_payments_export_' . date('Y-m-d') . '.csv"');
+    $out = fopen('php://output', 'w');
+    fputcsv($out, ['User', 'Email', 'Type', 'Service', 'Customer', 'NGN Amount', 'Commission (' . BILL_COMMISSION_PERCENT . '%)', 'VC Used', 'Provider Ref', 'Status', 'Date']);
+    foreach ($rows as $r) {
+        fputcsv($out, [
+            $r['user_name'] ?? '',
+            $r['user_email'] ?? '',
+            $r['type'] ?? '',
+            $r['service_id'] ?? '',
+            $r['customer_id'] ?? '',
+            number_format((float) ($r['amount_naira'] ?? 0), 2),
+            number_format((float) ($r['commission'] ?? 0), 2),
+            (int) ($r['coins_deducted'] ?? 0),
+            $r['provider_ref'] ?? '',
+            $r['status'] ?? '',
+            $r['created_at'] ?? '',
+        ]);
+    }
+    fclose($out);
+    exit;
+}
+
 if ($type === 'withdrawals') {
     $rows = db_fetch_all('
         SELECT u.name AS user_name, u.email AS user_email,
