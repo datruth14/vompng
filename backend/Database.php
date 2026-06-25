@@ -184,6 +184,15 @@ function db_init_schema(PDO $db)
                 FOREIGN KEY (store_id) REFERENCES stores(id) ON DELETE CASCADE
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ",
+        'exchange' => "
+            CREATE TABLE IF NOT EXISTS exchange (
+                id VARCHAR(24) PRIMARY KEY,
+                currency VARCHAR(10) NOT NULL,
+                rate DECIMAL(15,6) NOT NULL,
+                symbol VARCHAR(10) NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ",
         'bill_payments' => "
             CREATE TABLE IF NOT EXISTS bill_payments (
                 id VARCHAR(24) PRIMARY KEY,
@@ -304,6 +313,19 @@ function db_init_schema(PDO $db)
         $stmt = $db->prepare('INSERT INTO product_categories (id, name, sort_order) VALUES (?, ?, ?)');
         foreach ($defaults as $i => $name) {
             $stmt->execute([bin2hex(random_bytes(12)), $name, $i]);
+        }
+    }
+
+    $hasExchange = (int) $db->query('SELECT COUNT(*) FROM exchange')->fetchColumn();
+    if ($hasExchange === 0) {
+        $defaultRates = [
+            ['USD', 1560.00, '$'],
+            ['EUR', 1720.00, '€'],
+            ['GBP', 1980.00, '£'],
+        ];
+        $stmt = $db->prepare('INSERT INTO exchange (id, currency, rate, symbol) VALUES (?, ?, ?, ?)');
+        foreach ($defaultRates as $r) {
+            $stmt->execute([bin2hex(random_bytes(12)), $r[0], $r[1], $r[2]]);
         }
     }
 }
