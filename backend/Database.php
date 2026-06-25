@@ -187,10 +187,8 @@ function db_init_schema(PDO $db)
         'exchange' => "
             CREATE TABLE IF NOT EXISTS exchange (
                 id VARCHAR(24) PRIMARY KEY,
-                currency VARCHAR(10) NOT NULL,
-                rate DECIMAL(15,6) NOT NULL,
-                symbol VARCHAR(10) NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                data TEXT NOT NULL,
+                date_created DATETIME DEFAULT CURRENT_TIMESTAMP
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
         ",
         'bill_payments' => "
@@ -316,18 +314,7 @@ function db_init_schema(PDO $db)
         }
     }
 
-    $hasExchange = (int) $db->query('SELECT COUNT(*) FROM exchange')->fetchColumn();
-    if ($hasExchange === 0) {
-        $defaultRates = [
-            ['USD', 1560.00, '$'],
-            ['EUR', 1720.00, '€'],
-            ['GBP', 1980.00, '£'],
-        ];
-        $stmt = $db->prepare('INSERT INTO exchange (id, currency, rate, symbol) VALUES (?, ?, ?, ?)');
-        foreach ($defaultRates as $r) {
-            $stmt->execute([bin2hex(random_bytes(12)), $r[0], $r[1], $r[2]]);
-        }
-    }
+
 }
 
 function db_ensure_column(PDO $db, $table, $column, $definition)

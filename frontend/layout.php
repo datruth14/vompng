@@ -240,15 +240,6 @@
     <div id="navDrawer" class="fixed top-0 left-0 z-40 h-full w-72 bg-gray-950/95 border-r border-white/10 shadow-2xl transition-transform duration-300 -translate-x-full will-change-transform overflow-y-auto hidden">
     <?php endif; ?>
         <div class="flex flex-col items-stretch gap-2 p-6 pt-20">
-            <?php
-            $exchangeRates = db_fetch_all('SELECT currency, rate, symbol FROM exchange ORDER BY currency');
-            ?>
-            <div class="px-4 py-3 mb-2 rounded-xl bg-white/5 border border-white/10 text-xs space-y-1">
-                <p class="text-gray-500 uppercase tracking-wider font-black text-[10px]">Exchange Rates</p>
-                <?php foreach ($exchangeRates as $xr): ?>
-                    <p class="text-gray-300 font-medium"><span class="text-gray-500"><?php echo htmlspecialchars($xr['symbol']); ?></span> <?php echo htmlspecialchars($xr['currency']); ?> <span class="text-[#ff610a]">₦<?php echo number_format((float) $xr['rate'], 2); ?></span></p>
-                <?php endforeach; ?>
-            </div>
             <a href="/" class="flex items-center gap-3 py-3 px-4 rounded-xl text-gray-300 hover:text-white hover:bg-white/5 transition-all font-bold text-sm">
                 <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" /></svg>
                 <span>Home</span>
