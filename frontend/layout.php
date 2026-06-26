@@ -77,10 +77,6 @@
                             </svg>
                             <span><?php echo htmlspecialchars($currentUser['name']); ?></span>
                         </span>
-                        <a href="/game" class="inline-flex items-center gap-1.5 py-1 px-2.5 text-xs font-black text-emerald-400 bg-emerald-500/10 rounded-full border border-emerald-500/20 hover:bg-emerald-500/20 transition-all">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.744 8.05C16.242 7.008 14.268 6.5 12 6.5s-4.242.508-5.744 1.55C4.92 9.03 4 10.615 4 12.5c0 1.885.92 3.47 2.256 4.45C7.758 18.492 9.732 19 12 19s4.242-.508 5.744-1.55C19.08 16.47 20 14.885 20 13c0-1.885-.92-3.47-2.256-4.45zM8.5 10.5h2v2h-2v-2zm5 0h2v2h-2v-2z" /></svg>
-                            <span><?php echo number_format((int)($currentUser['gptokens'] ?? 0)); ?> GPT</span>
-                        </a>
                         <a href="/logout" class="inline-flex items-center gap-2 py-2 px-3 text-rose-300 hover:text-rose-100 font-bold text-sm transition-all duration-200 relative group">
                             <svg class="w-4 h-4 text-rose-400 group-hover:text-rose-200 transition-colors" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
