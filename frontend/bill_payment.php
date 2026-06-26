@@ -23,7 +23,7 @@ ob_start();
     box-shadow: none;
 }
 .ts-wrapper .ts-control input {
-    color: #fff;
+    color: #ff610a;
 }
 .ts-wrapper .ts-control .item {
     color: #fff;

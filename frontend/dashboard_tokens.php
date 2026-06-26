@@ -8,6 +8,33 @@ ob_start();
 ?>
 <link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
+<style>
+.ts-wrapper .ts-control {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.875rem;
+    box-shadow: none;
+}
+.ts-wrapper .ts-control:hover { border-color: rgba(255,255,255,0.15); }
+.ts-wrapper.focus .ts-control { border-color: rgba(255,97,10,0.5); box-shadow: none; }
+.ts-wrapper .ts-control input { color: #ff610a; }
+.ts-wrapper .ts-control .item { color: #fff; background: rgba(255,255,255,0.1); border-radius: 0.375rem; }
+.ts-dropdown {
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    color: #fff;
+    z-index: 9999;
+}
+.ts-dropdown .option { color: #ccc; padding: 0.5rem 1rem; }
+.ts-dropdown .option.active { background: rgba(255,97,10,0.2); color: #fff; }
+.ts-dropdown .option.highlight { background: rgba(255,97,10,0.3); color: #fff; }
+.ts-dropdown .no-results { color: #666; padding: 0.5rem 1rem; }
+.ts-wrapper .ts-control .dropdown-active { border-color: rgba(255,97,10,0.5); }
+</style>
 <section class="py-6 md:py-10 space-y-12">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>

@@ -19,7 +19,7 @@ ob_start();
 }
 .ts-wrapper .ts-control:hover { border-color: rgba(255,255,255,0.15); }
 .ts-wrapper.focus .ts-control { border-color: rgba(255,97,10,0.5); box-shadow: none; }
-.ts-wrapper .ts-control input { color: #fff; }
+.ts-wrapper .ts-control input { color: #ff610a; }
 .ts-wrapper .ts-control .item { color: #fff; background: rgba(255,255,255,0.1); border-radius: 0.375rem; }
 .ts-dropdown {
     background: #1a1a2e;
