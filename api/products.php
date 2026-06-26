@@ -48,9 +48,9 @@ if ($method === 'POST') {
         $price = $data['price'] ?? 0;
         $description = $data['description'] ?? '';
         $category = $data['category'] ?? '';
-        $country = $data['country'] ?? 'Nigeria';
-        $state = $data['state'] ?? '';
-        $currency = $data['currency'] ?? 'NGN';
+        $country = $data['country'] ?? ($currentUser['country'] ?? 'Nigeria');
+        $state = $data['state'] ?? ($currentUser['state'] ?? '');
+        $currency = $data['currency'] ?? ($currentUser['currency'] ?? 'NGN');
         $mediaUrl = $data['media_url'] ?? '';
         $affiliateUrl = $data['affiliate_url'] ?? '';
 

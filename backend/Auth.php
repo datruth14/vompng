@@ -128,7 +128,7 @@ function auth_logout()
 
 function auth_update_user($userId, $data)
 {
-    $allowed = ['name', 'email', 'phone'];
+    $allowed = ['name', 'email', 'phone', 'country', 'state', 'currency'];
     if (!empty($data['password'])) {
         $allowed[] = 'password';
     }

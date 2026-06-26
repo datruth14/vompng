@@ -292,6 +292,11 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'users', 'bank_account_number', 'VARCHAR(10)');
     db_ensure_column($db, 'users', 'bank_account_name', 'VARCHAR(255)');
 
+    // country/state/currency on users table (for product defaults)
+    db_ensure_column($db, 'users', 'country', "VARCHAR(100) DEFAULT ''");
+    db_ensure_column($db, 'users', 'state', "VARCHAR(100) DEFAULT ''");
+    db_ensure_column($db, 'users', 'currency', "VARCHAR(10) DEFAULT 'NGN'");
+
     $indexes = [
         'idx_products_store_id' => 'CREATE INDEX idx_products_store_id ON products(store_id)',
         'idx_stores_owner_id' => 'CREATE INDEX idx_stores_owner_id ON stores(owner_id)',

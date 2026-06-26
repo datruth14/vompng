@@ -6,34 +6,7 @@
 $pageTitle = 'Manage Products - vomp';
 ob_start();
 ?>
-<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
-<style>
-.ts-wrapper .ts-control {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    color: #fff;
-    font-size: 0.875rem;
-    box-shadow: none;
-}
-.ts-wrapper .ts-control:hover { border-color: rgba(255,255,255,0.15); }
-.ts-wrapper.focus .ts-control { border-color: rgba(255,97,10,0.5); box-shadow: none; }
-.ts-wrapper .ts-control input { color: #ff610a; }
-.ts-wrapper .ts-control .item { color: #fff; background: rgba(255,255,255,0.1); border-radius: 0.375rem; }
-.ts-dropdown {
-    background: #1a1a2e;
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 0.75rem;
-    color: #fff;
-    z-index: 9999;
-}
-.ts-dropdown .option { color: #ccc; padding: 0.5rem 1rem; }
-.ts-dropdown .option.active { background: rgba(255,97,10,0.2); color: #fff; }
-.ts-dropdown .option.highlight { background: rgba(255,97,10,0.3); color: #fff; }
-.ts-dropdown .no-results { color: #666; padding: 0.5rem 1rem; }
-.ts-wrapper .ts-control .dropdown-active { border-color: rgba(255,97,10,0.5); }
-</style>
+
 <section class="py-6 md:py-10 space-y-12">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
@@ -54,10 +27,27 @@ ob_start();
             <?php else: ?>
                 <span class="text-xs text-gray-500 font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coins remaining &bull; 10 Vomp Coins per product</span>
             <?php endif; ?>
-            <button onclick="toggleAddForm()" <?php echo (int) ($currentUser['token_balance'] ?? 0) < 10 ? 'disabled title="Need at least 10 Vomp Coins"' : ''; ?> class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all disabled:opacity-40 disabled:cursor-not-allowed">Add New Product</button>
+            <button onclick="toggleAddForm()" <?php
+                $btnDisabled = (int) ($currentUser['token_balance'] ?? 0) < 10 || empty($currentUser['country']) || empty($currentUser['currency']);
+                $btnTitle = (int) ($currentUser['token_balance'] ?? 0) < 10 ? 'Need at least 10 Vomp Coins' : (empty($currentUser['country']) || empty($currentUser['currency']) ? 'Complete your profile first' : '');
+                echo $btnDisabled ? 'disabled title="' . $btnTitle . '"' : '';
+            ?> class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all disabled:opacity-40 disabled:cursor-not-allowed">Add New Product</button>
         </div>
     </header>
 
+    <?php
+    $profileOk = !empty($currentUser['country']) && !empty($currentUser['currency']);
+    if (!$profileOk):
+    ?>
+    <div class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 mb-12 text-center animate__animated animate__fadeInUp">
+        <div class="w-16 h-16 rounded-2xl bg-[#ff610a]/10 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-[#ff610a]" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+        </div>
+        <h2 class="text-2xl font-black text-white mb-2">Complete Your Profile</h2>
+        <p class="text-gray-400 mb-6 max-w-md mx-auto">You need to set your country and currency in your profile before adding products.</p>
+        <a href="/profile" class="inline-block px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Update Profile</a>
+    </div>
+    <?php else: ?>
     <!-- Add / Edit Product Form -->
     <div id="addProductForm" class="hidden glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 mb-12 animate__animated animate__fadeInUp">
         <h2 id="formTitle" class="text-2xl font-black text-white mb-6">Create New Product</h2>
@@ -108,28 +98,7 @@ ob_start();
                         <?php endforeach; ?>
                     </select>
                 </div>
-                <div>
-                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Country</label>
-                    <select id="pCountry" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
-                        <option value="" class="bg-gray-900 text-gray-400">Select country</option>
-                        <?php foreach ($countries as $c): ?>
-                            <option value="<?php echo htmlspecialchars($c); ?>" class="bg-gray-900" <?php echo $c === 'Nigeria' ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <div>
-                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">State / Region</label>
-                    <input type="text" id="pState" placeholder="e.g. Lagos, Accra, Nairobi" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
-                </div>
-                <div>
-                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Currency</label>
-                    <select id="pCurrency" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
-                        <option value="" class="bg-gray-900 text-gray-400">Select currency</option>
-                        <?php foreach ($currencies as $code => $label): ?>
-                            <option value="<?php echo htmlspecialchars($code); ?>" class="bg-gray-900" <?php echo $code === 'NGN' ? 'selected' : ''; ?>><?php echo htmlspecialchars($label); ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
+
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Description</label>
                     <textarea id="pDesc" rows="6" placeholder="Describe your product..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all"></textarea>
@@ -145,6 +114,7 @@ ob_start();
             </div>
         </form>
     </div>
+    <?php endif; ?>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate__animated animate__fadeInUp">
         <?php foreach ($products as $p): ?>
@@ -172,7 +142,7 @@ ob_start();
                         <span class="text-xs font-black uppercase tracking-wider text-gray-400"><?php echo (int)$p['is_available'] ? 'Live' : 'Hidden'; ?></span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="editProduct(<?php echo htmlspecialchars(json_encode($p['id'])); ?>, <?php echo htmlspecialchars(json_encode($p['name'])); ?>, <?php echo htmlspecialchars(json_encode($p['price'])); ?>, <?php echo htmlspecialchars(json_encode($p['description'])); ?>, <?php echo htmlspecialchars(json_encode($p['country'] ?? 'Nigeria')); ?>, <?php echo htmlspecialchars(json_encode($p['state'] ?? '')); ?>, <?php echo htmlspecialchars(json_encode($p['currency'] ?? 'NGN')); ?>, <?php echo htmlspecialchars(json_encode($p['media_url'] ?? '')); ?>, <?php echo htmlspecialchars(json_encode($p['affiliate_url'] ?? '')); ?>)" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
+                        <button onclick="editProduct(<?php echo htmlspecialchars(json_encode($p['id'])); ?>, <?php echo htmlspecialchars(json_encode($p['name'])); ?>, <?php echo htmlspecialchars(json_encode($p['price'])); ?>, <?php echo htmlspecialchars(json_encode($p['description'])); ?>, <?php echo htmlspecialchars(json_encode($p['media_url'] ?? '')); ?>, <?php echo htmlspecialchars(json_encode($p['affiliate_url'] ?? '')); ?>)" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                         </button>
                         <button onclick="deleteProduct('<?php echo $p['id']; ?>')" class="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
@@ -195,7 +165,6 @@ ob_start();
     </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <script>
 function formatNumber(n) {
     var parts = n.toString().split('.');
@@ -230,10 +199,8 @@ function toggleAddForm() {
     const form = document.getElementById('addProductForm');
     form.classList.toggle('hidden');
     if (form.classList.contains('hidden')) {
-        destroyFormTomSelects();
         resetForm();
     } else {
-        initFormTomSelects();
         switchSource('store');
     }
 }
@@ -251,13 +218,9 @@ function resetForm() {
     document.getElementById('formTitle').textContent = 'Create New Product';
     document.getElementById('pMediaField').classList.remove('hidden');
     document.getElementById('pAffiliateFields').classList.add('hidden');
-    ['pCountry', 'pState', 'pCurrency'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el && el.tomselect) el.tomselect.setValue('');
-    });
 }
 
-function editProduct(id, name, price, description, country, state, currency, mediaUrl, affiliateUrl) {
+function editProduct(id, name, price, description, mediaUrl, affiliateUrl) {
     editingId = id;
     document.getElementById('pId').value = id;
     document.getElementById('pName').value = name;
@@ -277,52 +240,7 @@ function editProduct(id, name, price, description, country, state, currency, med
 
     const form = document.getElementById('addProductForm');
     form.classList.remove('hidden');
-    initFormTomSelects();
-
-    ['pCountry', 'pState', 'pCurrency'].forEach(function(id) {
-        var el = document.getElementById(id);
-        if (el) {
-            var val = id === 'pCountry' ? (country || 'Nigeria') : id === 'pState' ? (state || '') : (currency || 'NGN');
-            if (el.tomselect) { el.tomselect.setValue(val); }
-            else { el.value = val; }
-        }
-    });
-
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-/* Country data mapping: name -> {alpha2, currency} from API */
-const COUNTRY_DATA = <?php echo json_encode(!empty($countryData) ? array_combine(array_map(fn($c) => $c['name'], $countryData), $countryData) : [], JSON_UNESCAPED_UNICODE); ?>;
-
-/* Init form TomSelects (called when form is shown) */
-var formTomSelects = [];
-function initFormTomSelects() {
-    destroyFormTomSelects();
-    var countryTs = new TomSelect('#pCountry', {
-        placeholder: 'Search country...',
-        allowEmptyOption: true,
-        maxItems: 1,
-        onChange: function (value) {
-            var country = COUNTRY_DATA[value];
-            var currencyTs = document.getElementById('pCurrency').tomselect;
-            if (country && country.currencyCode && currencyTs) {
-                currencyTs.setValue(country.currencyCode);
-            }
-        }
-    });
-    formTomSelects.push(countryTs);
-
-    var currencyTs = new TomSelect('#pCurrency', {
-        placeholder: 'Search currency...',
-        allowEmptyOption: true,
-        maxItems: 1,
-    });
-    formTomSelects.push(currencyTs);
-}
-
-function destroyFormTomSelects() {
-    formTomSelects.forEach(function (ts) { ts.destroy(); });
-    formTomSelects = [];
 }
 
 function compressImage(file, quality = 0.7, maxDim = 1600) {
@@ -377,9 +295,9 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     formData.append('price', document.getElementById('pPrice').value.replace(/,/g, ''));
     formData.append('description', document.getElementById('pDesc').value);
     formData.append('category', document.getElementById('pCategory').value);
-    formData.append('country', document.getElementById('pCountry').value || 'Nigeria');
-    formData.append('state', document.getElementById('pState').value);
-    formData.append('currency', document.getElementById('pCurrency').value || 'NGN');
+    formData.append('country', '<?php echo htmlspecialchars($currentUser['country'] ?? 'Nigeria'); ?>');
+    formData.append('state', '<?php echo htmlspecialchars($currentUser['state'] ?? ''); ?>');
+    formData.append('currency', '<?php echo htmlspecialchars($currentUser['currency'] ?? 'NGN'); ?>');
 
     var source = document.getElementById('pSource').value;
     if (source === 'affiliate') {

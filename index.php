@@ -289,6 +289,9 @@ if ($method === 'GET') {
             break;
 
         case $requestPath === 'profile':
+            $countries = product_get_countries();
+            $countryData = product_get_country_data();
+            $currencies = product_get_currencies();
             include 'frontend/profile.php';
             break;
 
@@ -383,9 +386,6 @@ if ($method === 'GET') {
             }
             $products = product_get_products_by_store($store['id']);
             $productCategories = product_get_categories();
-            $countries = product_get_countries();
-            $countryData = product_get_country_data();
-            $currencies = product_get_currencies();
             include 'frontend/dashboard_products.php';
             break;
 

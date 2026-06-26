@@ -2,11 +2,38 @@
 $pageTitle = 'Profile - vomp';
 ob_start();
 ?>
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+<style>
+.ts-wrapper .ts-control {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.875rem;
+    box-shadow: none;
+}
+.ts-wrapper .ts-control:hover { border-color: rgba(255,255,255,0.15); }
+.ts-wrapper.focus .ts-control { border-color: rgba(255,97,10,0.5); box-shadow: none; }
+.ts-wrapper .ts-control input { color: #ff610a; }
+.ts-wrapper .ts-control .item { color: #fff; background: rgba(255,255,255,0.1); border-radius: 0.375rem; }
+.ts-dropdown {
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    color: #fff;
+    z-index: 9999;
+}
+.ts-dropdown .option { color: #ccc; padding: 0.5rem 1rem; }
+.ts-dropdown .option.active { background: rgba(255,97,10,0.2); color: #fff; }
+.ts-dropdown .option.highlight { background: rgba(255,97,10,0.3); color: #fff; }
+.ts-dropdown .no-results { color: #666; padding: 0.5rem 1rem; }
+</style>
 <section class="py-8 md:py-12">
     <div class="mb-10">
         <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Account</p>
         <h1 class="text-4xl md:text-5xl font-black text-white tracking-tight mb-2">My Profile</h1>
-        <p class="text-gray-400">Update your name, email, and password.</p>
+        <p class="text-gray-400">Update your name, email, phone, and location details.</p>
     </div>
 
     <div class="max-w-2xl">
@@ -24,6 +51,33 @@ ob_start();
             <div>
                 <label class="text-sm text-gray-300 font-bold">Phone Number</label>
                 <input type="tel" name="phone" id="phone" value="<?php echo htmlspecialchars($currentUser['phone'] ?? ''); ?>" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors" />
+            </div>
+
+            <hr class="border-white/10">
+
+            <div>
+                <label class="text-sm text-gray-300 font-bold">Country</label>
+                <select id="pCountry" class="w-full mt-2 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors">
+                    <option value="" class="bg-gray-900 text-gray-400">Select country</option>
+                    <?php foreach ($countries as $c): ?>
+                        <option value="<?php echo htmlspecialchars($c); ?>" class="bg-gray-900" <?php echo ($currentUser['country'] ?? '') === $c ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+
+            <div>
+                <label class="text-sm text-gray-300 font-bold">State / Region</label>
+                <input type="text" id="pState" value="<?php echo htmlspecialchars($currentUser['state'] ?? ''); ?>" placeholder="e.g. Lagos, Accra, Nairobi" class="mt-2 w-full rounded-xl px-4 py-3 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors">
+            </div>
+
+            <div>
+                <label class="text-sm text-gray-300 font-bold">Currency</label>
+                <select id="pCurrency" class="w-full mt-2 bg-transparent border border-white/5 focus:border-[#ff610a] focus:outline-none transition-colors">
+                    <option value="" class="bg-gray-900 text-gray-400">Select currency</option>
+                    <?php foreach ($currencies as $code => $label): ?>
+                        <option value="<?php echo htmlspecialchars($code); ?>" class="bg-gray-900" <?php echo ($currentUser['currency'] ?? 'NGN') === $code ? 'selected' : ''; ?>><?php echo htmlspecialchars($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
             </div>
 
             <hr class="border-white/10">
@@ -81,7 +135,30 @@ ob_start();
     </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <script>
+const COUNTRY_DATA = <?php echo json_encode(!empty($countryData) ? array_combine(array_map(fn($c) => $c['name'], $countryData), $countryData) : [], JSON_UNESCAPED_UNICODE); ?>;
+
+document.addEventListener('DOMContentLoaded', function() {
+    var countryTs = new TomSelect('#pCountry', {
+        placeholder: 'Search country...',
+        allowEmptyOption: true,
+        maxItems: 1,
+        onChange: function (value) {
+            var country = COUNTRY_DATA[value];
+            var currencyTs = document.getElementById('pCurrency').tomselect;
+            if (country && country.currencyCode && currencyTs) {
+                currencyTs.setValue(country.currencyCode);
+            }
+        }
+    });
+    var currencyTs = new TomSelect('#pCurrency', {
+        placeholder: 'Search currency...',
+        allowEmptyOption: true,
+        maxItems: 1,
+    });
+});
+
 // Transaction PIN
 document.getElementById('pinSaveBtn')?.addEventListener('click', async function() {
     var btn = this;
@@ -164,6 +241,9 @@ document.getElementById('saveBtn').addEventListener('click', async function() {
         name: document.getElementById('name').value,
         email: document.getElementById('email').value,
         phone: document.getElementById('phone').value,
+        country: document.getElementById('pCountry').value,
+        state: document.getElementById('pState').value,
+        currency: document.getElementById('pCurrency').value || 'NGN',
     };
     if (password) {
         if (!currentPassword) {
