@@ -98,10 +98,8 @@ ob_start();
                     </select>
                 </div>
                 <div>
-                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">City / State</label>
-                    <select id="pState" placeholder="Type to search cities..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
-                        <option value="" class="bg-gray-900 text-gray-400">Type or select a city...</option>
-                    </select>
+                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">State / Region</label>
+                    <input type="text" id="pState" placeholder="e.g. Lagos, Accra, Nairobi" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
                 </div>
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Currency</label>
@@ -269,51 +267,9 @@ function initFormTomSelects() {
             if (country && country.currencyCode && currencyTs) {
                 currencyTs.setValue(country.currencyCode);
             }
-            var cityTs = document.getElementById('pState').tomselect;
-            if (cityTs && country && country.alpha2Code) {
-                fetch('https://countries.dev/cities?country=' + encodeURIComponent(country.alpha2Code) + '&limit=20')
-                    .then(function (r) { return r.ok ? r.json() : []; })
-                    .then(function (cities) {
-                        cityTs.clearOptions();
-                        cityTs.addOption({ value: '', text: 'Type or select a city...' });
-                        cities.forEach(function (c) {
-                            cityTs.addOption({ value: c.name, text: c.name + (c.admin1Code ? ', ' + c.admin1Code : '') });
-                        });
-                        cityTs.refreshOptions();
-                    })
-                    .catch(function () {});
-            }
         }
     });
     formTomSelects.push(countryTs);
-
-    var cityTs = new TomSelect('#pState', {
-        placeholder: 'Type to search cities...',
-        allowEmptyOption: true,
-        maxItems: 1,
-        create: true,
-        valueField: 'value',
-        labelField: 'text',
-        searchField: ['text'],
-        load: function (query, callback) {
-            if (!query || query.length < 2) return callback();
-            var countryEl = document.getElementById('pCountry');
-            var countryInfo = COUNTRY_DATA[countryEl ? countryEl.value : ''] || {};
-            var alpha2 = countryInfo.alpha2Code || '';
-            var url = alpha2
-                ? 'https://countries.dev/cities?country=' + encodeURIComponent(alpha2) + '&q=' + encodeURIComponent(query) + '&limit=20'
-                : 'https://countries.dev/cities?q=' + encodeURIComponent(query) + '&limit=20';
-            fetch(url)
-                .then(function (r) { return r.ok ? r.json() : []; })
-                .then(function (data) {
-                    callback(data.map(function (c) {
-                        return { value: c.name, text: c.name + (c.admin1Code ? ', ' + c.admin1Code : '') };
-                    }));
-                })
-                .catch(function () { callback(); });
-        }
-    });
-    formTomSelects.push(cityTs);
 
     var currencyTs = new TomSelect('#pCurrency', {
         placeholder: 'Search currency...',
