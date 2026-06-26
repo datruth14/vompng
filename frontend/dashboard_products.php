@@ -191,8 +191,10 @@ function toggleAddForm() {
     const form = document.getElementById('addProductForm');
     form.classList.toggle('hidden');
     if (form.classList.contains('hidden')) {
+        destroyFormTomSelects();
         resetForm();
     } else {
+        initFormTomSelects();
         document.getElementById('pMediaField').classList.remove('hidden');
         document.getElementById('pMedia').removeAttribute('required');
     }
@@ -224,6 +226,11 @@ function editProduct(id, name, price, description, country, state, currency) {
     document.getElementById('productFormMsg').innerHTML = '';
     document.getElementById('formTitle').textContent = 'Edit Product';
     document.getElementById('pMediaField').classList.add('hidden');
+
+    const form = document.getElementById('addProductForm');
+    form.classList.remove('hidden');
+    initFormTomSelects();
+
     ['pCountry', 'pState', 'pCurrency'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el) {
@@ -233,31 +240,27 @@ function editProduct(id, name, price, description, country, state, currency) {
         }
     });
 
-
-    const form = document.getElementById('addProductForm');
-    form.classList.remove('hidden');
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 /* Country data mapping: name -> {alpha2, currency} from API */
 const COUNTRY_DATA = <?php echo json_encode(!empty($countryData) ? array_combine(array_map(fn($c) => $c['name'], $countryData), $countryData) : [], JSON_UNESCAPED_UNICODE); ?>;
 
-/* Country data mapping: name -> {alpha2, currency} from API */
-const COUNTRY_DATA = <?php echo json_encode(!empty($countryData) ? array_combine(array_map(fn($c) => $c['name'], $countryData), $countryData) : [], JSON_UNESCAPED_UNICODE); ?>;
-
-document.addEventListener('DOMContentLoaded', function () {
-    /* Country TomSelect */
-    new TomSelect('#pCountry', {
+/* Init form TomSelects (called when form is shown) */
+var formTomSelects = [];
+function initFormTomSelects() {
+    destroyFormTomSelects();
+    var countryTs = new TomSelect('#pCountry', {
         placeholder: 'Search country...',
         allowEmptyOption: true,
         maxItems: 1,
         onChange: function (value) {
-            const country = COUNTRY_DATA[value];
-            const currencyTs = document.getElementById('pCurrency').tomselect;
+            var country = COUNTRY_DATA[value];
+            var currencyTs = document.getElementById('pCurrency').tomselect;
             if (country && country.currencyCode && currencyTs) {
                 currencyTs.setValue(country.currencyCode);
             }
-            const cityTs = document.getElementById('pState').tomselect;
+            var cityTs = document.getElementById('pState').tomselect;
             if (cityTs && country && country.alpha2Code) {
                 fetch('https://countries.dev/cities?country=' + encodeURIComponent(country.alpha2Code) + '&limit=20')
                     .then(function (r) { return r.ok ? r.json() : []; })
@@ -273,9 +276,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+    formTomSelects.push(countryTs);
 
-    /* City TomSelect with remote load */
-    new TomSelect('#pState', {
+    var cityTs = new TomSelect('#pState', {
         placeholder: 'Type to search cities...',
         allowEmptyOption: true,
         maxItems: 1,
@@ -301,14 +304,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 .catch(function () { callback(); });
         }
     });
+    formTomSelects.push(cityTs);
 
-    /* Currency TomSelect */
-    new TomSelect('#pCurrency', {
+    var currencyTs = new TomSelect('#pCurrency', {
         placeholder: 'Search currency...',
         allowEmptyOption: true,
         maxItems: 1,
     });
-});
+    formTomSelects.push(currencyTs);
+}
+
+function destroyFormTomSelects() {
+    formTomSelects.forEach(function (ts) { ts.destroy(); });
+    formTomSelects = [];
+}
 
 function compressImage(file, quality = 0.7, maxDim = 1600) {
     return new Promise((resolve) => {
