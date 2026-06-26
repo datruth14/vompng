@@ -730,6 +730,9 @@ if ($method === 'GET') {
         case 'api/track_affiliate_click.php':
             include 'api/track_affiliate_click.php';
             exit;
+        case 'api/admin/reset_password':
+            include 'api/admin/reset_password.php';
+            exit;
         default:
             http_response_code(404);
             echo json_encode(['error' => 'API endpoint not found']);
