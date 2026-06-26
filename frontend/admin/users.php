@@ -31,6 +31,7 @@ ob_start();
                     <th class="text-left p-3">Plan</th>
                     <th class="text-left p-3">Role</th>
                     <th class="text-left p-3">Joined</th>
+                    <th class="text-left p-3">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,6 +70,9 @@ ob_start();
                             <?php endif; ?>
                         </td>
                         <td class="p-3 text-gray-500 text-xs whitespace-nowrap"><?php echo date('M j, Y', strtotime($u['created_at'])); ?></td>
+                        <td class="p-3">
+                            <button onclick="openResetPassword('<?php echo $u['id']; ?>', '<?php echo htmlspecialchars(addslashes($u['name'])); ?>')" class="px-3 py-1.5 rounded-xl bg-amber-500/20 border border-amber-500/30 text-amber-300 text-xs font-bold hover:bg-amber-500/30 transition-all">Reset Password</button>
+                        </td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if (!$users): ?>
@@ -97,6 +101,105 @@ ob_start();
         </div>
     <?php endif; ?>
 </section>
+<!-- Reset Password Modal -->
+<div id="resetPasswordModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/60 backdrop-blur-sm" style="display:none">
+    <div class="bg-gray-900 border border-white/10 rounded-2xl p-6 w-full max-w-md mx-4">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-black text-white">Reset Password</h3>
+            <button onclick="closeResetPassword()" class="p-2 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-all">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+            </button>
+        </div>
+        <p class="text-gray-400 text-sm mb-4">Resetting password for: <strong id="resetUserName" class="text-white"></strong></p>
+        <form id="resetPasswordForm" onsubmit="return false;">
+            <input type="hidden" name="user_id" id="resetUserId">
+            <div class="mb-4">
+                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">New Password</label>
+                <input type="password" name="password" id="resetPassword" required minlength="6" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ff610a]/50 transition-all" placeholder="Min 6 characters">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-400 text-xs font-bold uppercase tracking-wider mb-2">Confirm New Password</label>
+                <input type="password" id="resetPasswordConfirm" required minlength="6" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-[#ff610a]/50 transition-all" placeholder="Repeat password">
+            </div>
+            <div id="resetPasswordError" class="text-red-400 text-sm mb-4 hidden"></div>
+            <div class="flex gap-3">
+                <button type="button" onclick="closeResetPassword()" class="flex-1 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-bold text-sm hover:bg-white/10 transition-all">Cancel</button>
+                <button type="submit" onclick="submitResetPassword()" class="flex-1 px-4 py-3 rounded-xl bg-[#ff610a] text-white font-bold text-sm hover:bg-[#e05500] transition-all">Reset Password</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+let resetUserId = '';
+function openResetPassword(userId, userName) {
+    resetUserId = userId;
+    document.getElementById('resetUserId').value = userId;
+    document.getElementById('resetUserName').textContent = userName;
+    document.getElementById('resetPassword').value = '';
+    document.getElementById('resetPasswordConfirm').value = '';
+    document.getElementById('resetPasswordError').classList.add('hidden');
+    document.getElementById('resetPasswordModal').style.display = 'flex';
+}
+function closeResetPassword() {
+    document.getElementById('resetPasswordModal').style.display = 'none';
+}
+function submitResetPassword() {
+    const password = document.getElementById('resetPassword').value;
+    const confirm = document.getElementById('resetPasswordConfirm').value;
+    const errorEl = document.getElementById('resetPasswordError');
+
+    if (!password || password.length < 6) {
+        errorEl.textContent = 'Password must be at least 6 characters';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+    if (password !== confirm) {
+        errorEl.textContent = 'Passwords do not match';
+        errorEl.classList.remove('hidden');
+        return;
+    }
+
+    errorEl.classList.add('hidden');
+
+    const btn = document.querySelector('#resetPasswordForm button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Resetting...';
+
+    fetch('/api/admin/reset_password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: resetUserId, password })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            closeResetPassword();
+            showToast('Password reset successful');
+        } else {
+            errorEl.textContent = data.error || 'Failed to reset password';
+            errorEl.classList.remove('hidden');
+        }
+    })
+    .catch(() => {
+        errorEl.textContent = 'Network error. Please try again.';
+        errorEl.classList.remove('hidden');
+    })
+    .finally(() => {
+        btn.disabled = false;
+        btn.textContent = 'Reset Password';
+    });
+}
+
+function showToast(msg) {
+    const el = document.createElement('div');
+    el.className = 'fixed bottom-6 right-6 z-50 px-6 py-3 rounded-2xl bg-emerald-600 text-white font-bold text-sm shadow-xl animate__animated animate__fadeInUp';
+    el.textContent = msg;
+    document.body.appendChild(el);
+    setTimeout(() => { el.classList.add('animate__fadeOutDown'); setTimeout(() => el.remove(), 500); }, 3000);
+}
+</script>
+
 <?php
 $content = ob_get_clean();
 ?>

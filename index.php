@@ -625,6 +625,10 @@ if ($method === 'GET') {
             include 'api/admin_export.php';
             exit;
 
+        case $requestPath === 'api/admin/reset_password':
+            include 'api/admin/reset_password.php';
+            exit;
+
         case $requestPath === 'logout':
             include 'api/logout.php';
             exit;
