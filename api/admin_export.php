@@ -81,7 +81,7 @@ if ($type === 'stores') {
 if ($type === 'products') {
     $rows = db_fetch_all('
         SELECT p.name, p.price, s.name AS store_name, p.category,
-               p.is_available, p.product_condition, p.location, p.created_at
+               p.is_available, p.product_condition, p.location, p.affiliate_url, p.created_at
         FROM products p
         JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
         ORDER BY p.created_at DESC
@@ -90,7 +90,7 @@ if ($type === 'products') {
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename="products_export_' . date('Y-m-d') . '.csv"');
     $out = fopen('php://output', 'w');
-    fputcsv($out, ['Product', 'Price (₦)', 'Store', 'Category', 'Available', 'Condition', 'Location', 'Created']);
+    fputcsv($out, ['Product', 'Price (₦)', 'Store', 'Category', 'Available', 'Condition', 'Location', 'Type', 'Affiliate URL', 'Created']);
     foreach ($rows as $r) {
         fputcsv($out, [
             $r['name'],
@@ -100,6 +100,8 @@ if ($type === 'products') {
             (int) ($r['is_available'] ?? 1) === 1 ? 'Yes' : 'No',
             $r['product_condition'] ?? '',
             $r['location'] ?? '',
+            !empty($r['affiliate_url']) ? 'Affiliate' : 'Own',
+            !empty($r['affiliate_url']) ? $r['affiliate_url'] : '',
             $r['created_at'],
         ]);
     }

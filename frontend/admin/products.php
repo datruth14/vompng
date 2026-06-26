@@ -28,6 +28,7 @@ ob_start();
                     <th class="text-left p-3">Store</th>
                     <th class="text-left p-3">Category</th>
                     <th class="text-left p-3">Available</th>
+                    <th class="text-left p-3">Type</th>
                     <th class="text-left p-3">Created</th>
                 </tr>
             </thead>
@@ -49,11 +50,18 @@ ob_start();
                                 <span class="text-rose-400 font-bold">No</span>
                             <?php endif; ?>
                         </td>
+                        <td class="p-3">
+                            <?php if (!empty($p['affiliate_url'])): ?>
+                                <span class="text-purple-400 font-bold">Affiliate</span>
+                            <?php else: ?>
+                                <span class="text-gray-500">Own</span>
+                            <?php endif; ?>
+                        </td>
                         <td class="p-3 text-gray-500 text-xs whitespace-nowrap"><?php echo date('M j, Y', strtotime($p['created_at'])); ?></td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if (!$products): ?>
-                    <tr><td colspan="6" class="p-6 text-center text-gray-500">No products found.</td></tr>
+                    <tr><td colspan="7" class="p-6 text-center text-gray-500">No products found.</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

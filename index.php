@@ -664,6 +664,10 @@ if ($method === 'GET') {
         case 'api/game_exchange.php':
             include 'api/game_exchange.php';
             exit;
+        case 'api/track_affiliate_click':
+        case 'api/track_affiliate_click.php':
+            include 'api/track_affiliate_click.php';
+            exit;
         default:
             http_response_code(404);
             echo json_encode(['error' => 'API endpoint not found']);

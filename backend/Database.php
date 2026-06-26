@@ -265,6 +265,7 @@ function db_init_schema(PDO $db)
 
     db_ensure_column($db, 'bill_payments', 'commission', 'DECIMAL(10,2) DEFAULT 0');
     db_ensure_column($db, 'products', 'location', 'VARCHAR(255)');
+    db_ensure_column($db, 'products', 'affiliate_url', 'TEXT');
 
     // Migration: make token_transactions.store_id nullable and add user_id column
     try {
@@ -385,7 +386,11 @@ function db_last_insert_id()
 
 function img_url($url)
 {
-    if ($url && $url[0] !== '/') {
+    if (!$url) return $url;
+    if (str_starts_with($url, 'http://') || str_starts_with($url, 'https://')) {
+        return $url;
+    }
+    if ($url[0] !== '/') {
         return '/' . $url;
     }
     return $url;

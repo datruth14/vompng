@@ -52,13 +52,16 @@ if ($method === 'POST') {
         $state = $data['state'] ?? '';
         $currency = $data['currency'] ?? 'NGN';
         $mediaUrl = $data['media_url'] ?? '';
+        $affiliateUrl = $data['affiliate_url'] ?? '';
 
         if (!$name) {
             echo json_encode(['success' => false, 'error' => 'Product name is required']);
             exit;
         }
 
-        if (!empty($_FILES['media'])) {
+        $isAffiliate = !empty($affiliateUrl);
+
+        if (!$isAffiliate && !empty($_FILES['media'])) {
             $file = $_FILES['media'];
 
             if ($file['error'] !== UPLOAD_ERR_OK) {
@@ -127,15 +130,17 @@ if ($method === 'POST') {
             $mediaUrl = '/assets/media/images/product_images/' . $uniqueName;
         }
 
-        /* Deduct 10 tokens from user's central balance for publishing this product */
-        $tokenResult = token_deduct_for_product_upload($currentUser['id'], $store['id']);
-        if (!$tokenResult['success']) {
-            http_response_code(402);
-            echo json_encode(['success' => false, 'error' => $tokenResult['error'], 'code' => $tokenResult['code'] ?? null]);
-            exit;
+        /* Deduct 10 tokens only for non-affiliate products */
+        if (!$isAffiliate) {
+            $tokenResult = token_deduct_for_product_upload($currentUser['id'], $store['id']);
+            if (!$tokenResult['success']) {
+                http_response_code(402);
+                echo json_encode(['success' => false, 'error' => $tokenResult['error'], 'code' => $tokenResult['code'] ?? null]);
+                exit;
+            }
         }
 
-        $result = product_create($store['id'], $name, $price, $description, $mediaUrl, 'image', $category, $country, $state, $currency);
+        $result = product_create($store['id'], $name, $price, $description, $mediaUrl, 'image', $category, $country, $state, $currency, $affiliateUrl);
         echo json_encode($result);
         exit;
     }

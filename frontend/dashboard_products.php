@@ -61,6 +61,12 @@ ob_start();
     <!-- Add / Edit Product Form -->
     <div id="addProductForm" class="hidden glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 mb-12 animate__animated animate__fadeInUp">
         <h2 id="formTitle" class="text-2xl font-black text-white mb-6">Create New Product</h2>
+        <!-- Source Tabs -->
+        <div class="flex gap-2 mb-8">
+            <button type="button" id="tabStore" class="source-tab px-6 py-3 rounded-xl font-black text-sm transition-all bg-[#ff610a] text-white shadow-xl shadow-[#ff610a]/20" onclick="switchSource('store')">Add From My Store</button>
+            <button type="button" id="tabAffiliate" class="source-tab px-6 py-3 rounded-xl font-black text-sm transition-all bg-white/5 text-gray-400 hover:bg-white/10" onclick="switchSource('affiliate')">Add From Affiliate Site</button>
+        </div>
+        <input type="hidden" id="pSource" value="store">
         <form id="productForm" class="grid grid-cols-1 md:grid-cols-2 gap-8" enctype="multipart/form-data">
             <input type="hidden" id="pId" value="">
             <div class="space-y-4">
@@ -72,10 +78,24 @@ ob_start();
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Price (₦)</label>
                     <input type="text" id="pPrice" required placeholder="0.00" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
                 </div>
+                <!-- My Store: file upload -->
                 <div id="pMediaField">
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Product Image</label>
                     <input type="file" id="pMedia" accept="image/*" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-gray-400 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all file:bg-[#ff610a]/20 file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-[#ff8c3a] file:font-bold file:text-xs file:cursor-pointer">
                     <p class="text-xs text-gray-500 mt-1">JPG, PNG or WebP (compressed automatically)</p>
+                </div>
+                <!-- Affiliate: image URL + affiliate URL -->
+                <div id="pAffiliateFields" class="hidden space-y-4">
+                    <div>
+                        <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Image URL</label>
+                        <input type="url" id="pMediaUrl" placeholder="https://example.com/image.jpg" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                        <p class="text-xs text-gray-500 mt-1">Direct link to the product image</p>
+                    </div>
+                    <div>
+                        <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Affiliate Product URL</label>
+                        <input type="url" id="pAffiliateUrl" placeholder="https://affiliate-site.com/product/123" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                        <p class="text-xs text-gray-500 mt-1">Where buyers will be redirected to purchase</p>
+                    </div>
                 </div>
             </div>
             <div class="space-y-4">
@@ -130,8 +150,11 @@ ob_start();
         <?php foreach ($products as $p): ?>
             <article class="glass-morphism rounded-[2rem] p-6 border border-white/10 flex flex-col group hover:bg-white/5 transition-all">
                 <?php if ($p['media_url']): ?>
-                    <div class="aspect-square rounded-2xl overflow-hidden mb-6 skeleton-box border border-white/5">
+                    <div class="aspect-square rounded-2xl overflow-hidden mb-6 skeleton-box border border-white/5 relative">
                         <img src="<?php echo htmlspecialchars(img_url($p['media_url'])); ?>" alt="<?php echo htmlspecialchars($p['name']); ?>" class="img-skeleton w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" onerror="this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-gray-600\'><svg class=\'w-10 h-10\' fill=\'none\' stroke=\'currentColor\' stroke-width=\'1.5\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' d=\'M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0022.5 18.75V5.25A2.25 2.25 0 0020.25 3H3.75A2.25 2.25 0 001.5 5.25v13.5A2.25 2.25 0 003.75 21z\'/></svg></div>'">
+                        <?php if (!empty($p['affiliate_url'])): ?>
+                            <span class="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] font-black uppercase tracking-wider">Affiliate</span>
+                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
                 
@@ -149,7 +172,7 @@ ob_start();
                         <span class="text-xs font-black uppercase tracking-wider text-gray-400"><?php echo (int)$p['is_available'] ? 'Live' : 'Hidden'; ?></span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="editProduct(<?php echo htmlspecialchars(json_encode($p['id'])); ?>, <?php echo htmlspecialchars(json_encode($p['name'])); ?>, <?php echo htmlspecialchars(json_encode($p['price'])); ?>, <?php echo htmlspecialchars(json_encode($p['description'])); ?>, <?php echo htmlspecialchars(json_encode($p['country'] ?? 'Nigeria')); ?>, <?php echo htmlspecialchars(json_encode($p['state'] ?? '')); ?>, <?php echo htmlspecialchars(json_encode($p['currency'] ?? 'NGN')); ?>)" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
+                        <button onclick="editProduct(<?php echo htmlspecialchars(json_encode($p['id'])); ?>, <?php echo htmlspecialchars(json_encode($p['name'])); ?>, <?php echo htmlspecialchars(json_encode($p['price'])); ?>, <?php echo htmlspecialchars(json_encode($p['description'])); ?>, <?php echo htmlspecialchars(json_encode($p['country'] ?? 'Nigeria')); ?>, <?php echo htmlspecialchars(json_encode($p['state'] ?? '')); ?>, <?php echo htmlspecialchars(json_encode($p['currency'] ?? 'NGN')); ?>, <?php echo htmlspecialchars(json_encode($p['media_url'] ?? '')); ?>, <?php echo htmlspecialchars(json_encode($p['affiliate_url'] ?? '')); ?>)" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                         </button>
                         <button onclick="deleteProduct('<?php echo $p['id']; ?>')" class="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
@@ -194,6 +217,15 @@ document.getElementById('pPrice').addEventListener('input', function () {
 
 let editingId = null;
 
+function switchSource(source) {
+    document.getElementById('pSource').value = source;
+    document.getElementById('tabStore').className = 'source-tab px-6 py-3 rounded-xl font-black text-sm transition-all ' + (source === 'store' ? 'bg-[#ff610a] text-white shadow-xl shadow-[#ff610a]/20' : 'bg-white/5 text-gray-400 hover:bg-white/10');
+    document.getElementById('tabAffiliate').className = 'source-tab px-6 py-3 rounded-xl font-black text-sm transition-all ' + (source === 'affiliate' ? 'bg-[#ff610a] text-white shadow-xl shadow-[#ff610a]/20' : 'bg-white/5 text-gray-400 hover:bg-white/10');
+    document.getElementById('pMediaField').classList.toggle('hidden', source === 'affiliate');
+    document.getElementById('pAffiliateFields').classList.toggle('hidden', source === 'store');
+    document.getElementById('pMedia').required = (source === 'store');
+}
+
 function toggleAddForm() {
     const form = document.getElementById('addProductForm');
     form.classList.toggle('hidden');
@@ -202,8 +234,7 @@ function toggleAddForm() {
         resetForm();
     } else {
         initFormTomSelects();
-        document.getElementById('pMediaField').classList.remove('hidden');
-        document.getElementById('pMedia').removeAttribute('required');
+        switchSource('store');
     }
 }
 
@@ -214,25 +245,35 @@ function resetForm() {
     document.getElementById('pPrice').value = '';
     document.getElementById('pDesc').value = '';
     document.getElementById('pMedia').value = '';
+    document.getElementById('pMediaUrl').value = '';
+    document.getElementById('pAffiliateUrl').value = '';
     document.getElementById('productFormMsg').innerHTML = '';
     document.getElementById('formTitle').textContent = 'Create New Product';
     document.getElementById('pMediaField').classList.remove('hidden');
+    document.getElementById('pAffiliateFields').classList.add('hidden');
     ['pCountry', 'pState', 'pCurrency'].forEach(function(id) {
         var el = document.getElementById(id);
         if (el && el.tomselect) el.tomselect.setValue('');
     });
 }
 
-function editProduct(id, name, price, description, country, state, currency) {
+function editProduct(id, name, price, description, country, state, currency, mediaUrl, affiliateUrl) {
     editingId = id;
     document.getElementById('pId').value = id;
     document.getElementById('pName').value = name;
     document.getElementById('pPrice').value = formatNumber(price.toString().replace(/[^0-9.]/g, ''));
     document.getElementById('pDesc').value = description;
     document.getElementById('pMedia').value = '';
+    document.getElementById('pMediaUrl').value = mediaUrl || '';
+    document.getElementById('pAffiliateUrl').value = affiliateUrl || '';
     document.getElementById('productFormMsg').innerHTML = '';
     document.getElementById('formTitle').textContent = 'Edit Product';
-    document.getElementById('pMediaField').classList.add('hidden');
+
+    var isAffiliate = affiliateUrl && affiliateUrl.length > 0;
+    switchSource(isAffiliate ? 'affiliate' : 'store');
+    if (isAffiliate) {
+        document.getElementById('pMediaField').classList.add('hidden');
+    }
 
     const form = document.getElementById('addProductForm');
     form.classList.remove('hidden');
@@ -339,6 +380,12 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     formData.append('country', document.getElementById('pCountry').value || 'Nigeria');
     formData.append('state', document.getElementById('pState').value);
     formData.append('currency', document.getElementById('pCurrency').value || 'NGN');
+
+    var source = document.getElementById('pSource').value;
+    if (source === 'affiliate') {
+        formData.append('media_url', document.getElementById('pMediaUrl').value);
+        formData.append('affiliate_url', document.getElementById('pAffiliateUrl').value);
+    }
 
     const fileInput = document.getElementById('pMedia');
     if (fileInput.files.length > 0) {

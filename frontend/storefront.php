@@ -51,12 +51,12 @@ ob_start();
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <?php foreach ($products as $product):
             $pImgUrl = $product['media_url'] ?? '';
-            if ($pImgUrl && $pImgUrl[0] !== '/') {
+            if ($pImgUrl && !str_starts_with($pImgUrl, 'http://') && !str_starts_with($pImgUrl, 'https://') && $pImgUrl[0] !== '/') {
                 $pImgUrl = '/' . $pImgUrl;
             }
         ?>
             <article class="glass-morphism rounded-3xl p-5 border border-white/10 flex flex-col gap-4 animate__animated animate__fadeInUp">
-                <div class="h-52 rounded-2xl overflow-hidden skeleton-box border border-white/5">
+                <div class="h-52 rounded-2xl overflow-hidden skeleton-box border border-white/5 relative">
                     <?php if (!empty($product['media_url'])): ?>
                         <img src="<?php echo htmlspecialchars($pImgUrl); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full h-full object-cover" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')">
                     <?php else: ?>
@@ -65,6 +65,9 @@ ob_start();
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909M3 3h18M3 21h18M9 3v18" />
                             </svg>
                         </div>
+                    <?php endif; ?>
+                    <?php if (!empty($product['affiliate_url'])): ?>
+                        <span class="absolute top-2 right-2 px-2 py-0.5 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] font-black uppercase tracking-wider z-10">Affiliate</span>
                     <?php endif; ?>
                 </div>
                 <div>
@@ -81,7 +84,11 @@ ob_start();
                     <p class="text-[#ff8c3a] font-black text-xl"><?php echo htmlspecialchars(product_get_currency_symbol($product['currency'] ?? 'NGN')); ?><?php echo number_format((float) $product['price'], 2); ?></p>
                     <div class="flex flex-wrap gap-3">
                         <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>/<?php echo htmlspecialchars($product['id']); ?>" class="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-black text-sm hover:bg-white/10 transition-all">View Details</a>
-                        <button class="bg-[#ff610a] px-5 py-2.5 rounded-xl order-btn" data-store="<?php echo htmlspecialchars($store['slug']); ?>" data-product="<?php echo htmlspecialchars($product['id']); ?>">Order via WhatsApp</button>
+                        <?php if (!empty($product['affiliate_url'])): ?>
+                            <a href="<?php echo htmlspecialchars($product['affiliate_url']); ?>" target="_blank" rel="noopener" onclick="trackAffiliateClick('<?php echo $product['id']; ?>', '<?php echo $store['slug']; ?>')" class="bg-[#ff610a] px-5 py-2.5 rounded-xl inline-flex items-center gap-2 text-white font-black text-sm">Buy on Affiliate Site <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg></a>
+                        <?php else: ?>
+                            <button class="bg-[#ff610a] px-5 py-2.5 rounded-xl order-btn" data-store="<?php echo htmlspecialchars($store['slug']); ?>" data-product="<?php echo htmlspecialchars($product['id']); ?>">Order via WhatsApp</button>
+                        <?php endif; ?>
                     </div>
                 </div>
             </article>
@@ -209,6 +216,14 @@ ob_start();
 </div>
 
 <script>
+function trackAffiliateClick(productId, storeSlug) {
+    fetch('/api/track_affiliate_click.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ product_id: productId, store_slug: storeSlug })
+    }).catch(function(){});
+}
+
 let activeOrder = null;
 
 function openOrderModal(btn) {

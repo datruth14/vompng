@@ -10,10 +10,10 @@ ob_start();
     <div class="max-w-5xl mx-auto space-y-10">
         <div class="glass-morphism rounded-[2.5rem] p-8 md:p-12 border border-white/10">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-                <div class="rounded-3xl overflow-hidden skeleton-box border border-white/10 flex items-center justify-center">
+                <div class="rounded-3xl overflow-hidden skeleton-box border border-white/10 flex items-center justify-center relative">
                     <?php
                     $imgUrl = $product['media_url'];
-                    if ($imgUrl && $imgUrl[0] !== '/') {
+                    if ($imgUrl && !str_starts_with($imgUrl, 'http://') && !str_starts_with($imgUrl, 'https://') && $imgUrl[0] !== '/') {
                         $imgUrl = '/' . $imgUrl;
                     }
                     ?>
@@ -21,6 +21,9 @@ ob_start();
                         <img src="<?php echo htmlspecialchars($imgUrl); ?>" alt="<?php echo htmlspecialchars($product['name']); ?>" class="img-skeleton w-full max-h-[500px] object-contain" onload="this.parentElement.classList.remove('skeleton-box');this.classList.add('loaded')" onerror="this.parentElement.innerHTML='<div class=\'h-64 flex items-center justify-center text-gray-500 text-sm\'>Image not available</div>'" />
                     <?php else: ?>
                         <div class="h-64 flex items-center justify-center text-gray-500 text-sm">No image available</div>
+                    <?php endif; ?>
+                    <?php if (!empty($product['affiliate_url'])): ?>
+                        <span class="absolute top-3 right-3 px-3 py-1 rounded-lg bg-purple-500/20 border border-purple-500/30 text-purple-300 text-xs font-black uppercase tracking-wider">Affiliate Product</span>
                     <?php endif; ?>
                 </div>
 
@@ -58,14 +61,18 @@ ob_start();
                             <p class="text-gray-400 text-sm mt-2"><?php echo htmlspecialchars($store['description'] ?: 'No store description'); ?></p>
                         </div>
                         <div class="glass-morphism rounded-3xl p-6 border border-white/10">
-                            <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-400 mb-3">Order</p>
-                            <p class="text-white font-bold">WhatsApp order</p>
-                            <p class="text-gray-400 text-sm mt-2">Place an order directly with the seller via WhatsApp.</p>
+                            <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-400 mb-3"><?php echo !empty($product['affiliate_url']) ? 'Purchase' : 'Order'; ?></p>
+                            <p class="text-white font-bold"><?php echo !empty($product['affiliate_url']) ? 'Affiliate link' : 'WhatsApp order'; ?></p>
+                            <p class="text-gray-400 text-sm mt-2"><?php echo !empty($product['affiliate_url']) ? 'You will be redirected to the affiliate site to complete your purchase.' : 'Place an order directly with the seller via WhatsApp.'; ?></p>
                         </div>
                     </div>
 
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-center animate__animated animate__zoomIn">
-                        <button id="order-now" class="px-8 py-4 rounded-3xl bg-[#ff610a] text-white font-black text-base shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Order via WhatsApp</button>
+                        <?php if (!empty($product['affiliate_url'])): ?>
+                            <a href="<?php echo htmlspecialchars($product['affiliate_url']); ?>" target="_blank" rel="noopener" onclick="trackAffiliateClick('<?php echo $product['id']; ?>', '<?php echo $store['slug']; ?>')" class="px-8 py-4 rounded-3xl bg-[#ff610a] text-white font-black text-base shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all inline-flex items-center gap-2">Buy on Affiliate Site <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" /></svg></a>
+                        <?php else: ?>
+                            <button id="order-now" class="px-8 py-4 rounded-3xl bg-[#ff610a] text-white font-black text-base shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all">Order via WhatsApp</button>
+                        <?php endif; ?>
                         <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>" class="px-8 py-4 rounded-3xl bg-white/5 border border-white/10 text-white font-black text-base text-center hover:bg-white/10 transition-all">Back to storefront</a>
                     </div>
                 </div>
@@ -109,6 +116,14 @@ ob_start();
 </div>
 
 <script>
+function trackAffiliateClick(productId, storeSlug) {
+    fetch('/api/track_affiliate_click.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ product_id: productId, store_slug: storeSlug })
+    }).catch(function(){});
+}
+
 function openOrderModal() {
     document.getElementById('orderModal').classList.remove('hidden');
     document.documentElement.style.overflow = 'hidden';

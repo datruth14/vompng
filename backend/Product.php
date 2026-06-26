@@ -237,16 +237,16 @@ function product_get_by_id_and_store($productId, $storeId)
 
 /* Create a new product record for a store. */
 
-function product_create($storeId, $name, $price, $description = '', $mediaUrl = '', $mediaType = 'image', $category = '', $country = 'Nigeria', $state = '', $currency = 'NGN')
+function product_create($storeId, $name, $price, $description = '', $mediaUrl = '', $mediaType = 'image', $category = '', $country = 'Nigeria', $state = '', $currency = 'NGN', $affiliateUrl = '')
 {
     $db = db_get_connection();
     $id = bin2hex(random_bytes(12));
 
     $stmt = $db->prepare(
-        'INSERT INTO products (id, name, price, description, media_url, media_type, category, store_id, country, state, currency, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
+        'INSERT INTO products (id, name, price, description, media_url, media_type, category, store_id, country, state, currency, affiliate_url, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
     );
 
-    $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $category ?: 'Others', $storeId, $country, $state, $currency]);
+    $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $category ?: 'Others', $storeId, $country, $state, $currency, $affiliateUrl]);
 
     return $result ? ['success' => true, 'id' => $id, 'message' => 'Product created'] : ['success' => false, 'error' => 'Failed to create product'];
 }
@@ -255,7 +255,7 @@ function product_create($storeId, $name, $price, $description = '', $mediaUrl = 
 
 function product_update($productId, $data)
 {
-    $allowed = ['name', 'price', 'description', 'media_url', 'media_type', 'is_available', 'category', 'country', 'state', 'currency'];
+    $allowed = ['name', 'price', 'description', 'media_url', 'media_type', 'is_available', 'category', 'country', 'state', 'currency', 'affiliate_url'];
     $updateData = array_intersect_key($data, array_flip($allowed));
 
     if (empty($updateData)) {

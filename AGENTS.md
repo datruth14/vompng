@@ -88,6 +88,7 @@ api/
   tokens_deduct.php    - POST /api/tokens/deduct
   game_submit_score.php - POST /api/game_submit_score.php
   game_exchange.php    - POST /api/game_exchange.php
+  track_affiliate_click.php - POST /api/track_affiliate_click.php (records affiliate click as an order with "Affiliate Visitor" as customer)
   bill_payment.php     - POST /api/bill_payment.php (airtime, data, electricity, tv, betting, epins, verify)
   bill_variations.php  - GET /api/bill_variations.php
   list_banks.php       - GET /api/list_banks.php
@@ -157,7 +158,7 @@ The `index.php` router sets variables (e.g. `$store`, `$products`, `$transaction
 - `id` VARCHAR(24) PK, `name`, `slug`, `description`, `owner_id`, `contact_phone`, `contact_email`, `logo_url`, `hero_image_url`, `hero_color`, `accent_color`, `token_balance` INT DEFAULT 50, `plan` VARCHAR(20) DEFAULT 'free', `is_active` TINYINT(1) DEFAULT 1, `social_facebook`, `social_instagram`, `social_twitter`, `social_tiktok`, `social_youtube`, `visits` INT DEFAULT 0, `created_at`, `updated_at`
 
 ### Products
-- `id` VARCHAR(24) PK, `name`, `price` DECIMAL(10,2), `description`, `media_url` TEXT, `media_type` VARCHAR(20) DEFAULT 'image', `is_available` TINYINT(1) DEFAULT 1, `category` VARCHAR(100) DEFAULT 'Others', `product_condition` VARCHAR(50) DEFAULT 'Brand-New', `location`, `store_id` VARCHAR(24), `created_at`, `updated_at`
+- `id` VARCHAR(24) PK, `name`, `price` DECIMAL(10,2), `description`, `media_url` TEXT, `media_type` VARCHAR(20) DEFAULT 'image', `is_available` TINYINT(1) DEFAULT 1, `category` VARCHAR(100) DEFAULT 'Others', `product_condition` VARCHAR(50) DEFAULT 'Brand-New', `location`, `store_id` VARCHAR(24), `affiliate_url` TEXT, `created_at`, `updated_at`
 
 ### Orders
 - `id` VARCHAR(24) PK, `store_id` VARCHAR(24), `product_id` VARCHAR(24), `product_name`, `product_price` DECIMAL(10,2), `customer_name`, `customer_phone`, `quantity` INT DEFAULT 1, `status` VARCHAR(20) DEFAULT 'pending', `created_at`
@@ -204,6 +205,7 @@ IDs are generated with `bin2hex(random_bytes(12))` (24-char hex).
 | `/api/tokens/deduct` | Yes | Generate WhatsApp order URL (free, no token deduction) |
 | `/api/game_submit_score.php` | Yes | Submit game score (adds to users.gptokens) |
 | `/api/game_exchange.php` | Yes | Exchange 1M GPTokens for 50 Vomp Coins (atomic) |
+| `/api/track_affiliate_click.php` | No | Record an affiliate click as an order ("Affiliate Visitor" as customer) |
 | `/api/bill_payment.php` | Yes | Pay bill (airtime/data/electricity/tv/betting/epins, requires pin) |
 | `/api/resolve_account.php` | Yes | Resolve bank account number |
 | `/api/save_bank_details.php` | Yes | Save bank details on user profile |
@@ -291,6 +293,16 @@ IDs are generated with `bin2hex(random_bytes(12))` (24-char hex).
 - `admin_commission_summary()` — Returns total_withdrawals, total_naira_withdrawn, total_commission (2% of withdrawals), total_bill_payments, total_bill_commission (sum of bill_payments.commission)
 - Paginated queries: `admin_get_users_paginated`, `admin_get_stores_paginated`, `admin_get_products_paginated`, `admin_get_transactions_paginated`, `admin_get_withdrawals_paginated`, `admin_get_bill_payments_paginated`
 - Search variants for each + count functions
+
+## Affiliate Products
+- Products can be sourced from affiliate sites instead of the seller's own inventory
+- Affiliate products have an `affiliate_url` column in the DB (TEXT, NULL for own products)
+- **Creation:** Dashboard product form has two tabs: "Add From My Store" (file upload) and "Add From Affiliate Site" (image URL + affiliate URL)
+- **Token deduction:** Affiliate products do NOT deduct 10 Vomp Coins (only own products do)
+- **Display:** Affiliate badge (purple "Affiliate" tag) appears on product cards in storefront, marketplace, dashboard, and all products page
+- **Product detail:** Shows "Buy on Affiliate Site" button (external link) instead of "Order via WhatsApp"
+- **Tracking:** Clicking an affiliate link triggers `api/track_affiliate_click.php` via JS (`trackAffiliateClick()` function), which records an order with customer name "Affiliate Visitor"
+- **Affiliate URL:** Seller provides the external purchase URL; buyers are redirected in a new tab on click
 
 ## Token System
 - 1 Vomp Coin (VC) = ₦20
