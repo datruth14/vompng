@@ -16,7 +16,7 @@ A PHP-based marketplace platform where sellers create stores, list products, and
 ## Features
 
 ### Marketplace
-- Public marketplace with product grid, categories, search, storefronts
+- Public marketplace with product grid, categories, country filter, search, storefronts
 - Product detail page with WhatsApp order modal
 - Storefront with custom branding (hero image/color, accent color, social media links)
 - Explore Stores page sorted by product count
@@ -46,6 +46,7 @@ A PHP-based marketplace platform where sellers create stores, list products, and
 
 ### Admin Panel
 - Users, Stores, Products, Transactions, Withdrawals — all with search, pagination, CSV export
+- Admin can reset any user's password via modal on users page
 - Store analytics: unique daily visits + order count per store
 - Store toggle (enable/disable)
 - Admin commission summary (withdrawals + platform fees)
@@ -111,7 +112,7 @@ frontend/
   create_store.php — Create additional store for existing user
   marketplace.php  — Product grid, categories, search, storefronts
   stores.php       — Explore Stores page sorted by product count
-  products.php     — All products with horizontal scroll categories
+  products.php     — All products with country filter, search, category pills, pagination
   storefront.php   — Public storefront (hero, products, social footer, order modal)
   product_detail.php — Single product detail with order form modal
   orders.php       — Token activity with date filtering
@@ -137,6 +138,7 @@ api/
   store_create.php  — POST /api/store_create
   admin/toggle-store.php — POST toggle store active status
   admin/export.php  — GET CSV export (users, stores, products, transactions, withdrawals)
+  admin/reset_password.php — POST admin resets any user's password
   list_banks.php    — GET Paystack bank list (no cache)
   resolve_account.php — POST resolve bank account
   save_bank_details.php — POST save bank details to user

@@ -97,6 +97,8 @@ api/
   orders_export.php    - GET /api/orders_export.php
   admin_export.php     - GET /api/admin/export?type=users|stores|products|transactions|withdrawals|bill_payments
   admin_backfill_bill_commission.php - One-time script to backfill commission on existing bill_payments (admin only)
+  admin/
+    reset_password.php - POST /api/admin/reset_password (admin resets any user's password)
 uploads/               - Uploaded product images
 assets/
   theme.css            - Dark/light mode CSS overrides
@@ -117,7 +119,8 @@ Routes in `index.php`:
 - `GET /dashboard/create-store` → create additional store
 - `GET /dashboard/{slug}` → store overview
 - `GET /dashboard/{slug}/products|settings|tokens` → sub-pages
-- `GET /marketplace` → browse products/stores (`?q=` search, `?category=` filter)
+- `GET /marketplace` → browse products/stores (`?q=` search, `?category=` filter, `?country=` filter)
+- `GET /products` → browse all products (`?q=` search, `?category=` filter, `?country=` filter, paginated)
 - `GET /stores` → browse all storefronts
 - `GET /orders` → vendor order tracking with date filter
 - `GET /profile` → edit user name/email/password/PIN
@@ -209,6 +212,7 @@ IDs are generated with `bin2hex(random_bytes(12))` (24-char hex).
 | `/api/bill_payment.php` | Yes | Pay bill (airtime/data/electricity/tv/betting/epins, requires pin) |
 | `/api/resolve_account.php` | Yes | Resolve bank account number |
 | `/api/save_bank_details.php` | Yes | Save bank details on user profile |
+| `/api/admin/reset_password` | Admin | Reset any user's password (admin only) |
 
 ## Key Backend Functions
 
@@ -347,7 +351,7 @@ IDs are generated with `bin2hex(random_bytes(12))` (24-char hex).
 ## Admin Panel
 - Routes under `/admin/*`, guarded by `auth_is_admin()`
 - Admin dashboard: total users, stores, products, transactions, commission earned
-- Users: list, search, CSV export
+- Users: list, search, CSV export, admin can reset any user's password via modal
 - Stores: list with visits + orders columns, toggle active/inactive, CSV export
 - Products: list, search, CSV export
 - Orders (finance): withdrawals + token transactions + bill payments + commission summary cards, CSV export
