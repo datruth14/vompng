@@ -149,7 +149,7 @@ ob_start();
                         <span class="text-xs font-black uppercase tracking-wider text-gray-400"><?php echo (int)$p['is_available'] ? 'Live' : 'Hidden'; ?></span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="editProduct('<?php echo $p['id']; ?>', '<?php echo addslashes($p['name']); ?>', '<?php echo $p['price']; ?>', '<?php echo addslashes($p['description']); ?>', '<?php echo htmlspecialchars($p['country'] ?? 'Nigeria'); ?>', '<?php echo htmlspecialchars($p['state'] ?? ''); ?>', '<?php echo htmlspecialchars($p['currency'] ?? 'NGN'); ?>')" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
+                        <button onclick="editProduct(<?php echo json_encode($p['id']); ?>, <?php echo json_encode($p['name']); ?>, <?php echo json_encode($p['price']); ?>, <?php echo json_encode($p['description']); ?>, <?php echo json_encode($p['country'] ?? 'Nigeria'); ?>, <?php echo json_encode($p['state'] ?? ''); ?>, <?php echo json_encode($p['currency'] ?? 'NGN'); ?>)" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                         </button>
                         <button onclick="deleteProduct('<?php echo $p['id']; ?>')" class="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
@@ -227,7 +227,7 @@ function editProduct(id, name, price, description, country, state, currency) {
     editingId = id;
     document.getElementById('pId').value = id;
     document.getElementById('pName').value = name;
-    document.getElementById('pPrice').value = formatNumber(price.replace(/[^0-9]/g, ''));
+    document.getElementById('pPrice').value = formatNumber(price.toString().replace(/[^0-9.]/g, ''));
     document.getElementById('pDesc').value = description;
     document.getElementById('pMedia').value = '';
     document.getElementById('productFormMsg').innerHTML = '';
