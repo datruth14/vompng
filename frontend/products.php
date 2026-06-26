@@ -11,9 +11,27 @@ ob_start();
         </div>
     </header>
 
-    <form method="GET" action="/products" class="relative animate__animated animate__fadeInUp">
-        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
-        <input type="text" name="q" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>" placeholder="Search products..." class="w-full rounded-xl px-5 py-3.5 pl-12 bg-transparent border border-white/10 focus:border-[#ff610a] focus:outline-none text-white placeholder-gray-500 transition-colors"/>
+    <form method="GET" action="/products" class="animate__animated animate__fadeInUp">
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="relative flex-1 min-w-[200px]">
+                <input type="text" name="q" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>" placeholder="Search products..." class="w-full rounded-xl px-5 py-3.5 pl-12 bg-transparent border border-white/10 focus:border-[#ff610a] focus:outline-none text-white placeholder-gray-500 transition-colors"/>
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"/></svg>
+                <?php if ($searchQuery): ?>
+                    <a href="/products" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 hover:text-white transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <select name="country" onchange="this.form.submit()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-[#ff610a]/50">
+                <option value="" class="bg-gray-900 text-gray-400">All Countries</option>
+                <?php foreach ($countries as $c): ?>
+                    <option value="<?php echo htmlspecialchars($c); ?>" class="bg-gray-900" <?php echo ($activeCountry ?? '') === $c ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php if ($activeCountry): ?>
+                <a href="/products" class="px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-bold hover:bg-white/10 transition-all">Clear</a>
+            <?php endif; ?>
+        </div>
     </form>
 
     <?php if ($searchQuery): ?>
@@ -87,6 +105,7 @@ ob_start();
                         $params = [];
                         if ($searchQuery) $params['q'] = urlencode($searchQuery);
                         if ($activeCategory) $params['category'] = urlencode($activeCategory);
+                        if ($activeCountry) $params['country'] = urlencode($activeCountry);
                         $params['page'] = $page - 1;
                         echo http_build_query($params);
                     ?>" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">← Prev</a>
@@ -98,6 +117,7 @@ ob_start();
                     $params = [];
                     if ($searchQuery) $params['q'] = urlencode($searchQuery);
                     if ($activeCategory) $params['category'] = urlencode($activeCategory);
+                    if ($activeCountry) $params['country'] = urlencode($activeCountry);
                     $params['page'] = $i;
                 ?>
                     <a href="/products?<?php echo http_build_query($params); ?>" class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold transition-all <?php echo $i === $page ? 'bg-[#ff610a] text-white' : 'bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10'; ?>"><?php echo $i; ?></a>
@@ -107,6 +127,7 @@ ob_start();
                         $params = [];
                         if ($searchQuery) $params['q'] = urlencode($searchQuery);
                         if ($activeCategory) $params['category'] = urlencode($activeCategory);
+                        if ($activeCountry) $params['country'] = urlencode($activeCountry);
                         $params['page'] = $page + 1;
                         echo http_build_query($params);
                     ?>" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white font-bold text-sm hover:bg-white/10 transition-all">Next →</a>

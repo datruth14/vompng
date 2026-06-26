@@ -120,12 +120,17 @@ if ($method === 'GET') {
         case $requestPath === 'products':
             $searchQuery = isset($_GET['q']) && $_GET['q'] !== '' ? trim($_GET['q']) : null;
             $activeCategory = isset($_GET['category']) && $_GET['category'] !== '' ? $_GET['category'] : null;
+            $activeCountry = isset($_GET['country']) && $_GET['country'] !== '' ? $_GET['country'] : null;
             $page = max(1, isset($_GET['page']) ? (int) $_GET['page'] : 1);
             $perPage = 12;
             $categories = product_get_categories();
+            $countries = product_get_countries_with_products();
             if ($searchQuery) {
                 $products = product_search_paginated($searchQuery, $page, $perPage);
                 $totalProducts = product_count_search($searchQuery);
+            } elseif ($activeCountry) {
+                $products = product_get_by_country_currency_paginated($activeCountry, null, $page, $perPage);
+                $totalProducts = product_count_by_country($activeCountry);
             } elseif ($activeCategory) {
                 $products = product_get_by_category_paginated($activeCategory, $page, $perPage);
                 $totalProducts = product_count_by_category($activeCategory);

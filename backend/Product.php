@@ -460,3 +460,11 @@ function product_get_by_country_currency_paginated($country = null, $currency = 
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
 }
+
+function product_count_by_country($country)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id WHERE p.country = ?');
+    $stmt->execute([$country]);
+    return (int) $stmt->fetchColumn();
+}
