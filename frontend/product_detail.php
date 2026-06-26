@@ -37,6 +37,20 @@ ob_start();
                         <?php echo nl2br(htmlspecialchars($product['description'] ?: 'No description provided.')); ?>
                     </div>
 
+                    <div class="flex flex-wrap gap-3 text-sm animate__animated animate__fadeInUp">
+                        <?php if (!empty($product['country'])): ?>
+                            <span class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-300">
+                                <span class="text-gray-500">📍</span> <?php echo htmlspecialchars($product['country']); ?>
+                                <?php if (!empty($product['state'])): ?> &middot; <?php echo htmlspecialchars($product['state']); ?><?php endif; ?>
+                            </span>
+                        <?php endif; ?>
+                        <?php if (!empty($product['currency'])): ?>
+                            <span class="px-3 py-1.5 rounded-xl bg-white/5 border border-white/10 text-gray-300">
+                                <span class="text-gray-500">💱</span> <?php echo htmlspecialchars(product_get_currency_symbol($product['currency'])); ?> <?php echo htmlspecialchars($product['currency']); ?>
+                            </span>
+                        <?php endif; ?>
+                    </div>
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 animate__animated animate__fadeInUp">
                         <div class="glass-morphism rounded-3xl p-6 border border-white/10">
                             <p class="text-xs uppercase tracking-[0.2em] font-black text-gray-400 mb-3">Store</p>

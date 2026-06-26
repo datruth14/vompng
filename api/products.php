@@ -48,6 +48,9 @@ if ($method === 'POST') {
         $price = $data['price'] ?? 0;
         $description = $data['description'] ?? '';
         $category = $data['category'] ?? '';
+        $country = $data['country'] ?? 'Nigeria';
+        $state = $data['state'] ?? '';
+        $currency = $data['currency'] ?? 'NGN';
         $mediaUrl = $data['media_url'] ?? '';
 
         if (!$name) {
@@ -132,7 +135,7 @@ if ($method === 'POST') {
             exit;
         }
 
-        $result = product_create($store['id'], $name, $price, $description, $mediaUrl, 'image', $category);
+        $result = product_create($store['id'], $name, $price, $description, $mediaUrl, 'image', $category, $country, $state, $currency);
         echo json_encode($result);
         exit;
     }

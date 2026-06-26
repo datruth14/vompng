@@ -61,6 +61,56 @@ ob_start();
                     </select>
                 </div>
                 <div>
+                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Country</label>
+                    <select id="pCountry" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                        <option value="" class="bg-gray-900 text-gray-400">Select country</option>
+                        <option value="Nigeria" selected class="bg-gray-900">Nigeria</option>
+                        <option value="Ghana" class="bg-gray-900">Ghana</option>
+                        <option value="Kenya" class="bg-gray-900">Kenya</option>
+                        <option value="South Africa" class="bg-gray-900">South Africa</option>
+                        <option value="Uganda" class="bg-gray-900">Uganda</option>
+                        <option value="Tanzania" class="bg-gray-900">Tanzania</option>
+                        <option value="Rwanda" class="bg-gray-900">Rwanda</option>
+                        <option value="Ethiopia" class="bg-gray-900">Ethiopia</option>
+                        <option value="Egypt" class="bg-gray-900">Egypt</option>
+                        <option value="Morocco" class="bg-gray-900">Morocco</option>
+                        <option value="Zambia" class="bg-gray-900">Zambia</option>
+                        <option value="Zimbabwe" class="bg-gray-900">Zimbabwe</option>
+                        <option value="Botswana" class="bg-gray-900">Botswana</option>
+                        <option value="Namibia" class="bg-gray-900">Namibia</option>
+                        <option value="Mozambique" class="bg-gray-900">Mozambique</option>
+                        <option value="Senegal" class="bg-gray-900">Senegal</option>
+                        <option value="Ivory Coast" class="bg-gray-900">Ivory Coast</option>
+                        <option value="Cameroon" class="bg-gray-900">Cameroon</option>
+                        <option value="Angola" class="bg-gray-900">Angola</option>
+                        <option value="DRC" class="bg-gray-900">DRC</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">State / Region</label>
+                    <input type="text" id="pState" placeholder="e.g. Lagos, Accra, Nairobi" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                </div>
+                <div>
+                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Currency</label>
+                    <select id="pCurrency" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                        <option value="" class="bg-gray-900 text-gray-400">Select currency</option>
+                        <option value="NGN" selected class="bg-gray-900">₦ (NGN)</option>
+                        <option value="GHS" class="bg-gray-900">GH₵ (GHS)</option>
+                        <option value="KES" class="bg-gray-900">KSh (KES)</option>
+                        <option value="ZAR" class="bg-gray-900">R (ZAR)</option>
+                        <option value="UGX" class="bg-gray-900">USh (UGX)</option>
+                        <option value="TZS" class="bg-gray-900">TSh (TZS)</option>
+                        <option value="RWF" class="bg-gray-900">FRw (RWF)</option>
+                        <option value="ETB" class="bg-gray-900">Br (ETB)</option>
+                        <option value="EGP" class="bg-gray-900">E£ (EGP)</option>
+                        <option value="MAD" class="bg-gray-900">MAD</option>
+                        <option value="ZMW" class="bg-gray-900">ZK (ZMW)</option>
+                        <option value="USD" class="bg-gray-900">$ (USD)</option>
+                        <option value="EUR" class="bg-gray-900">€ (EUR)</option>
+                        <option value="GBP" class="bg-gray-900">£ (GBP)</option>
+                    </select>
+                </div>
+                <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Description</label>
                     <textarea id="pDesc" rows="6" placeholder="Describe your product..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all"></textarea>
                 </div>
@@ -99,7 +149,7 @@ ob_start();
                         <span class="text-xs font-black uppercase tracking-wider text-gray-400"><?php echo (int)$p['is_available'] ? 'Live' : 'Hidden'; ?></span>
                     </div>
                     <div class="flex gap-2">
-                        <button onclick="editProduct('<?php echo $p['id']; ?>', '<?php echo addslashes($p['name']); ?>', '<?php echo $p['price']; ?>', '<?php echo addslashes($p['description']); ?>')" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
+                        <button onclick="editProduct('<?php echo $p['id']; ?>', '<?php echo addslashes($p['name']); ?>', '<?php echo $p['price']; ?>', '<?php echo addslashes($p['description']); ?>', '<?php echo htmlspecialchars($p['country'] ?? 'Nigeria'); ?>', '<?php echo htmlspecialchars($p['state'] ?? ''); ?>', '<?php echo htmlspecialchars($p['currency'] ?? 'NGN'); ?>')" class="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400 hover:bg-indigo-500 hover:text-white transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" /></svg>
                         </button>
                         <button onclick="deleteProduct('<?php echo $p['id']; ?>')" class="p-2.5 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
@@ -157,7 +207,7 @@ function resetForm() {
     document.getElementById('pMediaField').classList.remove('hidden');
 }
 
-function editProduct(id, name, price, description) {
+function editProduct(id, name, price, description, country, state, currency) {
     editingId = id;
     document.getElementById('pId').value = id;
     document.getElementById('pName').value = name;
@@ -167,6 +217,9 @@ function editProduct(id, name, price, description) {
     document.getElementById('productFormMsg').innerHTML = '';
     document.getElementById('formTitle').textContent = 'Edit Product';
     document.getElementById('pMediaField').classList.add('hidden');
+    if (document.getElementById('pCountry')) document.getElementById('pCountry').value = country || 'Nigeria';
+    if (document.getElementById('pState')) document.getElementById('pState').value = state || '';
+    if (document.getElementById('pCurrency')) document.getElementById('pCurrency').value = currency || 'NGN';
 
     const form = document.getElementById('addProductForm');
     form.classList.remove('hidden');
@@ -225,6 +278,9 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     formData.append('price', document.getElementById('pPrice').value.replace(/,/g, ''));
     formData.append('description', document.getElementById('pDesc').value);
     formData.append('category', document.getElementById('pCategory').value);
+    formData.append('country', document.getElementById('pCountry').value || 'Nigeria');
+    formData.append('state', document.getElementById('pState').value);
+    formData.append('currency', document.getElementById('pCurrency').value || 'NGN');
 
     const fileInput = document.getElementById('pMedia');
     if (fileInput.files.length > 0) {

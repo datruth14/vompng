@@ -237,16 +237,16 @@ function product_get_by_id_and_store($productId, $storeId)
 
 /* Create a new product record for a store. */
 
-function product_create($storeId, $name, $price, $description = '', $mediaUrl = '', $mediaType = 'image', $category = '')
+function product_create($storeId, $name, $price, $description = '', $mediaUrl = '', $mediaType = 'image', $category = '', $country = 'Nigeria', $state = '', $currency = 'NGN')
 {
     $db = db_get_connection();
     $id = bin2hex(random_bytes(12));
 
     $stmt = $db->prepare(
-        'INSERT INTO products (id, name, price, description, media_url, media_type, category, store_id, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
+        'INSERT INTO products (id, name, price, description, media_url, media_type, category, store_id, country, state, currency, is_available, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, NOW(), NOW())'
     );
 
-    $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $category ?: 'Others', $storeId]);
+    $result = $stmt->execute([$id, $name, $price, $description, $mediaUrl, $mediaType, $category ?: 'Others', $storeId, $country, $state, $currency]);
 
     return $result ? ['success' => true, 'id' => $id, 'message' => 'Product created'] : ['success' => false, 'error' => 'Failed to create product'];
 }
@@ -255,7 +255,7 @@ function product_create($storeId, $name, $price, $description = '', $mediaUrl = 
 
 function product_update($productId, $data)
 {
-    $allowed = ['name', 'price', 'description', 'media_url', 'media_type', 'is_available', 'category'];
+    $allowed = ['name', 'price', 'description', 'media_url', 'media_type', 'is_available', 'category', 'country', 'state', 'currency'];
     $updateData = array_intersect_key($data, array_flip($allowed));
 
     if (empty($updateData)) {
@@ -341,4 +341,70 @@ function product_count_by_user_id($userId)
     ');
     $stmt->execute([$userId]);
     return (int) $stmt->fetchColumn();
+}
+
+function product_get_countries()
+{
+    return ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Uganda', 'Tanzania', 'Rwanda', 'Ethiopia', 'Egypt', 'Morocco', 'Zambia', 'Zimbabwe', 'Botswana', 'Namibia', 'Mozambique', 'Senegal', 'Ivory Coast', 'Cameroon', 'Angola', 'DRC'];
+}
+
+function product_get_currencies()
+{
+    return [
+        'NGN' => '₦ (NGN)',
+        'GHS' => 'GH₵ (GHS)',
+        'KES' => 'KSh (KES)',
+        'ZAR' => 'R (ZAR)',
+        'UGX' => 'USh (UGX)',
+        'TZS' => 'TSh (TZS)',
+        'RWF' => 'FRw (RWF)',
+        'ETB' => 'Br (ETB)',
+        'EGP' => 'E£ (EGP)',
+        'MAD' => 'MAD',
+        'ZMW' => 'ZK (ZMW)',
+        'USD' => '$ (USD)',
+        'EUR' => '€ (EUR)',
+        'GBP' => '£ (GBP)',
+    ];
+}
+
+function product_get_by_country_currency_paginated($country = null, $currency = null, $page = 1, $perPage = 50)
+{
+    $db = db_get_connection();
+    $offset = max(0, ($page - 1) * $perPage);
+    $conditions = [];
+    $params = [];
+    if ($country) {
+        $conditions[] = 'p.country = ?';
+        $params[] = $country;
+    }
+    if ($currency) {
+        $conditions[] = 'p.currency = ?';
+        $params[] = $currency;
+    }
+    $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
+    $params[] = (int) $perPage;
+    $params[] = (int) $offset;
+    $stmt = $db->prepare("
+        SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
+        FROM products p
+        LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        $where
+        ORDER BY p.created_at DESC
+        LIMIT ? OFFSET ?
+    ");
+    $stmt->execute($params);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function product_get_country_by_code($code)
+{
+    $map = ['NGN' => 'Nigeria', 'GHS' => 'Ghana', 'KES' => 'Kenya', 'ZAR' => 'South Africa', 'UGX' => 'Uganda', 'TZS' => 'Tanzania', 'RWF' => 'Rwanda', 'ETB' => 'Ethiopia', 'EGP' => 'Egypt', 'MAD' => 'Morocco', 'USD' => 'United States', 'EUR' => 'Europe', 'GBP' => 'United Kingdom'];
+    return $map[$code] ?? '';
+}
+
+function product_get_currency_symbol($code)
+{
+    $map = ['NGN' => '₦', 'GHS' => 'GH₵', 'KES' => 'KSh', 'ZAR' => 'R', 'UGX' => 'USh', 'TZS' => 'TSh', 'RWF' => 'FRw', 'ETB' => 'Br', 'EGP' => 'E£', 'MAD' => 'MAD', 'ZMW' => 'ZK', 'USD' => '$', 'EUR' => '€', 'GBP' => '£'];
+    return $map[$code] ?? $code;
 }

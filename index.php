@@ -157,10 +157,17 @@ if ($method === 'GET') {
             $stores = store_get_top_active_paginated(1, 6);
             $categories = product_get_categories();
             $activeCategory = isset($_GET['category']) && $_GET['category'] !== '' ? $_GET['category'] : null;
+            $activeCountry = isset($_GET['country']) && $_GET['country'] !== '' ? $_GET['country'] : null;
+            $activeCurrency = isset($_GET['currency']) && $_GET['currency'] !== '' ? $_GET['currency'] : null;
+            $countries = product_get_countries();
+            $currencies = product_get_currencies();
 
             if ($searchQuery) {
                 $allProducts = product_search_paginated($searchQuery, 1, 8);
                 $searchStores = store_search_paginated($searchQuery, 1, 8);
+            } elseif ($activeCountry || $activeCurrency) {
+                $allProducts = product_get_by_country_currency_paginated($activeCountry, $activeCurrency, 1, 8);
+                $searchStores = null;
             } elseif ($activeCategory) {
                 $allProducts = product_get_by_category_paginated($activeCategory, 1, 8);
                 $searchStores = null;

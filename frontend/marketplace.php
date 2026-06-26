@@ -11,7 +11,7 @@ ob_start();
     </div>
 
     <!-- Search Bar -->
-    <form method="GET" action="/marketplace" class="mb-6 animate__animated animate__fadeInUp">
+    <form method="GET" action="/marketplace" class="mb-6 space-y-4 animate__animated animate__fadeInUp">
         <div class="relative max-w-xl">
             <input type="text" name="q" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>" placeholder="Search products or stores..." class="w-full rounded-xl px-5 py-3.5 pl-12 bg-transparent border border-white/10 focus:border-[#ff610a] focus:outline-none text-white placeholder-gray-500 transition-colors" />
             <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
@@ -19,6 +19,23 @@ ob_start();
                 <a href="/marketplace" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 hover:text-white transition-colors">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
                 </a>
+            <?php endif; ?>
+        </div>
+        <div class="flex flex-wrap gap-3">
+            <select name="country" onchange="this.form.submit()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#ff610a]/50">
+                <option value="" class="bg-gray-900 text-gray-400">All Countries</option>
+                <?php foreach ($countries as $c): ?>
+                    <option value="<?php echo htmlspecialchars($c); ?>" class="bg-gray-900" <?php echo ($activeCountry ?? '') === $c ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <select name="currency" onchange="this.form.submit()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#ff610a]/50">
+                <option value="" class="bg-gray-900 text-gray-400">All Currencies</option>
+                <?php foreach ($currencies as $code => $label): ?>
+                    <option value="<?php echo htmlspecialchars($code); ?>" class="bg-gray-900" <?php echo ($activeCurrency ?? '') === $code ? 'selected' : ''; ?>><?php echo htmlspecialchars($label); ?></option>
+                <?php endforeach; ?>
+            </select>
+            <?php if ($activeCountry || $activeCurrency): ?>
+                <a href="/marketplace" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-bold hover:bg-white/10 transition-all">Clear</a>
             <?php endif; ?>
         </div>
     </form>
@@ -103,6 +120,15 @@ ob_start();
                         <?php endif; ?>
                         <?php if (!empty($p['product_condition'])): ?>
                             <p class="text-[10px] text-gray-600 mt-0.5"><?php echo htmlspecialchars($p['product_condition']); ?></p>
+                        <?php endif; ?>
+                        <?php if (!empty($p['country'])): ?>
+                            <p class="text-[10px] text-gray-600 mt-0.5 flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" /></svg>
+                                <?php echo htmlspecialchars($p['country']); ?>
+                                <?php if (!empty($p['currency'])): ?>
+                                    &middot; <?php echo htmlspecialchars(product_get_currency_symbol($p['currency'])); ?>
+                                <?php endif; ?>
+                            </p>
                         <?php endif; ?>
                     </div>
                 </a>

@@ -259,6 +259,9 @@ function db_init_schema(PDO $db)
     db_ensure_column($db, 'products', 'is_available', "TINYINT(1) DEFAULT 1");
     db_ensure_column($db, 'products', 'category', "VARCHAR(100) DEFAULT 'Others'");
     db_ensure_column($db, 'products', 'product_condition', "VARCHAR(50) DEFAULT 'Brand-New'");
+    db_ensure_column($db, 'products', 'country', "VARCHAR(100) DEFAULT 'Nigeria'");
+    db_ensure_column($db, 'products', 'state', "VARCHAR(100) DEFAULT ''");
+    db_ensure_column($db, 'products', 'currency', "VARCHAR(10) DEFAULT 'NGN'");
 
     db_ensure_column($db, 'bill_payments', 'commission', 'DECIMAL(10,2) DEFAULT 0');
     db_ensure_column($db, 'products', 'location', 'VARCHAR(255)');

@@ -69,7 +69,13 @@ ob_start();
                 </div>
                 <div>
                     <h3 class="text-2xl font-black text-white"><?php echo htmlspecialchars($product['name']); ?></h3>
-                    <p class="text-gray-400 text-sm mt-2"><?php echo htmlspecialchars($product['description'] ?: ''); ?></p>
+                    <p class="text-gray-400 text-sm mt-2 line-clamp-2"><?php echo htmlspecialchars($product['description'] ?: ''); ?></p>
+                    <?php if (!empty($product['country'])): ?>
+                        <div class="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                            <span>📍 <?php echo htmlspecialchars($product['country']); ?><?php if (!empty($product['state'])): ?> &middot; <?php echo htmlspecialchars($product['state']); ?><?php endif; ?></span>
+                            <span>💱 <?php echo htmlspecialchars(product_get_currency_symbol($product['currency'] ?? 'NGN')); ?> <?php echo htmlspecialchars($product['currency'] ?? 'NGN'); ?></span>
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <div class="mt-auto flex flex-col gap-3">
                     <p class="text-[#ff8c3a] font-black text-xl">₦<?php echo number_format((float) $product['price'], 2); ?></p>
