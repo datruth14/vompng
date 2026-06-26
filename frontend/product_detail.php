@@ -36,8 +36,18 @@ ob_start();
                         <span class="text-3xl font-black text-[#ff8c3a] whitespace-nowrap"><?php echo htmlspecialchars(product_get_currency_symbol($product['currency'] ?? 'NGN')); ?><?php echo number_format((float) $product['price'], 2); ?></span>
                     </div>
 
+                    <?php
+                    $fullDesc = $product['description'] ?: 'No description provided.';
+                    $words = explode(' ', $fullDesc);
+                    $showTruncate = count($words) > 70;
+                    $shortDesc = $showTruncate ? implode(' ', array_slice($words, 0, 70)) . '...' : $fullDesc;
+                    ?>
                     <div class="text-gray-400 text-base leading-7 animate__animated animate__fadeInUp">
-                        <?php echo nl2br(htmlspecialchars($product['description'] ?: 'No description provided.')); ?>
+                        <span id="descShort"><?php echo nl2br(htmlspecialchars($shortDesc)); ?></span>
+                        <span id="descFull" class="hidden"><?php echo nl2br(htmlspecialchars($fullDesc)); ?></span>
+                        <?php if ($showTruncate): ?>
+                            <button onclick="toggleDesc()" id="descToggle" class="text-[#ff610a] hover:underline font-bold text-sm ml-1">See more</button>
+                        <?php endif; ?>
                     </div>
 
                     <div class="flex flex-wrap gap-3 text-sm animate__animated animate__fadeInUp">
@@ -116,6 +126,21 @@ ob_start();
 </div>
 
 <script>
+function toggleDesc() {
+    var short = document.getElementById('descShort');
+    var full = document.getElementById('descFull');
+    var btn = document.getElementById('descToggle');
+    if (full.classList.contains('hidden')) {
+        full.classList.remove('hidden');
+        short.classList.add('hidden');
+        btn.textContent = 'Show less';
+    } else {
+        full.classList.add('hidden');
+        short.classList.remove('hidden');
+        btn.textContent = 'See more';
+    }
+}
+
 function trackAffiliateClick(productId, storeSlug) {
     fetch('/api/track_affiliate_click.php', {
         method: 'POST',
