@@ -374,7 +374,7 @@ function _countries_dev_fetch($endpoint, $cacheFile, $ttl = 86400)
 
 function product_get_countries()
 {
-    $data = _countries_dev_fetch('/countries?fields=name,alpha2Code&limit=250', 'countries.dev_countries.json');
+    $data = _countries_dev_fetch('/countries?fields=name,alpha2Code,currencies&limit=250', 'countries.dev_countries.json');
     if ($data === null || !is_array($data)) {
         return ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Uganda', 'Tanzania', 'Rwanda', 'Ethiopia', 'Egypt', 'Morocco', 'Zambia', 'Zimbabwe', 'Botswana', 'Namibia', 'Mozambique', 'Senegal', 'Ivory Coast', 'Cameroon', 'Angola', 'DRC'];
     }
@@ -385,10 +385,18 @@ function product_get_countries()
 
 function product_get_country_data()
 {
-    $data = _countries_dev_fetch('/countries?fields=name,alpha2Code&limit=250', 'countries.dev_countries.json');
+    $data = _countries_dev_fetch('/countries?fields=name,alpha2Code,currencies&limit=250', 'countries.dev_countries.json');
     if ($data === null || !is_array($data)) return [];
     usort($data, fn($a, $b) => strcmp($a['name'], $b['name']));
-    return $data;
+    $result = [];
+    foreach ($data as $c) {
+        $currencyCode = '';
+        if (!empty($c['currencies']) && is_array($c['currencies'])) {
+            $currencyCode = $c['currencies'][0]['code'] ?? '';
+        }
+        $result[] = ['name' => $c['name'], 'alpha2Code' => $c['alpha2Code'], 'currencyCode' => $currencyCode];
+    }
+    return $result;
 }
 
 function product_get_currencies()

@@ -6,6 +6,34 @@
 $pageTitle = 'Manage Products - vomp';
 ob_start();
 ?>
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+<style>
+.ts-wrapper .ts-control {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.875rem;
+    box-shadow: none;
+}
+.ts-wrapper .ts-control:hover { border-color: rgba(255,255,255,0.15); }
+.ts-wrapper.focus .ts-control { border-color: rgba(255,97,10,0.5); box-shadow: none; }
+.ts-wrapper .ts-control input { color: #fff; }
+.ts-wrapper .ts-control .item { color: #fff; background: rgba(255,255,255,0.1); border-radius: 0.375rem; }
+.ts-dropdown {
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    color: #fff;
+    z-index: 9999;
+}
+.ts-dropdown .option { color: #ccc; padding: 0.5rem 1rem; }
+.ts-dropdown .option.active { background: rgba(255,97,10,0.2); color: #fff; }
+.ts-dropdown .option.highlight { background: rgba(255,97,10,0.3); color: #fff; }
+.ts-dropdown .no-results { color: #666; padding: 0.5rem 1rem; }
+.ts-wrapper .ts-control .dropdown-active { border-color: rgba(255,97,10,0.5); }
+</style>
 <section class="py-6 md:py-10 space-y-12">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
@@ -71,10 +99,9 @@ ob_start();
                 </div>
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">City / State</label>
-                    <div class="relative">
-                        <input type="text" id="pState" autocomplete="off" placeholder="Start typing a city name or enter state" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
-                        <div id="citySuggestions" class="hidden absolute z-20 top-full left-0 right-0 mt-1 rounded-2xl bg-gray-900 border border-white/10 max-h-48 overflow-y-auto shadow-xl"></div>
-                    </div>
+                    <select id="pState" placeholder="Type to search cities..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                        <option value="" class="bg-gray-900 text-gray-400">Type or select a city...</option>
+                    </select>
                 </div>
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Currency</label>
@@ -147,6 +174,7 @@ ob_start();
     </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <script>
 function formatNumber(n) {
     return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -180,8 +208,10 @@ function resetForm() {
     document.getElementById('productFormMsg').innerHTML = '';
     document.getElementById('formTitle').textContent = 'Create New Product';
     document.getElementById('pMediaField').classList.remove('hidden');
-    const suggestions = document.getElementById('citySuggestions');
-    if (suggestions) suggestions.classList.add('hidden');
+    ['pCountry', 'pState', 'pCurrency'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el && el.tomselect) el.tomselect.setValue('');
+    });
 }
 
 function editProduct(id, name, price, description, country, state, currency) {
@@ -194,9 +224,14 @@ function editProduct(id, name, price, description, country, state, currency) {
     document.getElementById('productFormMsg').innerHTML = '';
     document.getElementById('formTitle').textContent = 'Edit Product';
     document.getElementById('pMediaField').classList.add('hidden');
-    if (document.getElementById('pCountry')) document.getElementById('pCountry').value = country || 'Nigeria';
-    if (document.getElementById('pState')) document.getElementById('pState').value = state || '';
-    if (document.getElementById('pCurrency')) document.getElementById('pCurrency').value = currency || 'NGN';
+    ['pCountry', 'pState', 'pCurrency'].forEach(function(id) {
+        var el = document.getElementById(id);
+        if (el) {
+            var val = id === 'pCountry' ? (country || 'Nigeria') : id === 'pState' ? (state || '') : (currency || 'NGN');
+            if (el.tomselect) { el.tomselect.setValue(val); }
+            else { el.value = val; }
+        }
+    });
 
 
     const form = document.getElementById('addProductForm');
@@ -204,50 +239,75 @@ function editProduct(id, name, price, description, country, state, currency) {
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* Country name -> alpha2 mapping from API data */
-const COUNTRY_ALPHA2 = <?php echo json_encode(!empty($countryData) ? array_combine(array_map(fn($c) => $c['name'], $countryData), array_map(fn($c) => $c['alpha2Code'], $countryData)) : [], JSON_UNESCAPED_UNICODE); ?>;
+/* Country data mapping: name -> {alpha2, currency} from API */
+const COUNTRY_DATA = <?php echo json_encode(!empty($countryData) ? array_combine(array_map(fn($c) => $c['name'], $countryData), $countryData) : [], JSON_UNESCAPED_UNICODE); ?>;
 
-/* City autocomplete via countries.dev */
-let cityTimer = null;
-document.getElementById('pState').addEventListener('input', function () {
-    clearTimeout(cityTimer);
-    const suggestions = document.getElementById('citySuggestions');
-    const q = this.value.trim();
-    if (q.length < 2) { suggestions.classList.add('hidden'); return; }
-    const countryEl = document.getElementById('pCountry');
-    const countryName = countryEl ? countryEl.value : '';
-    const alpha2 = COUNTRY_ALPHA2[countryName] || '';
-    cityTimer = setTimeout(async () => {
-        const url = alpha2
-            ? 'https://countries.dev/cities?country=' + encodeURIComponent(alpha2) + '&q=' + encodeURIComponent(q) + '&limit=10'
-            : 'https://countries.dev/cities?q=' + encodeURIComponent(q) + '&limit=10';
-        try {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error();
-            const cities = await res.json();
-            suggestions.innerHTML = '';
-            if (!cities.length) { suggestions.classList.add('hidden'); return; }
-            cities.forEach(c => {
-                const div = document.createElement('div');
-                div.className = 'px-4 py-3 text-sm text-white hover:bg-white/10 cursor-pointer transition-all border-b border-white/5 last:border-0';
-                div.textContent = c.name + (c.admin1Code ? ', ' + c.admin1Code : '');
-                div.onclick = () => {
-                    document.getElementById('pState').value = c.name;
-                    suggestions.classList.add('hidden');
-                };
-                suggestions.appendChild(div);
-            });
-            suggestions.classList.remove('hidden');
-        } catch (e) {
-            suggestions.classList.add('hidden');
+/* Country data mapping: name -> {alpha2, currency} from API */
+const COUNTRY_DATA = <?php echo json_encode(!empty($countryData) ? array_combine(array_map(fn($c) => $c['name'], $countryData), $countryData) : [], JSON_UNESCAPED_UNICODE); ?>;
+
+document.addEventListener('DOMContentLoaded', function () {
+    /* Country TomSelect */
+    new TomSelect('#pCountry', {
+        placeholder: 'Search country...',
+        allowEmptyOption: true,
+        maxItems: 1,
+        onChange: function (value) {
+            const country = COUNTRY_DATA[value];
+            const currencyTs = document.getElementById('pCurrency').tomselect;
+            if (country && country.currencyCode && currencyTs) {
+                currencyTs.setValue(country.currencyCode);
+            }
+            const cityTs = document.getElementById('pState').tomselect;
+            if (cityTs && country && country.alpha2Code) {
+                fetch('https://countries.dev/cities?country=' + encodeURIComponent(country.alpha2Code) + '&limit=20')
+                    .then(function (r) { return r.ok ? r.json() : []; })
+                    .then(function (cities) {
+                        cityTs.clearOptions();
+                        cityTs.addOption({ value: '', text: 'Type or select a city...' });
+                        cities.forEach(function (c) {
+                            cityTs.addOption({ value: c.name, text: c.name + (c.admin1Code ? ', ' + c.admin1Code : '') });
+                        });
+                        cityTs.refreshOptions();
+                    })
+                    .catch(function () {});
+            }
         }
-    }, 300);
-});
-document.addEventListener('click', function (e) {
-    const s = document.getElementById('citySuggestions');
-    if (s && !e.target.closest('#pState') && !e.target.closest('#citySuggestions')) {
-        s.classList.add('hidden');
-    }
+    });
+
+    /* City TomSelect with remote load */
+    new TomSelect('#pState', {
+        placeholder: 'Type to search cities...',
+        allowEmptyOption: true,
+        maxItems: 1,
+        create: true,
+        valueField: 'value',
+        labelField: 'text',
+        searchField: ['text'],
+        load: function (query, callback) {
+            if (!query || query.length < 2) return callback();
+            var countryEl = document.getElementById('pCountry');
+            var countryInfo = COUNTRY_DATA[countryEl ? countryEl.value : ''] || {};
+            var alpha2 = countryInfo.alpha2Code || '';
+            var url = alpha2
+                ? 'https://countries.dev/cities?country=' + encodeURIComponent(alpha2) + '&q=' + encodeURIComponent(query) + '&limit=20'
+                : 'https://countries.dev/cities?q=' + encodeURIComponent(query) + '&limit=20';
+            fetch(url)
+                .then(function (r) { return r.ok ? r.json() : []; })
+                .then(function (data) {
+                    callback(data.map(function (c) {
+                        return { value: c.name, text: c.name + (c.admin1Code ? ', ' + c.admin1Code : '') };
+                    }));
+                })
+                .catch(function () { callback(); });
+        }
+    });
+
+    /* Currency TomSelect */
+    new TomSelect('#pCurrency', {
+        placeholder: 'Search currency...',
+        allowEmptyOption: true,
+        maxItems: 1,
+    });
 });
 
 function compressImage(file, quality = 0.7, maxDim = 1600) {
