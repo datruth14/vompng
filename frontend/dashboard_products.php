@@ -140,7 +140,7 @@ ob_start();
                 <div class="flex-1">
                     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                         <h3 class="text-xl font-black text-white break-words"><?php echo htmlspecialchars($p['name']); ?></h3>
-                        <p class="text-[#ff610a] font-black whitespace-nowrap">₦<?php echo number_format((float)$p['price'], 0); ?></p>
+                        <p class="text-[#ff610a] font-black whitespace-nowrap"><?php echo htmlspecialchars(product_get_currency_symbol($p['currency'] ?? 'NGN')); ?><?php echo number_format((float)$p['price'], 0); ?></p>
                     </div>
                     <p class="text-gray-500 text-sm line-clamp-2 mb-6"><?php echo htmlspecialchars($p['description']); ?></p>
                 </div>
@@ -177,12 +177,21 @@ ob_start();
 <script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <script>
 function formatNumber(n) {
-    return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    var parts = n.toString().split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return parts.join('.');
 }
 
 document.getElementById('pPrice').addEventListener('input', function () {
-    const val = this.value.replace(/[^0-9]/g, '');
-    if (val) this.value = formatNumber(val);
+    var cursor = this.selectionStart;
+    var raw = this.value.replace(/[^0-9.]/g, '');
+    var dots = raw.match(/\./g);
+    if (dots && dots.length > 1) raw = raw.replace(/\.+$/, '');
+    if (raw) {
+        this.value = formatNumber(raw);
+        var diff = this.value.length - raw.length;
+        this.setSelectionRange(cursor + diff, cursor + diff);
+    }
 });
 
 let editingId = null;

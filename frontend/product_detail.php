@@ -30,7 +30,7 @@ ob_start();
                             <p class="text-xs uppercase tracking-[0.2em] font-black text-[#ff610a] mb-2">Product Details</p>
                             <h1 class="text-3xl sm:text-5xl font-black text-white tracking-tight break-words animate__animated animate__fadeInDown"><?php echo htmlspecialchars($product['name']); ?></h1>
                         </div>
-                        <span class="text-3xl font-black text-[#ff8c3a] whitespace-nowrap">₦<?php echo number_format((float) $product['price'], 2); ?></span>
+                        <span class="text-3xl font-black text-[#ff8c3a] whitespace-nowrap"><?php echo htmlspecialchars(product_get_currency_symbol($product['currency'] ?? 'NGN')); ?><?php echo number_format((float) $product['price'], 2); ?></span>
                     </div>
 
                     <div class="text-gray-400 text-base leading-7 animate__animated animate__fadeInUp">

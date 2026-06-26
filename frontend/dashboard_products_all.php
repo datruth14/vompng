@@ -36,7 +36,7 @@ ob_start();
                     <div class="p-5">
                         <div class="flex items-start justify-between gap-2 mb-2">
                             <h3 class="text-lg font-black text-white leading-tight"><?php echo htmlspecialchars($p['name']); ?></h3>
-                            <span class="text-lg font-black text-[#ff610a] flex-shrink-0">₦<?php echo number_format((float) $p['price']); ?></span>
+                            <span class="text-lg font-black text-[#ff610a] flex-shrink-0"><?php echo htmlspecialchars(product_get_currency_symbol($p['currency'] ?? 'NGN')); ?><?php echo number_format((float) $p['price']); ?></span>
                         </div>
                         <a href="/store/<?php echo htmlspecialchars($p['store_slug']); ?>" class="text-xs text-[#ff610a] font-black uppercase tracking-wider hover:underline"><?php echo htmlspecialchars($p['store_name']); ?></a>
                         <div class="flex items-center gap-3 mt-3 text-xs text-gray-500 font-bold">

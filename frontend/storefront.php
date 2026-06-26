@@ -78,7 +78,7 @@ ob_start();
                     <?php endif; ?>
                 </div>
                 <div class="mt-auto flex flex-col gap-3">
-                    <p class="text-[#ff8c3a] font-black text-xl">₦<?php echo number_format((float) $product['price'], 2); ?></p>
+                    <p class="text-[#ff8c3a] font-black text-xl"><?php echo htmlspecialchars(product_get_currency_symbol($product['currency'] ?? 'NGN')); ?><?php echo number_format((float) $product['price'], 2); ?></p>
                     <div class="flex flex-wrap gap-3">
                         <a href="/store/<?php echo htmlspecialchars($store['slug']); ?>/<?php echo htmlspecialchars($product['id']); ?>" class="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white font-black text-sm hover:bg-white/10 transition-all">View Details</a>
                         <button class="bg-[#ff610a] px-5 py-2.5 rounded-xl order-btn" data-store="<?php echo htmlspecialchars($store['slug']); ?>" data-product="<?php echo htmlspecialchars($product['id']); ?>">Order via WhatsApp</button>

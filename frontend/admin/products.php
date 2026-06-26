@@ -35,7 +35,7 @@ ob_start();
                 <?php foreach ($products as $p): ?>
                     <tr class="border-t border-white/5 hover:bg-white/[0.02]">
                         <td class="p-3 text-white font-bold"><?php echo htmlspecialchars($p['name']); ?></td>
-                        <td class="p-3 text-[#ff8c3a] font-bold">₦<?php echo number_format((float) $p['price'], 2); ?></td>
+                        <td class="p-3 text-[#ff8c3a] font-bold"><?php echo htmlspecialchars(product_get_currency_symbol($p['currency'] ?? 'NGN')); ?><?php echo number_format((float) $p['price'], 2); ?></td>
                         <td class="p-3">
                             <a href="/store/<?php echo htmlspecialchars($p['slug'] ?? $p['store_slug'] ?? ''); ?>" target="_blank" class="text-gray-400 hover:text-white transition-colors">
                                 <?php echo htmlspecialchars($p['store_name'] ?? '-'); ?>
