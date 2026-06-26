@@ -343,29 +343,78 @@ function product_count_by_user_id($userId)
     return (int) $stmt->fetchColumn();
 }
 
+/* countries.dev API helper - fetches with file cache */
+function _countries_dev_fetch($endpoint, $cacheFile, $ttl = 86400)
+{
+    $cachePath = __DIR__ . '/../cache/' . $cacheFile;
+
+    if (is_file($cachePath) && (time() - filemtime($cachePath)) < $ttl) {
+        $data = json_decode(file_get_contents($cachePath), true);
+        if ($data !== null) return $data;
+    }
+
+    $url = 'https://countries.dev' . $endpoint;
+    $ctx = stream_context_create(['http' => ['timeout' => 10, 'user_agent' => 'VomP/1.0']]);
+    $response = @file_get_contents($url, false, $ctx);
+
+    if ($response === false) {
+        if (is_file($cachePath)) {
+            $data = json_decode(file_get_contents($cachePath), true);
+            if ($data !== null) return $data;
+        }
+        return null;
+    }
+
+    $data = json_decode($response, true);
+    if ($data === null) return null;
+
+    file_put_contents($cachePath, json_encode($data));
+    return $data;
+}
+
 function product_get_countries()
 {
-    return ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Uganda', 'Tanzania', 'Rwanda', 'Ethiopia', 'Egypt', 'Morocco', 'Zambia', 'Zimbabwe', 'Botswana', 'Namibia', 'Mozambique', 'Senegal', 'Ivory Coast', 'Cameroon', 'Angola', 'DRC'];
+    $data = _countries_dev_fetch('/countries?fields=name,alpha2Code&limit=250', 'countries.dev_countries.json');
+    if ($data === null || !is_array($data)) {
+        return ['Nigeria', 'Ghana', 'Kenya', 'South Africa', 'Uganda', 'Tanzania', 'Rwanda', 'Ethiopia', 'Egypt', 'Morocco', 'Zambia', 'Zimbabwe', 'Botswana', 'Namibia', 'Mozambique', 'Senegal', 'Ivory Coast', 'Cameroon', 'Angola', 'DRC'];
+    }
+    $names = array_map(fn($c) => $c['name'], $data);
+    sort($names);
+    return $names;
+}
+
+function product_get_country_data()
+{
+    $data = _countries_dev_fetch('/countries?fields=name,alpha2Code&limit=250', 'countries.dev_countries.json');
+    if ($data === null || !is_array($data)) return [];
+    usort($data, fn($a, $b) => strcmp($a['name'], $b['name']));
+    return $data;
 }
 
 function product_get_currencies()
 {
-    return [
-        'NGN' => '₦ (NGN)',
-        'GHS' => 'GH₵ (GHS)',
-        'KES' => 'KSh (KES)',
-        'ZAR' => 'R (ZAR)',
-        'UGX' => 'USh (UGX)',
-        'TZS' => 'TSh (TZS)',
-        'RWF' => 'FRw (RWF)',
-        'ETB' => 'Br (ETB)',
-        'EGP' => 'E£ (EGP)',
-        'MAD' => 'MAD',
-        'ZMW' => 'ZK (ZMW)',
-        'USD' => '$ (USD)',
-        'EUR' => '€ (EUR)',
-        'GBP' => '£ (GBP)',
-    ];
+    $data = _countries_dev_fetch('/currencies', 'countries.dev_currencies.json');
+    if ($data === null || !is_array($data)) {
+        return ['NGN' => '₦ (NGN)', 'GHS' => 'GH₵ (GHS)', 'KES' => 'KSh (KES)', 'ZAR' => 'R (ZAR)', 'UGX' => 'USh (UGX)', 'TZS' => 'TSh (TZS)', 'RWF' => 'FRw (RWF)', 'ETB' => 'Br (ETB)', 'EGP' => 'E£ (EGP)', 'MAD' => 'MAD', 'ZMW' => 'ZK (ZMW)', 'USD' => '$ (USD)', 'EUR' => '€ (EUR)', 'GBP' => '£ (GBP)'];
+    }
+    $result = [];
+    foreach ($data as $c) {
+        $result[$c['code']] = ($c['symbol'] ?: $c['code']) . ' (' . $c['code'] . ')';
+    }
+    ksort($result);
+    return $result;
+}
+
+function product_get_currency_symbol($code)
+{
+    $data = _countries_dev_fetch('/currencies', 'countries.dev_currencies.json');
+    if ($data !== null && is_array($data)) {
+        foreach ($data as $c) {
+            if ($c['code'] === $code) return $c['symbol'] ?: $code;
+        }
+    }
+    $map = ['NGN' => '₦', 'GHS' => 'GH₵', 'KES' => 'KSh', 'ZAR' => 'R', 'UGX' => 'USh', 'TZS' => 'TSh', 'RWF' => 'FRw', 'ETB' => 'Br', 'EGP' => 'E£', 'MAD' => 'MAD', 'ZMW' => 'ZK', 'USD' => '$', 'EUR' => '€', 'GBP' => '£'];
+    return $map[$code] ?? $code;
 }
 
 function product_get_by_country_currency_paginated($country = null, $currency = null, $page = 1, $perPage = 50)
@@ -395,16 +444,4 @@ function product_get_by_country_currency_paginated($country = null, $currency = 
     ");
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
-}
-
-function product_get_country_by_code($code)
-{
-    $map = ['NGN' => 'Nigeria', 'GHS' => 'Ghana', 'KES' => 'Kenya', 'ZAR' => 'South Africa', 'UGX' => 'Uganda', 'TZS' => 'Tanzania', 'RWF' => 'Rwanda', 'ETB' => 'Ethiopia', 'EGP' => 'Egypt', 'MAD' => 'Morocco', 'USD' => 'United States', 'EUR' => 'Europe', 'GBP' => 'United Kingdom'];
-    return $map[$code] ?? '';
-}
-
-function product_get_currency_symbol($code)
-{
-    $map = ['NGN' => '₦', 'GHS' => 'GH₵', 'KES' => 'KSh', 'ZAR' => 'R', 'UGX' => 'USh', 'TZS' => 'TSh', 'RWF' => 'FRw', 'ETB' => 'Br', 'EGP' => 'E£', 'MAD' => 'MAD', 'ZMW' => 'ZK', 'USD' => '$', 'EUR' => '€', 'GBP' => '£'];
-    return $map[$code] ?? $code;
 }

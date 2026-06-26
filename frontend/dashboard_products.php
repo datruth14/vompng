@@ -64,50 +64,25 @@ ob_start();
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Country</label>
                     <select id="pCountry" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
                         <option value="" class="bg-gray-900 text-gray-400">Select country</option>
-                        <option value="Nigeria" selected class="bg-gray-900">Nigeria</option>
-                        <option value="Ghana" class="bg-gray-900">Ghana</option>
-                        <option value="Kenya" class="bg-gray-900">Kenya</option>
-                        <option value="South Africa" class="bg-gray-900">South Africa</option>
-                        <option value="Uganda" class="bg-gray-900">Uganda</option>
-                        <option value="Tanzania" class="bg-gray-900">Tanzania</option>
-                        <option value="Rwanda" class="bg-gray-900">Rwanda</option>
-                        <option value="Ethiopia" class="bg-gray-900">Ethiopia</option>
-                        <option value="Egypt" class="bg-gray-900">Egypt</option>
-                        <option value="Morocco" class="bg-gray-900">Morocco</option>
-                        <option value="Zambia" class="bg-gray-900">Zambia</option>
-                        <option value="Zimbabwe" class="bg-gray-900">Zimbabwe</option>
-                        <option value="Botswana" class="bg-gray-900">Botswana</option>
-                        <option value="Namibia" class="bg-gray-900">Namibia</option>
-                        <option value="Mozambique" class="bg-gray-900">Mozambique</option>
-                        <option value="Senegal" class="bg-gray-900">Senegal</option>
-                        <option value="Ivory Coast" class="bg-gray-900">Ivory Coast</option>
-                        <option value="Cameroon" class="bg-gray-900">Cameroon</option>
-                        <option value="Angola" class="bg-gray-900">Angola</option>
-                        <option value="DRC" class="bg-gray-900">DRC</option>
+                        <?php foreach ($countries as $c): ?>
+                            <option value="<?php echo htmlspecialchars($c); ?>" class="bg-gray-900" <?php echo $c === 'Nigeria' ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div>
-                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">State / Region</label>
-                    <input type="text" id="pState" placeholder="e.g. Lagos, Accra, Nairobi" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">City / State</label>
+                    <div class="relative">
+                        <input type="text" id="pState" autocomplete="off" placeholder="Start typing a city name or enter state" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                        <div id="citySuggestions" class="hidden absolute z-20 top-full left-0 right-0 mt-1 rounded-2xl bg-gray-900 border border-white/10 max-h-48 overflow-y-auto shadow-xl"></div>
+                    </div>
                 </div>
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Currency</label>
                     <select id="pCurrency" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
                         <option value="" class="bg-gray-900 text-gray-400">Select currency</option>
-                        <option value="NGN" selected class="bg-gray-900">₦ (NGN)</option>
-                        <option value="GHS" class="bg-gray-900">GH₵ (GHS)</option>
-                        <option value="KES" class="bg-gray-900">KSh (KES)</option>
-                        <option value="ZAR" class="bg-gray-900">R (ZAR)</option>
-                        <option value="UGX" class="bg-gray-900">USh (UGX)</option>
-                        <option value="TZS" class="bg-gray-900">TSh (TZS)</option>
-                        <option value="RWF" class="bg-gray-900">FRw (RWF)</option>
-                        <option value="ETB" class="bg-gray-900">Br (ETB)</option>
-                        <option value="EGP" class="bg-gray-900">E£ (EGP)</option>
-                        <option value="MAD" class="bg-gray-900">MAD</option>
-                        <option value="ZMW" class="bg-gray-900">ZK (ZMW)</option>
-                        <option value="USD" class="bg-gray-900">$ (USD)</option>
-                        <option value="EUR" class="bg-gray-900">€ (EUR)</option>
-                        <option value="GBP" class="bg-gray-900">£ (GBP)</option>
+                        <?php foreach ($currencies as $code => $label): ?>
+                            <option value="<?php echo htmlspecialchars($code); ?>" class="bg-gray-900" <?php echo $code === 'NGN' ? 'selected' : ''; ?>><?php echo htmlspecialchars($label); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
                 <div>
@@ -205,6 +180,8 @@ function resetForm() {
     document.getElementById('productFormMsg').innerHTML = '';
     document.getElementById('formTitle').textContent = 'Create New Product';
     document.getElementById('pMediaField').classList.remove('hidden');
+    const suggestions = document.getElementById('citySuggestions');
+    if (suggestions) suggestions.classList.add('hidden');
 }
 
 function editProduct(id, name, price, description, country, state, currency) {
@@ -221,10 +198,57 @@ function editProduct(id, name, price, description, country, state, currency) {
     if (document.getElementById('pState')) document.getElementById('pState').value = state || '';
     if (document.getElementById('pCurrency')) document.getElementById('pCurrency').value = currency || 'NGN';
 
+
     const form = document.getElementById('addProductForm');
     form.classList.remove('hidden');
     form.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+/* Country name -> alpha2 mapping from API data */
+const COUNTRY_ALPHA2 = <?php echo json_encode(!empty($countryData) ? array_combine(array_map(fn($c) => $c['name'], $countryData), array_map(fn($c) => $c['alpha2Code'], $countryData)) : [], JSON_UNESCAPED_UNICODE); ?>;
+
+/* City autocomplete via countries.dev */
+let cityTimer = null;
+document.getElementById('pState').addEventListener('input', function () {
+    clearTimeout(cityTimer);
+    const suggestions = document.getElementById('citySuggestions');
+    const q = this.value.trim();
+    if (q.length < 2) { suggestions.classList.add('hidden'); return; }
+    const countryEl = document.getElementById('pCountry');
+    const countryName = countryEl ? countryEl.value : '';
+    const alpha2 = COUNTRY_ALPHA2[countryName] || '';
+    cityTimer = setTimeout(async () => {
+        const url = alpha2
+            ? 'https://countries.dev/cities?country=' + encodeURIComponent(alpha2) + '&q=' + encodeURIComponent(q) + '&limit=10'
+            : 'https://countries.dev/cities?q=' + encodeURIComponent(q) + '&limit=10';
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error();
+            const cities = await res.json();
+            suggestions.innerHTML = '';
+            if (!cities.length) { suggestions.classList.add('hidden'); return; }
+            cities.forEach(c => {
+                const div = document.createElement('div');
+                div.className = 'px-4 py-3 text-sm text-white hover:bg-white/10 cursor-pointer transition-all border-b border-white/5 last:border-0';
+                div.textContent = c.name + (c.admin1Code ? ', ' + c.admin1Code : '');
+                div.onclick = () => {
+                    document.getElementById('pState').value = c.name;
+                    suggestions.classList.add('hidden');
+                };
+                suggestions.appendChild(div);
+            });
+            suggestions.classList.remove('hidden');
+        } catch (e) {
+            suggestions.classList.add('hidden');
+        }
+    }, 300);
+});
+document.addEventListener('click', function (e) {
+    const s = document.getElementById('citySuggestions');
+    if (s && !e.target.closest('#pState') && !e.target.closest('#citySuggestions')) {
+        s.classList.add('hidden');
+    }
+});
 
 function compressImage(file, quality = 0.7, maxDim = 1600) {
     return new Promise((resolve) => {
