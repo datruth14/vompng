@@ -447,15 +447,15 @@ function product_get_by_country_currency_paginated($country = null, $currency = 
         $params[] = $currency;
     }
     $where = $conditions ? 'WHERE ' . implode(' AND ', $conditions) : '';
-    $params[] = (int) $perPage;
-    $params[] = (int) $offset;
+    $limit = (int) $perPage;
+    $off = (int) $offset;
     $stmt = $db->prepare("
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
         LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
         $where
         ORDER BY p.created_at DESC
-        LIMIT ? OFFSET ?
+        LIMIT $limit OFFSET $off
     ");
     $stmt->execute($params);
     return $stmt->fetchAll(PDO::FETCH_ASSOC);
