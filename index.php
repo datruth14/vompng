@@ -386,6 +386,7 @@ if ($method === 'GET') {
             }
             $products = product_get_products_by_store($store['id']);
             $productCategories = product_get_categories();
+            $currencies = product_get_currencies();
             include 'frontend/dashboard_products.php';
             break;
 

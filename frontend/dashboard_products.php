@@ -7,6 +7,34 @@ $pageTitle = 'Manage Products - vomp';
 ob_start();
 ?>
 
+<link href="https://cdn.jsdelivr.net/npm/tom-select/dist/css/tom-select.css" rel="stylesheet" />
+<style>
+.ts-wrapper .ts-control {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    color: #fff;
+    font-size: 0.875rem;
+    box-shadow: none;
+}
+.ts-wrapper .ts-control:hover { border-color: rgba(255,255,255,0.15); }
+.ts-wrapper.focus .ts-control { border-color: rgba(255,97,10,0.5); box-shadow: none; }
+.ts-wrapper .ts-control input { color: #ff610a; }
+.ts-wrapper .ts-control .item { color: #fff; background: rgba(255,255,255,0.1); border-radius: 0.375rem; }
+.ts-dropdown {
+    background: #1a1a2e;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 0.75rem;
+    color: #fff;
+    z-index: 9999;
+}
+.ts-dropdown .option { color: #ccc; padding: 0.5rem 1rem; }
+.ts-dropdown .option.active { background: rgba(255,97,10,0.2); color: #fff; }
+.ts-dropdown .option.highlight { background: rgba(255,97,10,0.3); color: #fff; }
+.ts-dropdown .no-results { color: #666; padding: 0.5rem 1rem; }
+.ts-wrapper .ts-control .dropdown-active { border-color: rgba(255,97,10,0.5); }
+</style>
 <section class="py-6 md:py-10 space-y-12">
     <header class="flex flex-col md:flex-row md:items-end justify-between gap-6 animate__animated animate__fadeInDown">
         <div>
@@ -28,15 +56,15 @@ ob_start();
                 <span class="text-xs text-gray-500 font-bold"><?php echo number_format((int) ($currentUser['token_balance'] ?? 0)); ?> Vomp Coins remaining &bull; 10 Vomp Coins per product</span>
             <?php endif; ?>
             <button onclick="toggleAddForm()" <?php
-                $btnDisabled = (int) ($currentUser['token_balance'] ?? 0) < 10 || empty($currentUser['country']) || empty($currentUser['currency']);
-                $btnTitle = (int) ($currentUser['token_balance'] ?? 0) < 10 ? 'Need at least 10 Vomp Coins' : (empty($currentUser['country']) || empty($currentUser['currency']) ? 'Complete your profile first' : '');
+                $btnDisabled = (int) ($currentUser['token_balance'] ?? 0) < 10 || empty($currentUser['country']);
+                $btnTitle = (int) ($currentUser['token_balance'] ?? 0) < 10 ? 'Need at least 10 Vomp Coins' : (empty($currentUser['country']) ? 'Complete your profile first' : '');
                 echo $btnDisabled ? 'disabled title="' . $btnTitle . '"' : '';
             ?> class="btn-press px-8 py-4 rounded-2xl bg-[#ff610a] text-white font-black text-sm shadow-xl shadow-[#ff610a]/20 hover:bg-[#e05500] transition-all disabled:opacity-40 disabled:cursor-not-allowed">Add New Product</button>
         </div>
     </header>
 
     <?php
-    $profileOk = !empty($currentUser['country']) && !empty($currentUser['currency']);
+    $profileOk = !empty($currentUser['country']);
     if (!$profileOk):
     ?>
     <div class="glass-morphism rounded-[2.5rem] p-8 md:p-10 border border-white/10 mb-12 text-center animate__animated animate__fadeInUp">
@@ -99,6 +127,15 @@ ob_start();
                     </select>
                 </div>
 
+                <div>
+                    <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Currency</label>
+                    <select id="pCurrency" class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all">
+                        <option value="" class="bg-gray-900 text-gray-400">Select currency</option>
+                        <?php foreach ($currencies as $code => $label): ?>
+                            <option value="<?php echo htmlspecialchars($code); ?>" class="bg-gray-900" <?php echo ($currentUser['currency'] ?? 'NGN') === $code ? 'selected' : ''; ?>><?php echo htmlspecialchars($label); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
                 <div>
                     <label class="field-label block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Description</label>
                     <textarea id="pDesc" rows="6" placeholder="Describe your product..." class="w-full bg-white/5 border border-white/5 rounded-2xl px-4 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 focus:bg-white/[0.08] transition-all"></textarea>
@@ -165,7 +202,17 @@ ob_start();
     </div>
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/tom-select/dist/js/tom-select.complete.min.js"></script>
 <script>
+var currencyTs;
+document.addEventListener('DOMContentLoaded', function () {
+    currencyTs = new TomSelect('#pCurrency', {
+        placeholder: 'Search currency...',
+        allowEmptyOption: true,
+        maxItems: 1,
+    });
+});
+
 function formatNumber(n) {
     var parts = n.toString().split('.');
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -297,7 +344,7 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
     formData.append('category', document.getElementById('pCategory').value);
     formData.append('country', '<?php echo htmlspecialchars($currentUser['country'] ?? 'Nigeria'); ?>');
     formData.append('state', '<?php echo htmlspecialchars($currentUser['state'] ?? ''); ?>');
-    formData.append('currency', '<?php echo htmlspecialchars($currentUser['currency'] ?? 'NGN'); ?>');
+    formData.append('currency', document.getElementById('pCurrency').value || 'NGN');
 
     var source = document.getElementById('pSource').value;
     if (source === 'affiliate') {
