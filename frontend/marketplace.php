@@ -10,26 +10,26 @@ ob_start();
         <p class="text-gray-400">Discover products from stores across Nigeria.</p>
     </div>
 
-    <!-- Search Bar -->
-    <form method="GET" action="/marketplace" class="mb-6 space-y-4 animate__animated animate__fadeInUp">
-        <div class="relative max-w-xl">
-            <input type="text" name="q" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>" placeholder="Search products or stores..." class="w-full rounded-xl px-5 py-3.5 pl-12 bg-transparent border border-white/10 focus:border-[#ff610a] focus:outline-none text-white placeholder-gray-500 transition-colors" />
-            <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
-            <?php if ($searchQuery): ?>
-                <a href="/marketplace" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 hover:text-white transition-colors">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                </a>
-            <?php endif; ?>
-        </div>
-        <div class="flex flex-wrap gap-3">
-            <select name="country" onchange="this.form.submit()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#ff610a]/50">
+    <!-- Search Bar + Filters -->
+    <form method="GET" action="/marketplace" class="mb-6 animate__animated animate__fadeInUp">
+        <div class="flex flex-wrap items-center gap-3">
+            <div class="relative flex-1 min-w-[200px]">
+                <input type="text" name="q" value="<?php echo htmlspecialchars($searchQuery ?? ''); ?>" placeholder="Search products or stores..." class="w-full rounded-xl px-5 py-3.5 pl-12 bg-transparent border border-white/10 focus:border-[#ff610a] focus:outline-none text-white placeholder-gray-500 transition-colors" />
+                <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" /></svg>
+                <?php if ($searchQuery): ?>
+                    <a href="/marketplace" class="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full text-gray-500 hover:text-white transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                    </a>
+                <?php endif; ?>
+            </div>
+            <select name="country" onchange="this.form.submit()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-sm text-white focus:outline-none focus:border-[#ff610a]/50">
                 <option value="" class="bg-gray-900 text-gray-400">All Countries</option>
                 <?php foreach ($countries as $c): ?>
                     <option value="<?php echo htmlspecialchars($c); ?>" class="bg-gray-900" <?php echo ($activeCountry ?? '') === $c ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
                 <?php endforeach; ?>
             </select>
             <?php if ($activeCountry): ?>
-                <a href="/marketplace" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-bold hover:bg-white/10 transition-all">Clear</a>
+                <a href="/marketplace" class="px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-bold hover:bg-white/10 transition-all">Clear</a>
             <?php endif; ?>
         </div>
     </form>
