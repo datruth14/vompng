@@ -39,8 +39,8 @@ ob_start();
                     <?php
                     $fullDesc = $product['description'] ?: 'No description provided.';
                     $words = explode(' ', $fullDesc);
-                    $showTruncate = count($words) > 70;
-                    $shortDesc = $showTruncate ? implode(' ', array_slice($words, 0, 70)) . '...' : $fullDesc;
+    $showTruncate = count($words) > 40;
+    $shortDesc = $showTruncate ? implode(' ', array_slice($words, 0, 40)) . '...' : $fullDesc;
                     ?>
                     <div class="text-gray-400 text-base leading-7 animate__animated animate__fadeInUp">
                         <span id="descShort"><?php echo nl2br(htmlspecialchars($shortDesc)); ?></span>
