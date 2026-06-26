@@ -383,6 +383,13 @@ function product_get_countries()
     return $names;
 }
 
+function product_get_countries_with_products()
+{
+    $db = db_get_connection();
+    $stmt = $db->query("SELECT DISTINCT country FROM products WHERE country IS NOT NULL AND country != '' ORDER BY country ASC");
+    return array_map(fn($r) => $r['country'], $stmt->fetchAll(PDO::FETCH_ASSOC));
+}
+
 function product_get_country_data()
 {
     $data = _countries_dev_fetch('/countries?fields=name,alpha2Code,currencies&limit=250', 'countries.dev_countries.json');

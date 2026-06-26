@@ -28,13 +28,7 @@ ob_start();
                     <option value="<?php echo htmlspecialchars($c); ?>" class="bg-gray-900" <?php echo ($activeCountry ?? '') === $c ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
                 <?php endforeach; ?>
             </select>
-            <select name="currency" onchange="this.form.submit()" class="bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#ff610a]/50">
-                <option value="" class="bg-gray-900 text-gray-400">All Currencies</option>
-                <?php foreach ($currencies as $code => $label): ?>
-                    <option value="<?php echo htmlspecialchars($code); ?>" class="bg-gray-900" <?php echo ($activeCurrency ?? '') === $code ? 'selected' : ''; ?>><?php echo htmlspecialchars($label); ?></option>
-                <?php endforeach; ?>
-            </select>
-            <?php if ($activeCountry || $activeCurrency): ?>
+            <?php if ($activeCountry): ?>
                 <a href="/marketplace" class="px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-gray-400 text-sm font-bold hover:bg-white/10 transition-all">Clear</a>
             <?php endif; ?>
         </div>
