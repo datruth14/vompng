@@ -95,6 +95,7 @@ function product_get_all_available_paginated($page = 1, $perPage = 50)
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
         LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
+        WHERE p.media_url IS NOT NULL AND p.media_url != \'\'
         ORDER BY RAND()
         LIMIT ? OFFSET ?
     ');
@@ -107,7 +108,7 @@ function product_get_all_available_paginated($page = 1, $perPage = 50)
 function product_count_all_available()
 {
     $db = db_get_connection();
-    return (int) $db->query('SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id')->fetchColumn();
+    return (int) $db->query("SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id WHERE p.media_url IS NOT NULL AND p.media_url != ''")->fetchColumn();
 }
 
 function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
@@ -118,7 +119,7 @@ function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
         LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
-        WHERE p.category = ?
+        WHERE p.category = ? AND p.media_url IS NOT NULL AND p.media_url != \'\'
         ORDER BY RAND()
         LIMIT ? OFFSET ?
     ');
@@ -132,7 +133,7 @@ function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
 function product_count_by_category($category)
 {
     $db = db_get_connection();
-    $stmt = $db->prepare('SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id WHERE p.category = ?');
+    $stmt = $db->prepare("SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id WHERE p.category = ? AND p.media_url IS NOT NULL AND p.media_url != ''");
     $stmt->execute([$category]);
     return (int) $stmt->fetchColumn();
 }
@@ -146,7 +147,7 @@ function product_search_paginated($query, $page = 1, $perPage = 50)
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
         LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
-        WHERE p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?
+        WHERE (p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?) AND p.media_url IS NOT NULL AND p.media_url != \'\'
         ORDER BY RAND()
         LIMIT ? OFFSET ?
     ');
@@ -163,7 +164,7 @@ function product_count_search($query)
 {
     $db = db_get_connection();
     $like = '%' . $query . '%';
-    $stmt = $db->prepare('SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id WHERE p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?');
+    $stmt = $db->prepare("SELECT COUNT(*) FROM products p LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id WHERE (p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?) AND p.media_url IS NOT NULL AND p.media_url != ''");
     $stmt->execute([$like, $like, $like]);
     return (int) $stmt->fetchColumn();
 }
