@@ -44,5 +44,6 @@ next-env.d.ts
 .aider*
 database/vomp.db
 assets/uploads/
+assets/media/
 
 /vendor/
