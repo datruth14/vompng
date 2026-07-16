@@ -95,7 +95,7 @@ function product_get_all_available_paginated($page = 1, $perPage = 50)
         SELECT p.*, s.name AS store_name, s.slug AS store_slug, s.contact_phone
         FROM products p
         LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
-        ORDER BY p.created_at DESC
+        ORDER BY RAND()
         LIMIT ? OFFSET ?
     ');
     $stmt->bindValue(1, (int) $perPage, PDO::PARAM_INT);
@@ -119,7 +119,7 @@ function product_get_by_category_paginated($category, $page = 1, $perPage = 50)
         FROM products p
         LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
         WHERE p.category = ?
-        ORDER BY p.created_at DESC
+        ORDER BY RAND()
         LIMIT ? OFFSET ?
     ');
     $stmt->bindValue(1, $category);
@@ -147,7 +147,7 @@ function product_search_paginated($query, $page = 1, $perPage = 50)
         FROM products p
         LEFT JOIN stores s ON p.store_id = s.id OR p.store_id = s.owner_id
         WHERE p.name LIKE ? OR p.description LIKE ? OR s.name LIKE ?
-        ORDER BY p.created_at DESC
+        ORDER BY RAND()
         LIMIT ? OFFSET ?
     ');
     $stmt->bindValue(1, $like);
