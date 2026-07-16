@@ -1,12 +1,12 @@
 # VomP — Pitch Deck
 
-**Tagline:** Africa's Simplest Marketplace + Play-to-Earn Platform
+**Tagline:** Africa's Simplest Marketplace + Play-to-Earn Platform And Tasklify System
 
 ---
 
 ## 1. Elevator Pitch
 
-VomP is a mobile-first marketplace platform where anyone in Africa can create a digital storefront in under 60 seconds, list products, and receive orders directly via WhatsApp — no technical skills, no app download, no merchant account required. On top of the marketplace, VomP layers a token economy (Vomp Wallet) and a play-to-earn GamePad hub where users earn GPTokens that convert to spendable coins.
+VomP is a mobile-first marketplace platform where anyone in the world can create a digital storefront in under 60 seconds, list products, and receive orders directly via WhatsApp — no technical skills, no app download, no merchant account required. On top of the marketplace, VomP layers a token economy (Vomp Wallet) and a play-to-earn GamePad hub where users earn GPTokens that convert to spendable coins.
 
 ---
 
@@ -18,7 +18,7 @@ VomP is a mobile-first marketplace platform where anyone in Africa can create a 
 - **Technical barriers:** Setting up a Shopify or WooCommerce store requires hosting, domain, payment gateway setup, and technical know-how.
 - **Payment friction:** Credit card penetration in Nigeria is below 5%. Cash-on-delivery has high failure rates. Mobile money and bank transfers are fragmented.
 - **Social commerce is manual:** Most sellers use Instagram/WhatsApp manually — posting product photos, taking orders in DMs, tracking in notebooks. No automation, no analytics.
-- **No monetization for users:** Users spend time and attention on platforms but earn nothing. VomP flips this with play-to-earn gaming.
+- **No monetization for users:** Users spend time and attention on platforms but earn nothing. VomP flips this with play-to-earn gaming, Task system and referal system.
 
 ---
 
@@ -162,7 +162,7 @@ VomP is a mobile-first marketplace platform where anyone in Africa can create a 
 
 ## 9. Team
 
-**Founder / Lead Developer:** [Name]
+**Founder / Lead Developer:** [Victor Francis]
 
 Building VomP as a solo founder with full-stack capability across PHP, MySQL, JavaScript, Canvas API, Paystack API, VTU.NG API, and PWA.
 
