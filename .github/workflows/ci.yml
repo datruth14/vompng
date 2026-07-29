@@ -40,7 +40,7 @@ jobs:
       - name: Deploy via rsync
         uses: burnett01/rsync-deployments@7.0.1
         with:
-          switches: -avz --delete --exclude='.env' --exclude='.git' --exclude='id_rsa' --exclude='id_rsa.pub'
+          switches: -avz --delete --exclude='.env' --exclude='.git' --exclude='id_rsa' --exclude='id_rsa.pub' --exclude='assets/media/' --exclude='assets/img/' --exclude='uploads/'
           path: ./
           remote_path: ~/public_html/
           remote_host: ${{ secrets.SSH_HOST }}
