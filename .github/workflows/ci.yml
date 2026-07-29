@@ -1,4 +1,4 @@
-name: CI
+name: CI/CD
 
 on:
   push:
@@ -28,3 +28,21 @@ jobs:
             exit 1
           fi
           echo "All PHP files passed syntax check"
+
+  deploy:
+    name: Deploy to Production
+    if: github.ref == 'refs/heads/main'
+    needs: php-lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via rsync
+        uses: burnett01/rsync-deployments@7.0.1
+        with:
+          switches: -avz --delete --exclude='.env' --exclude='.git' --exclude='id_rsa' --exclude='id_rsa.pub'
+          path: ./
+          remote_path: ~/public_html/
+          remote_host: ${{ secrets.SSH_HOST }}
+          remote_user: ${{ secrets.SSH_USERNAME }}
+          remote_key: ${{ secrets.SSH_KEY }}
