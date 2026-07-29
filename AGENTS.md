@@ -407,6 +407,33 @@ RESEND_API_KEY=re_xxx
 RESEND_FROM=vomp <noreply@domain.com>
 ```
 
+## CI/CD Pipeline (GitHub Actions)
+
+### CI (`php-lint`)
+Runs on every push to `main`/`develop`/`staging` and every PR targeting `main`:
+- `php -l` syntax check on all `.php` files
+
+### CD (`deploy`)
+Triggered only after CI passes on `main` branch:
+- Rsyncs all files to cPanel (`www.vomp.ng`, user `vompng`) via SSH
+- **Excluded from deploy:** `.env`, `.git`, `id_rsa`, `id_rsa.pub`, `assets/media/`, `assets/img/`, `uploads/`
+
+### Branch Protection (`main`)
+- Requires PR with 1 approving review
+- Requires CI to pass before merge
+- No direct pushes, no force pushes
+- Admin overrides disallowed
+
+### Workflow File
+`.github/workflows/ci.yml`
+
+### Secrets (set in GitHub repo)
+| Secret | Purpose |
+|---|---|
+| `SSH_HOST` | `www.vomp.ng` |
+| `SSH_USERNAME` | `vompng` |
+| `SSH_KEY` | Private SSH key for cPanel access |
+
 ## Dev Server
 ```bash
 php -S localhost:8000 router.php
