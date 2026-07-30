@@ -415,7 +415,7 @@ Runs on every push to `main`/`develop`/`staging` and every PR targeting `main`:
 
 ### CD (`deploy`)
 Triggered only after CI passes on `main` branch:
-- Rsyncs all files to cPanel (`www.vomp.ng`, user `vompng`) via SSH
+- FTP deploy to cPanel (`s4.whitelabelclouds.com`, user `vompng`)
 - **Excluded from deploy:** `.env`, `.git`, `id_rsa`, `id_rsa.pub`, `assets/media/`, `assets/img/`, `uploads/`
 
 ### Branch Protection (`main`)
@@ -430,9 +430,9 @@ Triggered only after CI passes on `main` branch:
 ### Secrets (set in GitHub repo)
 | Secret | Purpose |
 |---|---|
-| `SSH_HOST` | `www.vomp.ng` |
-| `SSH_USERNAME` | `vompng` |
-| `SSH_KEY` | Private SSH key for cPanel access |
+| `FTP_HOST` | `s4.whitelabelclouds.com` |
+| `FTP_USER` | `vompng` |
+| `FTP_PASSWORD` | cPanel password |
 
 ## Dev Server
 ```bash
