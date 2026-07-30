@@ -356,6 +356,17 @@ function admin_count_search_transactions($query)
     return (int) $stmt->fetchColumn();
 }
 
+function admin_get_users_without_stores()
+{
+    return db_fetch_all('
+        SELECT u.id, u.name, u.email
+        FROM users u
+        LEFT JOIN stores s ON s.owner_id = u.id
+        WHERE s.id IS NULL
+        ORDER BY u.name ASC
+    ');
+}
+
 function admin_get_users_with_stores()
 {
     return db_fetch_all('
