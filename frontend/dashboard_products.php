@@ -278,11 +278,15 @@ function editProduct(id, name, price, description, mediaUrl, affiliateUrl) {
     document.getElementById('pAffiliateUrl').value = affiliateUrl || '';
     document.getElementById('productFormMsg').innerHTML = '';
     document.getElementById('formTitle').textContent = 'Edit Product';
+    document.getElementById('pMedia').required = false;
+    document.getElementById('pMediaField').classList.add('hidden');
 
     var isAffiliate = affiliateUrl && affiliateUrl.length > 0;
-    switchSource(isAffiliate ? 'affiliate' : 'store');
     if (isAffiliate) {
-        document.getElementById('pMediaField').classList.add('hidden');
+        document.getElementById('pAffiliateFields').classList.remove('hidden');
+        document.getElementById('tabStore').className = 'source-tab px-6 py-3 rounded-xl font-black text-sm transition-all bg-white/5 text-gray-400 hover:bg-white/10';
+        document.getElementById('tabAffiliate').className = 'source-tab px-6 py-3 rounded-xl font-black text-sm transition-all bg-[#ff610a] text-white shadow-xl shadow-[#ff610a]/20';
+        document.getElementById('pSource').value = 'affiliate';
     }
 
     const form = document.getElementById('addProductForm');
@@ -352,11 +356,13 @@ document.getElementById('productForm').addEventListener('submit', async (e) => {
         formData.append('affiliate_url', document.getElementById('pAffiliateUrl').value);
     }
 
-    const fileInput = document.getElementById('pMedia');
-    if (fileInput.files.length > 0) {
-        btn.textContent = 'Compressing...';
-        const compressed = await compressImage(fileInput.files[0]);
-        formData.append('media', compressed);
+    if (!editingId) {
+        const fileInput = document.getElementById('pMedia');
+        if (fileInput.files.length > 0) {
+            btn.textContent = 'Compressing...';
+            const compressed = await compressImage(fileInput.files[0]);
+            formData.append('media', compressed);
+        }
     }
 
     const slug = '<?php echo $store['slug']; ?>';
