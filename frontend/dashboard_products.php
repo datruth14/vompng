@@ -265,6 +265,8 @@ function resetForm() {
     document.getElementById('formTitle').textContent = 'Create New Product';
     document.getElementById('pMediaField').classList.remove('hidden');
     document.getElementById('pAffiliateFields').classList.add('hidden');
+    document.getElementById('tabStore').classList.remove('hidden');
+    document.getElementById('tabAffiliate').classList.remove('hidden');
 }
 
 function editProduct(id, name, price, description, mediaUrl, affiliateUrl) {
@@ -280,14 +282,9 @@ function editProduct(id, name, price, description, mediaUrl, affiliateUrl) {
     document.getElementById('formTitle').textContent = 'Edit Product';
     document.getElementById('pMedia').required = false;
     document.getElementById('pMediaField').classList.add('hidden');
-
-    var isAffiliate = affiliateUrl && affiliateUrl.length > 0;
-    if (isAffiliate) {
-        document.getElementById('pAffiliateFields').classList.remove('hidden');
-        document.getElementById('tabStore').className = 'source-tab px-6 py-3 rounded-xl font-black text-sm transition-all bg-white/5 text-gray-400 hover:bg-white/10';
-        document.getElementById('tabAffiliate').className = 'source-tab px-6 py-3 rounded-xl font-black text-sm transition-all bg-[#ff610a] text-white shadow-xl shadow-[#ff610a]/20';
-        document.getElementById('pSource').value = 'affiliate';
-    }
+    document.getElementById('pAffiliateFields').classList.add('hidden');
+    document.getElementById('tabStore').classList.add('hidden');
+    document.getElementById('tabAffiliate').classList.add('hidden');
 
     const form = document.getElementById('addProductForm');
     form.classList.remove('hidden');
