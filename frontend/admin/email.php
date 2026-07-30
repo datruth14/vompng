@@ -12,12 +12,19 @@ ob_start();
         <div class="space-y-6">
             <div>
                 <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Recipient Filter</label>
-                <select id="filterSelect" onchange="loadRecipients()" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm">
+                <select id="filterSelect" onchange="onFilterChange()" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm">
                     <option value="all" class="bg-gray-900">All Registered Users</option>
                     <option value="with_stores" class="bg-gray-900">Users with Stores</option>
+                    <option value="without_stores" class="bg-gray-900">Users without Stores</option>
                     <option value="min_2_products" class="bg-gray-900">Users with 2+ Products</option>
                     <option value="min_5_products" class="bg-gray-900">Users with 5+ Products</option>
+                    <option value="single" class="bg-gray-900">Single User</option>
                 </select>
+            </div>
+
+            <div id="singleSearchWrap" class="hidden">
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Search User</label>
+                <input type="text" id="singleSearch" placeholder="Type name or email..." oninput="searchSingleUser()" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm">
             </div>
 
             <div id="recipientCount" class="text-sm text-gray-400 font-medium hidden"></div>
@@ -73,6 +80,50 @@ ob_start();
 
 <script>
 let allUsers = [];
+let searchTimeout;
+
+function onFilterChange() {
+    const filter = document.getElementById('filterSelect').value;
+    const singleWrap = document.getElementById('singleSearchWrap');
+    if (filter === 'single') {
+        singleWrap.classList.remove('hidden');
+        document.getElementById('recipientCount').classList.add('hidden');
+        document.getElementById('userList').innerHTML = '';
+        document.getElementById('loadingUsers').textContent = 'Type at least 2 characters to search';
+        document.getElementById('loadingUsers').classList.remove('hidden');
+        document.getElementById('selectAll').classList.add('hidden');
+        updateCount();
+        return;
+    }
+    singleWrap.classList.add('hidden');
+    document.getElementById('selectAll').classList.remove('hidden');
+    loadRecipients();
+}
+
+function searchSingleUser() {
+    clearTimeout(searchTimeout);
+    const q = document.getElementById('singleSearch').value.trim();
+    if (q.length < 2) {
+        document.getElementById('userList').innerHTML = '';
+        document.getElementById('loadingUsers').textContent = 'Type at least 2 characters to search';
+        document.getElementById('loadingUsers').classList.remove('hidden');
+        document.getElementById('recipientCount').classList.add('hidden');
+        return;
+    }
+    document.getElementById('loadingUsers').textContent = 'Searching...';
+    document.getElementById('loadingUsers').classList.remove('hidden');
+
+    fetch('/api/admin/send_email?action=list&filter=single&q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                renderUsers(data.users);
+                document.getElementById('recipientCount').textContent = data.users.length + ' user(s) found';
+                document.getElementById('recipientCount').classList.remove('hidden');
+                document.getElementById('loadingUsers').classList.add('hidden');
+            }
+        });
+}
 
 function loadRecipients() {
     const filter = document.getElementById('filterSelect').value;

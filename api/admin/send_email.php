@@ -20,11 +20,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             case 'with_stores':
                 $users = admin_get_users_with_stores();
                 break;
+            case 'without_stores':
+                $users = admin_get_users_without_stores();
+                break;
             case 'min_2_products':
                 $users = admin_get_users_with_min_products(2);
                 break;
             case 'min_5_products':
                 $users = admin_get_users_with_min_products(5);
+                break;
+            case 'single':
+                $q = $_GET['q'] ?? '';
+                if (strlen($q) < 2) {
+                    $users = [];
+                } else {
+                    $like = '%' . $q . '%';
+                    $users = db_fetch_all('SELECT id, name, email FROM users WHERE name LIKE ? OR email LIKE ? ORDER BY name ASC LIMIT 20', [$like, $like]);
+                }
                 break;
             default:
                 $users = db_fetch_all('SELECT id, name, email FROM users ORDER BY name ASC');
