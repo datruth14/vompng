@@ -66,6 +66,8 @@ if (empty($recipients) || empty($subject) || empty($message)) {
     exit;
 }
 
+$baseUrl = rtrim(getenv('APP_URL') ?: 'https://vomp.ng', '/');
+$logoUrl = $baseUrl . '/assets/img/logo.png';
 $count = 0;
 $errors = [];
 
@@ -74,9 +76,9 @@ foreach ($recipients as $email) {
         $errors[] = "Invalid email: $email";
         continue;
     }
-    $html = '<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+    $html = '<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #030712; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
         <div style="text-align: center; margin-bottom: 32px;">
-            <div style="font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">vomp</div>
+            <img src="' . htmlspecialchars($logoUrl) . '" alt="vomp" style="max-width: 100px; height: auto; display: inline-block;">
         </div>
         <div style="font-size: 14px; color: #ddd; line-height: 1.6;">' . nl2br(htmlspecialchars($message)) . '</div>
         <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 24px 0;">

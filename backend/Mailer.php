@@ -1,5 +1,11 @@
 <?php
 
+function mailer_logo_url()
+{
+    $baseUrl = rtrim(getenv('APP_URL') ?: 'https://vomp.ng', '/');
+    return $baseUrl . '/assets/img/logo.png';
+}
+
 function mailer_send($to, $subject, $html)
 {
     $apiKey = getenv('RESEND_API_KEY') ?: $_ENV['RESEND_API_KEY'] ?? '';
@@ -43,10 +49,11 @@ function mailer_send($to, $subject, $html)
 
 function mailer_send_otp($email, $name, $otp)
 {
+    $logoUrl = mailer_logo_url();
     $html = '
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #030712; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
             <div style="text-align: center; margin-bottom: 32px;">
-                <div style="font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">vomp</div>
+                <img src="' . htmlspecialchars($logoUrl) . '" alt="vomp" style="max-width: 100px; height: auto; display: inline-block;">
             </div>
             <p style="font-size: 16px; margin-bottom: 8px;">Hi ' . htmlspecialchars($name) . ',</p>
             <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">Use the OTP below to reset your password. It expires in 15 minutes.</p>
@@ -61,10 +68,11 @@ function mailer_send_otp($email, $name, $otp)
 
 function mailer_notify_withdrawal($userName, $userEmail, $amount, $nairaAmount, $bankName, $accountNumber)
 {
+    $logoUrl = mailer_logo_url();
     $html = '
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #030712; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
             <div style="text-align: center; margin-bottom: 32px;">
-                <div style="font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">vomp</div>
+                <img src="' . htmlspecialchars($logoUrl) . '" alt="vomp" style="max-width: 100px; height: auto; display: inline-block;">
             </div>
             <p style="font-size: 16px; margin-bottom: 8px;">Withdrawal Request</p>
             <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">' . htmlspecialchars($userName) . ' (' . htmlspecialchars($userEmail) . ') is trying to make a withdrawal:</p>
@@ -81,10 +89,11 @@ function mailer_notify_withdrawal($userName, $userEmail, $amount, $nairaAmount, 
 
 function mailer_notify_bill_payment($userName, $userEmail, $type, $serviceId, $customerId, $amount, $error)
 {
+    $logoUrl = mailer_logo_url();
     $html = '
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #0a0a0a; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #030712; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
             <div style="text-align: center; margin-bottom: 32px;">
-                <div style="font-size: 28px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">vomp</div>
+                <img src="' . htmlspecialchars($logoUrl) . '" alt="vomp" style="max-width: 100px; height: auto; display: inline-block;">
             </div>
             <p style="font-size: 16px; margin-bottom: 8px;">Bill Payment Failed</p>
             <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">' . htmlspecialchars($userName) . ' (' . htmlspecialchars($userEmail) . ') tried to make a bill payment but it failed:</p>
