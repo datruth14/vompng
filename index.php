@@ -633,7 +633,7 @@ if ($method === 'GET') {
             include 'api/admin/reset_password.php';
             exit;
 
-        case $requestPath === 'api/admin/send_email':
+        case str_starts_with($requestPath, 'api/admin/send_email'):
             include 'api/admin/send_email.php';
             exit;
 
