@@ -71,6 +71,7 @@ admin/
   stores.php           - Store management (visits + orders columns)
   products.php         - Product management
   orders.php           - Finance: withdrawals + token transactions + bill payments + commission
+  email.php            - Send individual/bulk email to users (filter by stores, products)
 api/
   register.php         - POST /api/register
   login.php            - POST /api/login
@@ -132,7 +133,7 @@ Routes in `index.php`:
 - `GET /store/{slug}` → public storefront
 - `GET /store/{slug}/{productId}` → product detail
 - `GET /admin` → admin dashboard
-- `GET /admin/users|stores|products|orders` → admin management pages
+- `GET /admin/users|stores|products|orders|email` → admin management pages
 - `GET /admin/backfill-bill-commission` → one-time bill commission backfill
 - `POST /api/*` → API handlers (all API files are self-contained with require_once chains)
 
@@ -213,6 +214,7 @@ IDs are generated with `bin2hex(random_bytes(12))` (24-char hex).
 | `/api/resolve_account.php` | Yes | Resolve bank account number |
 | `/api/save_bank_details.php` | Yes | Save bank details on user profile |
 | `/api/admin/reset_password` | Admin | Reset any user's password (admin only) |
+| `/api/admin/send_email` | Admin | Send individual/bulk email to users (JSON: recipients[], subject, message) |
 
 ## Key Backend Functions
 

@@ -355,3 +355,29 @@ function admin_count_search_transactions($query)
     $stmt->execute([$like, $like, $like]);
     return (int) $stmt->fetchColumn();
 }
+
+function admin_get_users_with_stores()
+{
+    return db_fetch_all('
+        SELECT DISTINCT u.id, u.name, u.email
+        FROM users u
+        INNER JOIN stores s ON s.owner_id = u.id
+        ORDER BY u.name ASC
+    ');
+}
+
+function admin_get_users_with_min_products($min = 2)
+{
+    $db = db_get_connection();
+    $stmt = $db->prepare('
+        SELECT u.id, u.name, u.email, COUNT(p.id) AS product_count
+        FROM users u
+        INNER JOIN stores s ON s.owner_id = u.id
+        INNER JOIN products p ON p.store_id = s.id
+        GROUP BY u.id
+        HAVING product_count >= ?
+        ORDER BY u.name ASC
+    ');
+    $stmt->execute([(int) $min]);
+    return $stmt->fetchAll(PDO::FETCH_ASSOC);
+}
