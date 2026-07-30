@@ -6,7 +6,16 @@ function mailer_logo_url()
     return $baseUrl . '/assets/img/logo.png';
 }
 
-function mailer_send($to, $subject, $html)
+function mailer_logo_html()
+{
+    $url = mailer_logo_url();
+    return '<div style="text-align: center; margin-bottom: 32px; display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <img src="' . htmlspecialchars($url) . '" alt="vomp" style="max-width: 36px; height: auto; display: inline-block;">
+        <span style="font-size: 22px; font-weight: 900; letter-spacing: 2px; color: #ff610a;">VOMP.NG</span>
+    </div>';
+}
+
+function mailer_send($to, $subject, $html, $attachments = [])
 {
     $apiKey = getenv('RESEND_API_KEY') ?: $_ENV['RESEND_API_KEY'] ?? '';
     $from = getenv('RESEND_FROM') ?: $_ENV['RESEND_FROM'] ?? 'vomp <noreply@vomp.ng>';
@@ -15,18 +24,22 @@ function mailer_send($to, $subject, $html)
         return ['success' => false, 'error' => 'Resend API key not configured.'];
     }
 
-    $payload = json_encode([
+    $payload = [
         'from' => $from,
         'to' => [$to],
         'subject' => $subject,
         'html' => $html,
-    ]);
+    ];
+
+    if (!empty($attachments)) {
+        $payload['attachments'] = $attachments;
+    }
 
     $options = [
         'http' => [
             'header' => "Authorization: Bearer $apiKey\r\nContent-Type: application/json\r\n",
             'method' => 'POST',
-            'content' => $payload,
+            'content' => json_encode($payload),
             'ignore_errors' => true,
         ],
     ];
@@ -49,12 +62,9 @@ function mailer_send($to, $subject, $html)
 
 function mailer_send_otp($email, $name, $otp)
 {
-    $logoUrl = mailer_logo_url();
     $html = '
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #030712; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="text-align: center; margin-bottom: 32px;">
-                <img src="' . htmlspecialchars($logoUrl) . '" alt="vomp" style="max-width: 100px; height: auto; display: inline-block;">
-            </div>
+            ' . mailer_logo_html() . '
             <p style="font-size: 16px; margin-bottom: 8px;">Hi ' . htmlspecialchars($name) . ',</p>
             <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">Use the OTP below to reset your password. It expires in 15 minutes.</p>
             <div style="text-align: center; margin: 32px 0;">
@@ -68,12 +78,9 @@ function mailer_send_otp($email, $name, $otp)
 
 function mailer_notify_withdrawal($userName, $userEmail, $amount, $nairaAmount, $bankName, $accountNumber)
 {
-    $logoUrl = mailer_logo_url();
     $html = '
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #030712; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="text-align: center; margin-bottom: 32px;">
-                <img src="' . htmlspecialchars($logoUrl) . '" alt="vomp" style="max-width: 100px; height: auto; display: inline-block;">
-            </div>
+            ' . mailer_logo_html() . '
             <p style="font-size: 16px; margin-bottom: 8px;">Withdrawal Request</p>
             <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">' . htmlspecialchars($userName) . ' (' . htmlspecialchars($userEmail) . ') is trying to make a withdrawal:</p>
             <div style="background: rgba(255,97,10,0.1); padding: 24px; border-radius: 16px; margin-bottom: 24px;">
@@ -89,12 +96,9 @@ function mailer_notify_withdrawal($userName, $userEmail, $amount, $nairaAmount, 
 
 function mailer_notify_bill_payment($userName, $userEmail, $type, $serviceId, $customerId, $amount, $error)
 {
-    $logoUrl = mailer_logo_url();
     $html = '
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #030712; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
-            <div style="text-align: center; margin-bottom: 32px;">
-                <img src="' . htmlspecialchars($logoUrl) . '" alt="vomp" style="max-width: 100px; height: auto; display: inline-block;">
-            </div>
+            ' . mailer_logo_html() . '
             <p style="font-size: 16px; margin-bottom: 8px;">Bill Payment Failed</p>
             <p style="font-size: 14px; color: #aaa; margin-bottom: 24px;">' . htmlspecialchars($userName) . ' (' . htmlspecialchars($userEmail) . ') tried to make a bill payment but it failed:</p>
             <div style="background: rgba(255,97,10,0.1); padding: 24px; border-radius: 16px; margin-bottom: 24px;">

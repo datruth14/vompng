@@ -57,7 +57,18 @@ ob_start();
 
             <div>
                 <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Message</label>
-                <textarea id="message" rows="10" placeholder="Write your message here..." class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm resize-y"></textarea>
+                <textarea id="message" rows="8" placeholder="Write your message here..." class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm resize-y"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Promo Image URL <span class="text-gray-600 font-normal normal-case">(optional)</span></label>
+                <input type="url" id="imageUrl" placeholder="https://example.com/promo.jpg" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white placeholder-gray-600 focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm">
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">File Attachment <span class="text-gray-600 font-normal normal-case">(optional)</span></label>
+                <input type="file" id="attachmentFile" onchange="onFileSelect()" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-gray-400 focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm file:bg-[#ff610a]/20 file:border-0 file:rounded-lg file:px-3 file:py-1 file:text-[#ff8c3a] file:font-bold file:text-xs file:cursor-pointer">
+                <div id="attachmentName" class="text-xs text-gray-500 mt-1 hidden"></div>
             </div>
 
             <div id="sendProgress" class="hidden">
@@ -82,6 +93,7 @@ ob_start();
 <script>
 let allUsers = [];
 let searchTimeout;
+let pendingAttachment = null;
 
 function onFilterChange() {
     const filter = document.getElementById('filterSelect').value;
@@ -190,9 +202,44 @@ function escapeHtml(str) {
     return d.innerHTML;
 }
 
+function onFileSelect() {
+    const input = document.getElementById('attachmentFile');
+    const nameEl = document.getElementById('attachmentName');
+    if (input.files && input.files[0]) {
+        nameEl.textContent = 'Selected: ' + input.files[0].name + ' (' + formatSize(input.files[0].size) + ')';
+        nameEl.classList.remove('hidden');
+    } else {
+        nameEl.classList.add('hidden');
+        pendingAttachment = null;
+    }
+}
+
+function formatSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+            const base64 = reader.result.split(',')[1];
+            resolve({
+                filename: file.name,
+                content: base64,
+                content_type: file.type || 'application/octet-stream'
+            });
+        };
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 async function sendEmail() {
     const subject = document.getElementById('subject').value.trim();
     const message = document.getElementById('message').value.trim();
+    const imageUrl = document.getElementById('imageUrl').value.trim();
     const recipients = Array.from(document.querySelectorAll('.user-cb:checked')).map(cb => cb.value);
 
     if (!recipients.length) { alert('Select at least one recipient.'); return; }
@@ -209,16 +256,40 @@ async function sendEmail() {
     const successEl = document.getElementById('sendSuccess');
 
     btn.disabled = true;
-    btn.textContent = 'Sending...';
+    btn.textContent = 'Preparing...';
     progress.classList.remove('hidden');
     errorsEl.classList.add('hidden');
     successEl.classList.add('hidden');
+
+    progressBar.style.width = '10%';
+    statusEl.textContent = 'Processing...';
+
+    const payload = { recipients, subject, message, image_url: imageUrl, attachments: [] };
+
+    const fileInput = document.getElementById('attachmentFile');
+    if (fileInput.files && fileInput.files[0]) {
+        statusEl.textContent = 'Reading attachment...';
+        progressBar.style.width = '20%';
+        try {
+            const attachment = await readFileAsBase64(fileInput.files[0]);
+            payload.attachments = [attachment];
+        } catch (e) {
+            alert('Failed to read attachment file.');
+            btn.disabled = false;
+            btn.textContent = 'Send Email';
+            progress.classList.add('hidden');
+            return;
+        }
+    }
+
+    progressBar.style.width = '30%';
+    statusEl.textContent = 'Sending...';
 
     try {
         const res = await fetch('/api/admin/send_email', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ recipients, subject, message })
+            body: JSON.stringify(payload)
         });
         const data = await res.json();
 
