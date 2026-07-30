@@ -59,6 +59,8 @@ $input = json_decode(file_get_contents('php://input'), true);
 $recipients = $input['recipients'] ?? [];
 $subject = trim($input['subject'] ?? '');
 $message = trim($input['message'] ?? '');
+$imageUrl = trim($input['image_url'] ?? '');
+$attachments = $input['attachments'] ?? [];
 
 if (empty($recipients) || empty($subject) || empty($message)) {
     http_response_code(400);
@@ -66,8 +68,6 @@ if (empty($recipients) || empty($subject) || empty($message)) {
     exit;
 }
 
-$baseUrl = rtrim(getenv('APP_URL') ?: 'https://vomp.ng', '/');
-$logoUrl = $baseUrl . '/assets/img/logo.png';
 $count = 0;
 $errors = [];
 
@@ -76,21 +76,28 @@ foreach ($recipients as $email) {
         $errors[] = "Invalid email: $email";
         continue;
     }
+
+    $body = nl2br(htmlspecialchars($message));
+
+    if ($imageUrl) {
+        $body = '<div style="text-align: center; margin-bottom: 24px;">
+            <img src="' . htmlspecialchars($imageUrl) . '" alt="" style="max-width: 100%; height: auto; border-radius: 16px; display: inline-block;">
+        </div>' . $body;
+    }
+
     $html = '<div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px; background: #030712; color: #fff; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1);">
-        <div style="text-align: center; margin-bottom: 32px;">
-            <img src="' . htmlspecialchars($logoUrl) . '" alt="vomp" style="max-width: 100px; height: auto; display: inline-block;">
-        </div>
-        <div style="font-size: 14px; color: #ddd; line-height: 1.6;">' . nl2br(htmlspecialchars($message)) . '</div>
+        ' . mailer_logo_html() . '
+        <div style="font-size: 14px; color: #ddd; line-height: 1.6;">' . $body . '</div>
         <hr style="border: none; border-top: 1px solid rgba(255,255,255,0.1); margin: 24px 0;">
         <p style="font-size: 12px; color: #666; text-align: center;">You received this email because you are registered on vomp.</p>
     </div>';
-    $result = mailer_send($email, $subject, $html);
+
+    $result = mailer_send($email, $subject, $html, $attachments);
     if ($result['success']) {
         $count++;
     } else {
         $errors[] = "$email: " . ($result['error'] ?? 'unknown error');
     }
-    // Small delay to avoid rate limits
     usleep(100000);
 }
 
