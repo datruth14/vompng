@@ -13,6 +13,7 @@ ob_start();
             <div>
                 <label class="block text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 ml-1">Recipient Filter</label>
                 <select id="filterSelect" onchange="onFilterChange()" class="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white focus:outline-none focus:border-[#ff610a]/50 transition-all text-sm">
+                    <option value="" class="bg-gray-900">— Select Filter —</option>
                     <option value="all" class="bg-gray-900">All Registered Users</option>
                     <option value="with_stores" class="bg-gray-900">Users with Stores</option>
                     <option value="without_stores" class="bg-gray-900">Users without Stores</option>
@@ -85,6 +86,16 @@ let searchTimeout;
 function onFilterChange() {
     const filter = document.getElementById('filterSelect').value;
     const singleWrap = document.getElementById('singleSearchWrap');
+    if (!filter) {
+        singleWrap.classList.add('hidden');
+        document.getElementById('selectAll').classList.add('hidden');
+        document.getElementById('userList').innerHTML = '';
+        document.getElementById('recipientCount').classList.add('hidden');
+        document.getElementById('loadingUsers').textContent = 'Select a filter to load users';
+        document.getElementById('loadingUsers').classList.remove('hidden');
+        updateCount();
+        return;
+    }
     if (filter === 'single') {
         singleWrap.classList.remove('hidden');
         document.getElementById('recipientCount').classList.add('hidden');
