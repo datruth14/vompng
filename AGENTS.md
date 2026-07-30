@@ -415,7 +415,7 @@ Runs on every push to `main`/`develop`/`staging` and every PR targeting `main`:
 
 ### CD (`deploy`)
 Triggered only after CI passes on `main` branch:
-- FTP deploy to cPanel (`s4.whitelabelclouds.com`, user `vompng`)
+- FTP deploy to cPanel (`ftp.vomp.ng`, user `vompng`)
 - **Excluded from deploy:** `.env`, `.git`, `id_rsa`, `id_rsa.pub`, `assets/media/`, `assets/img/`, `uploads/`
 
 ### Branch Protection (`main`)
@@ -430,7 +430,7 @@ Triggered only after CI passes on `main` branch:
 ### Secrets (set in GitHub repo)
 | Secret | Purpose |
 |---|---|
-| `FTP_HOST` | `s4.whitelabelclouds.com` |
+| `FTP_HOST` | `ftp.vomp.ng` |
 | `FTP_USER` | `vompng` |
 | `FTP_PASSWORD` | cPanel password |
 
