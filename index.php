@@ -741,6 +741,9 @@ if ($method === 'GET') {
         case 'api/admin/reset_password':
             include 'api/admin/reset_password.php';
             exit;
+        case 'api/admin/send_email':
+            include 'api/admin/send_email.php';
+            exit;
         default:
             http_response_code(404);
             echo json_encode(['error' => 'API endpoint not found']);
