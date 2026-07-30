@@ -48,6 +48,10 @@ ob_start();
             <h3 class="text-white font-black text-xl mb-2">Order & Token Log</h3>
             <p class="text-gray-400 text-sm">View all token transactions and order activity.</p>
         </a>
+        <a href="/admin/email" class="glass-morphism rounded-2xl p-6 border border-white/10 hover:bg-white/10 transition-all">
+            <h3 class="text-white font-black text-xl mb-2">Send Email</h3>
+            <p class="text-gray-400 text-sm">Send individual or bulk email to registered users.</p>
+        </a>
     </div>
 </section>
 <?php

@@ -611,6 +611,10 @@ if ($method === 'GET') {
                     include 'frontend/admin/orders.php';
                     break;
 
+                case 'admin/email':
+                    include 'frontend/admin/email.php';
+                    break;
+
                 case 'admin/backfill-bill-commission':
                     include 'api/admin_backfill_bill_commission.php';
                     exit;
@@ -627,6 +631,10 @@ if ($method === 'GET') {
 
         case $requestPath === 'api/admin/reset_password':
             include 'api/admin/reset_password.php';
+            exit;
+
+        case $requestPath === 'api/admin/send_email':
+            include 'api/admin/send_email.php';
             exit;
 
         case $requestPath === 'logout':
